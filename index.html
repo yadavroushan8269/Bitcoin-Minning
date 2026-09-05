@@ -9,215 +9,941 @@
 
 <body>
 
-<header class="top-header">
-  <div>
-    <h2>💰 NSG Wellfare</h2>
-    <small>Secure Investment Platform</small>
+<!-- ================= AUTH ================= -->
+
+<section id="authScreen" class="auth-screen">
+
+  <div class="auth-card">
+
+    <div class="brand-mark">🌿</div>
+
+    <h1>NSG Wellfare</h1>
+    <p class="auth-subtitle">Secure Digital Platform</p>
+
+    <div class="auth-tabs">
+      <button id="loginTab"
+              class="auth-tab active"
+              onclick="showAuth('login')">
+        Login
+      </button>
+
+      <button id="signupTab"
+              class="auth-tab"
+              onclick="showAuth('signup')">
+        Sign Up
+      </button>
+    </div>
+
+
+    <!-- LOGIN -->
+
+    <div id="loginBox" class="auth-box">
+
+      <h2>Welcome Back</h2>
+
+      <p class="muted">
+        Login with your registered mobile number.
+      </p>
+
+      <label>Mobile Number</label>
+
+      <div class="phone-row">
+        <span>+91</span>
+
+        <input
+          id="loginMobile"
+          type="tel"
+          inputmode="numeric"
+          maxlength="10"
+          placeholder="10 digit mobile number"
+        >
+      </div>
+
+
+      <label>Password</label>
+
+      <input
+        id="loginPassword"
+        type="password"
+        placeholder="Enter password"
+      >
+
+
+      <button
+        id="loginBtn"
+        class="primary-btn"
+        onclick="loginUser()">
+        Login
+      </button>
+
+
+      <p class="auth-switch">
+        Don't have an account?
+
+        <button
+          type="button"
+          onclick="showAuth('signup')">
+          Sign Up
+        </button>
+      </p>
+
+      <p id="loginMessage"
+         class="form-message">
+      </p>
+
+    </div>
+
+
+    <!-- SIGN UP -->
+
+    <div id="signupBox"
+         class="auth-box hidden">
+
+      <h2>Create Account</h2>
+
+      <p class="muted">
+        Register your mobile number to continue.
+      </p>
+
+
+      <label>Mobile Number</label>
+
+      <div class="phone-row">
+
+        <span>+91</span>
+
+        <input
+          id="signupMobile"
+          type="tel"
+          inputmode="numeric"
+          maxlength="10"
+          placeholder="10 digit mobile number"
+        >
+
+      </div>
+
+
+      <label>Password</label>
+
+      <input
+        id="signupPassword"
+        type="password"
+        placeholder="At least 8 characters, letters + numbers"
+      >
+
+
+      <label>Confirm Password</label>
+
+      <input
+        id="signupConfirm"
+        type="password"
+        placeholder="Re-enter password"
+      >
+
+
+      <small class="password-hint">
+        Password must be at least 8 characters
+        and contain both letters and numbers.
+      </small>
+
+
+      <button
+        id="signupBtn"
+        class="primary-btn"
+        onclick="registerUser()">
+        Register
+      </button>
+
+
+      <p class="auth-switch">
+        Already registered?
+
+        <button
+          type="button"
+          onclick="showAuth('login')">
+          Login
+        </button>
+      </p>
+
+
+      <p id="signupMessage"
+         class="form-message">
+      </p>
+
+    </div>
+
   </div>
+
+</section>
+
+
+<!-- ================= MAIN APP ================= -->
+
+<div id="appScreen" class="hidden">
+
+<header class="topbar">
+
+  <div>
+
+    <h2>🌿 NSG Wellfare</h2>
+
+    <small>
+      Secure Digital Platform
+    </small>
+
+  </div>
+
+
+  <div class="top-actions">
+
+    <div class="balance">
+      ₹<span id="balance">0.00</span>
+    </div>
+
+    <button
+      class="logout-btn"
+      onclick="logoutUser()">
+      Logout
+    </button>
+
+  </div>
+
 </header>
+
 
 <main>
 
-  <!-- HOME -->
-  <section id="home" class="page active">
-    <div class="welcome-card">
-      <h2>Welcome to NSG Wellfare</h2>
-      <p>Manage your investment, rewards and account easily.</p>
+
+<!-- HOME -->
+
+<section id="home"
+         class="page active">
+
+  <div class="welcome card">
+
+    <h2>Welcome 👋</h2>
+
+    <p>
+      Welcome to NSG Wellfare
+    </p>
+
+    <p class="user-mobile">
+      +91 <span id="loggedMobile"></span>
+    </p>
+
+    <div class="balance-big">
+      ₹<span id="homeBalance">0.00</span>
     </div>
 
-    <div class="balance-card">
-      <span>Total Balance</span>
-      <h1>₹<span id="homeBalance">0.00</span></h1>
-    </div>
-
-    <div class="menu-grid">
-      <button onclick="openPage('attendance')">📅<span>Daily Attendance</span></button>
-      <button onclick="openPage('rewards')">🎁<span>Rewards</span></button>
-      <button onclick="customerService()">💬<span>Customer Service</span></button>
-      <button onclick="downloadApp()">📲<span>Download App</span></button>
-    </div>
-
-    <div class="section-title">Investment Products</div>
-    <div id="homeProducts"></div>
-  </section>
+  </div>
 
 
-  <!-- PRODUCTS -->
-  <section id="products" class="page">
-    <div class="page-title">Investment Products</div>
-    <div id="productsList"></div>
-  </section>
+  <div class="grid">
+
+    <button
+      class="menu-card"
+      onclick="openPage('attendance')">
+
+      <span>📅</span>
+      <b>Daily Attendance</b>
+      <small>Attendance Calendar</small>
+
+    </button>
 
 
-  <!-- ATTENDANCE -->
-  <section id="attendance" class="page">
-    <div class="page-title">Daily Attendance</div>
+    <button
+      class="menu-card"
+      onclick="openPage('rewards')">
 
-    <div class="month-control">
-      <button onclick="changeMonth(-1)">‹</button>
+      <span>🎁</span>
+      <b>Rewards</b>
+      <small>Claim available rewards</small>
+
+    </button>
+
+
+    <button
+      class="menu-card"
+      onclick="customerService()">
+
+      <span>💬</span>
+      <b>Customer Service</b>
+      <small>Contact Support</small>
+
+    </button>
+
+
+    <button
+      class="menu-card"
+      onclick="downloadApp()">
+
+      <span>📱</span>
+      <b>Download App</b>
+      <small>Application</small>
+
+    </button>
+
+  </div>
+
+
+  <h3 class="section-title">
+    Investment Products
+  </h3>
+
+  <div id="homeProducts"></div>
+
+</section>
+
+
+
+<!-- PRODUCTS -->
+
+<section id="products"
+         class="page">
+
+  <h2 class="page-title">
+    📦 Products
+  </h2>
+
+  <div id="productsList"></div>
+
+</section>
+
+
+
+<!-- ATTENDANCE -->
+
+<section id="attendance"
+         class="page">
+
+  <div class="page-head">
+
+    <button onclick="openPage('home')">
+      ←
+    </button>
+
+    <h2>
+      Daily Attendance
+    </h2>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="calendar-head">
+
+      <button onclick="changeMonth(-1)">
+        ‹
+      </button>
+
       <h3 id="monthTitle"></h3>
-      <button onclick="changeMonth(1)">›</button>
+
+      <button onclick="changeMonth(1)">
+        ›
+      </button>
+
     </div>
 
-    <div id="calendar" class="calendar"></div>
 
-    <div class="attendance-total">
-      Attendance: <b id="attendanceTotal">0</b>
+    <div class="weekdays">
+
+      <span>Sun</span>
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
+
     </div>
-  </section>
 
 
-  <!-- REWARDS -->
-  <section id="rewards" class="page">
-    <div class="page-title">Rewards</div>
+    <div id="calendar"
+         class="calendar">
+    </div>
+
+
+    <div class="attendance-info">
+
+      Total Attendance:
+      <b id="attendanceTotal">
+        0
+      </b>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- REWARDS -->
+
+<section id="rewards"
+         class="page">
+
+  <div class="page-head">
+
+    <button onclick="openPage('home')">
+      ←
+    </button>
+
+    <h2>
+      Rewards
+    </h2>
+
+  </div>
+
+
+  <div class="card">
+
+    <p class="notice">
+      Available rewards are shown
+      according to your account activity.
+    </p>
+
     <div id="rewardsList"></div>
-  </section>
+
+  </div>
+
+</section>
 
 
-  <!-- MY INFO -->
-  <section id="info" class="page">
-    <div class="page-title">My Info</div>
 
-    <div class="info-card">
-      <div class="info-balance">
-        <small>Available Balance</small>
-        <h1>₹<span id="infoBalance">0.00</span></h1>
-      </div>
+<!-- MY INFO -->
 
-      <button class="big-btn" onclick="showDeposit()">💰 Deposit</button>
-      <button class="big-btn" onclick="showWithdrawal()">🏦 Withdrawal</button>
-      <button class="big-btn" onclick="openPage('depositHistory')">📥 Deposit History</button>
-      <button class="big-btn" onclick="openPage('withdrawHistory')">📤 Withdrawal History</button>
-      <button class="big-btn" onclick="openPage('transactions')">📊 Transactions</button>
-      <button class="big-btn" onclick="inviteNow()">👥 Invite Friends</button>
-    </div>
-  </section>
+<section id="info"
+         class="page">
+
+  <h2 class="page-title">
+    👤 My Info
+  </h2>
 
 
-  <!-- DEPOSIT -->
-  <section id="deposit" class="page">
-    <div class="page-title">Deposit</div>
+  <div class="profile-card card">
 
-    <div class="payment-card">
-      <h3>Make Payment</h3>
-      <p>Pay using the UPI ID or scan the QR code.</p>
-
-      <div class="qr-box">
-        <img src="assets/upi-qr.jpg" class="upi-qr" alt="UPI QR Code">
-      </div>
-
-      <div class="upi-row">
-        <span id="upiId">yadav-rishab@fam</span>
-        <button onclick="copyUPI()">Copy</button>
-      </div>
+    <div class="profile-icon">
+      👤
     </div>
 
-    <div class="form-card">
-      <label>Deposit Amount</label>
-      <input id="depositAmount" type="number" placeholder="Enter amount">
+    <div>
 
-      <label>UTR / Transaction ID</label>
-      <input id="utr" type="text" placeholder="Enter UTR number">
+      <b>
+        Registered Mobile
+      </b>
 
-      <label>Payment Screenshot</label>
-      <input id="paymentScreenshot" type="file" accept="image/*">
+      <p>
+        +91 <span id="profileMobile"></span>
+      </p>
 
-      <button id="depositSubmitBtn" class="submit-btn" onclick="submitDeposit()">
-        Submit Deposit
+    </div>
+
+  </div>
+
+
+  <div class="info-menu">
+
+
+    <button onclick="showDeposit()">
+
+      <span>💰</span>
+
+      <div>
+
+        <b>Deposit</b>
+
+        <small>
+          Add balance securely
+        </small>
+
+      </div>
+
+    </button>
+
+
+    <button onclick="showWithdrawal()">
+
+      <span>🏦</span>
+
+      <div>
+
+        <b>Withdrawal</b>
+
+        <small>
+          Request withdrawal
+        </small>
+
+      </div>
+
+    </button>
+
+
+    <button onclick="openPage('withdrawHistory')">
+
+      <span>📋</span>
+
+      <div>
+
+        <b>Withdrawal History</b>
+
+        <small>
+          View withdrawal requests
+        </small>
+
+      </div>
+
+    </button>
+
+
+    <button onclick="openPage('depositHistory')">
+
+      <span>📥</span>
+
+      <div>
+
+        <b>Deposit History</b>
+
+        <small>
+          View deposit requests
+        </small>
+
+      </div>
+
+    </button>
+
+
+    <button onclick="openPage('transactions')">
+
+      <span>📊</span>
+
+      <div>
+
+        <b>Transaction History</b>
+
+        <small>
+          View all transactions
+        </small>
+
+      </div>
+
+    </button>
+
+
+    <button onclick="inviteNow()">
+
+      <span>🎁</span>
+
+      <div>
+
+        <b>Invite Now</b>
+
+        <small>
+          Share with friends
+        </small>
+
+      </div>
+
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- DEPOSIT -->
+
+<section id="deposit"
+         class="page">
+
+  <div class="page-head">
+
+    <button onclick="openPage('info')">
+      ←
+    </button>
+
+    <h2>
+      Deposit
+    </h2>
+
+  </div>
+
+
+  <div class="card">
+
+    <label>
+      Deposit Amount
+    </label>
+
+    <input
+      type="number"
+      id="depositAmount"
+      placeholder="Minimum ₹500"
+      min="500"
+      max="20000"
+    >
+
+
+    <div class="payment-box">
+
+      <p>
+        <b>
+          Pay using UPI
+        </b>
+      </p>
+
+
+      <div class="qr-wrap">
+
+        <img
+          src="assets/upi-qr.jpg"
+          alt="UPI QR Code"
+          class="upi-qr"
+          onerror="this.style.display='none';document.getElementById('qrError').style.display='block';"
+        >
+
+
+        <div
+          id="qrError"
+          class="qr-error hidden">
+
+          QR image load nahi hui.
+          Check <b>assets/upi-qr.jpg</b>.
+
+        </div>
+
+      </div>
+
+
+      <p>
+
+        UPI ID:
+        <b id="upiId">
+          yadav-rishab@fam
+        </b>
+
+      </p>
+
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="copyUPI()">
+
+        Copy UPI ID
+
       </button>
+
+
+      <small>
+
+        Payment ke baad UTR aur
+        payment screenshot submit karein.
+        Balance admin verification ke
+        baad update hoga.
+
+      </small>
+
     </div>
 
-    <button class="back-btn" onclick="openPage('info')">← Back</button>
-  </section>
+
+    <label>
+      UTR / Transaction ID
+    </label>
+
+    <input
+      type="text"
+      id="utr"
+      placeholder="Enter UTR / Transaction ID"
+    >
 
 
-  <!-- WITHDRAW -->
-  <section id="withdraw" class="page">
-    <div class="page-title">Withdrawal</div>
+    <label>
+      Payment Screenshot
+    </label>
 
-    <div class="withdraw-balance">
+    <input
+      type="file"
+      id="paymentScreenshot"
+      accept="image/jpeg,image/png,image/webp"
+    >
+
+
+    <small class="warning">
+
+      JPG, PNG or WebP.
+      Maximum 3 MB.
+
+    </small>
+
+
+    <button
+      class="primary-btn"
+      id="depositSubmitBtn"
+      onclick="submitDeposit()">
+
+      Submit Deposit Request
+
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- WITHDRAWAL -->
+
+<section id="withdraw"
+         class="page">
+
+  <div class="page-head">
+
+    <button onclick="openPage('info')">
+      ←
+    </button>
+
+    <h2>
+      Withdrawal
+    </h2>
+
+  </div>
+
+
+  <div class="card">
+
+    <p>
+
       Available Balance:
-      <b>₹<span id="withdrawBalance">0.00</span></b>
-    </div>
+      <b>
+        ₹<span id="withdrawBalance">0.00</span>
+      </b>
 
-    <div class="form-card">
-
-      <label>Withdrawal Amount</label>
-      <input id="withdrawAmount" type="number" placeholder="Enter amount">
-
-      <label>Account Holder Name</label>
-      <input id="bankName" type="text" placeholder="Account holder name">
-
-      <label>Account Number</label>
-      <input id="accountNumber" type="text" placeholder="Enter account number">
-
-      <label>Confirm Account Number</label>
-      <input id="confirmAccount" type="text" placeholder="Re-enter account number">
-
-      <label>Bank Name</label>
-      <input id="bank" type="text" placeholder="Enter bank name">
-
-      <label>IFSC Code</label>
-      <input id="ifsc" type="text" placeholder="Enter IFSC code">
-
-      <button id="withdrawSubmitBtn" class="submit-btn" onclick="submitWithdrawal()">
-        Submit Withdrawal
-      </button>
-    </div>
-
-    <button class="back-btn" onclick="openPage('info')">← Back</button>
-  </section>
+    </p>
 
 
-  <!-- WITHDRAW HISTORY -->
-  <section id="withdrawHistory" class="page">
-    <div class="page-title">Withdrawal History</div>
-    <div id="withdrawHistoryList"></div>
-  </section>
+    <label>
+      Withdrawal Amount
+    </label>
+
+    <input
+      type="number"
+      id="withdrawAmount"
+      placeholder="Minimum ₹300"
+      min="300"
+      max="10000"
+    >
 
 
-  <!-- DEPOSIT HISTORY -->
-  <section id="depositHistory" class="page">
-    <div class="page-title">Deposit History</div>
-    <div id="depositHistoryList"></div>
-  </section>
+    <h3>
+      Bank Details
+    </h3>
 
 
-  <!-- TRANSACTIONS -->
-  <section id="transactions" class="page">
-    <div class="page-title">Transactions</div>
-    <div id="transactionList"></div>
-  </section>
+    <label>
+      Account Holder Name
+    </label>
+
+    <input
+      id="bankName"
+      placeholder="Account Holder Name"
+    >
+
+
+    <label>
+      Account Number
+    </label>
+
+    <input
+      id="accountNumber"
+      inputmode="numeric"
+      placeholder="Account Number"
+    >
+
+
+    <label>
+      Confirm Account Number
+    </label>
+
+    <input
+      id="confirmAccount"
+      inputmode="numeric"
+      placeholder="Confirm Account Number"
+    >
+
+
+    <label>
+      Bank Name
+    </label>
+
+    <input
+      id="bank"
+      placeholder="Bank Name"
+    >
+
+
+    <label>
+      IFSC Code
+    </label>
+
+    <input
+      id="ifsc"
+      placeholder="IFSC Code"
+    >
+
+
+    <button
+      class="primary-btn"
+      id="withdrawSubmitBtn"
+      onclick="submitWithdrawal()">
+
+      Submit Withdrawal Request
+
+    </button>
+
+
+    <small class="warning">
+
+      Withdrawal request admin verification/payment
+      ke liye bheji jayegi.
+
+    </small>
+
+  </div>
+
+</section>
+
+
+
+<!-- WITHDRAWAL HISTORY -->
+
+<section id="withdrawHistory"
+         class="page">
+
+  <div class="page-head">
+
+    <button onclick="openPage('info')">
+      ←
+    </button>
+
+    <h2>
+      Withdrawal History
+    </h2>
+
+  </div>
+
+
+  <div id="withdrawHistoryList"></div>
+
+</section>
+
+
+
+<!-- DEPOSIT HISTORY -->
+
+<section id="depositHistory"
+         class="page">
+
+  <div class="page-head">
+
+    <button onclick="openPage('info')">
+      ←
+    </button>
+
+    <h2>
+      Deposit History
+    </h2>
+
+  </div>
+
+
+  <div id="depositHistoryList"></div>
+
+</section>
+
+
+
+<!-- TRANSACTIONS -->
+
+<section id="transactions"
+         class="page">
+
+  <div class="page-head">
+
+    <button onclick="openPage('info')">
+      ←
+    </button>
+
+    <h2>
+      Transaction History
+    </h2>
+
+  </div>
+
+
+  <div id="transactionList"></div>
+
+</section>
 
 </main>
 
 
+
 <!-- BOTTOM NAV -->
+
 <nav class="bottom-nav">
+
   <button onclick="openPage('home')">
-    🏠
-    <span>Home</span>
+
+    <span>🏠</span>
+    Home
+
   </button>
+
 
   <button onclick="openPage('products')">
-    📦
-    <span>Products</span>
+
+    <span>📦</span>
+    Products
+
   </button>
 
+
   <button onclick="openPage('info')">
-    👤
-    <span>My Info</span>
+
+    <span>👤</span>
+    My Info
+
   </button>
+
 </nav>
 
 
+
 <!-- MODAL -->
-<div id="modal" class="modal">
+
+<div id="modal"
+     class="modal">
+
   <div class="modal-box">
-    <button class="close-modal" onclick="closeModal()">×</button>
+
+    <button
+      class="close"
+      onclick="closeModal()">
+      ×
+    </button>
+
     <h3 id="modalTitle"></h3>
+
     <div id="modalContent"></div>
+
   </div>
+
+</div>
+
+
 </div>
 
 
