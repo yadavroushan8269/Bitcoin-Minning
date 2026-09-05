@@ -8,50 +8,45 @@
 body {
   background: #f2f5f3;
   color: #17231b;
-  padding-bottom: 85px;
+  padding-bottom: 80px;
 }
 
-/* =========================
-   TOP BAR
-========================= */
+button {
+  cursor: pointer;
+}
 
 .topbar {
-  background: #064d2b;
+  background: #07572f;
   color: white;
-  padding: 18px;
+  padding: 17px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .topbar h2 {
-  font-size: 25px;
-  margin-bottom: 5px;
+  font-size: 22px;
+  margin-bottom: 4px;
 }
 
 .topbar small {
-  opacity: 0.85;
-  font-size: 14px;
+  opacity: .85;
 }
 
 .balance {
-  background: rgba(255,255,255,0.12);
-  padding: 12px 18px;
-  border-radius: 30px;
-  font-size: 20px;
+  background: rgba(255,255,255,.15);
+  padding: 10px 14px;
+  border-radius: 20px;
   font-weight: bold;
-  white-space: nowrap;
 }
 
-/* =========================
-   MAIN
-========================= */
-
 main {
-  max-width: 900px;
+  max-width: 620px;
   margin: auto;
-  padding: 20px 16px;
+  padding: 15px;
 }
 
 .page {
@@ -62,553 +57,417 @@ main {
   display: block;
 }
 
-/* =========================
-   HEADINGS
-========================= */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
 
+.welcome {
+  background: linear-gradient(135deg,#07572f,#0b7a43);
+  color: white;
+}
+
+.welcome h2 {
+  margin-bottom: 7px;
+}
+
+.welcome p {
+  opacity: .9;
+}
+
+.balance-big {
+  font-size: 36px;
+  font-weight: bold;
+  margin-top: 18px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 15px 0 25px;
+}
+
+.menu-card {
+  background: white;
+  border: none;
+  border-radius: 14px;
+  padding: 18px 12px;
+  text-align: left;
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+
+.menu-card span {
+  display: block;
+  font-size: 27px;
+  margin-bottom: 9px;
+}
+
+.menu-card b {
+  display: block;
+}
+
+.menu-card small {
+  display: block;
+  color: #777;
+  margin-top: 5px;
+}
+
+.section-title,
 .page-title {
-  font-size: 30px;
-  margin: 10px 0 20px;
+  margin: 10px 0 15px;
 }
 
 .page-head {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.page-head h2 {
-  font-size: 28px;
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
 .page-head button {
   border: none;
   background: white;
-  width: 50px;
-  height: 50px;
   border-radius: 50%;
-  font-size: 28px;
-  cursor: pointer;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-}
-
-/* =========================
-   CARD
-========================= */
-
-.card {
-  background: white;
-  border-radius: 22px;
-  padding: 25px;
-  margin-bottom: 20px;
-  box-shadow: 0 5px 25px rgba(0,0,0,0.06);
-}
-
-.card h2 {
-  margin-bottom: 18px;
-}
-
-.card h3 {
-  margin: 20px 0 12px;
-}
-
-/* =========================
-   HOME
-========================= */
-
-.welcome {
-  background: linear-gradient(135deg,#064d2b,#08733f);
-  color: white;
-  padding: 28px;
-}
-
-.welcome h2 {
-  font-size: 27px;
-}
-
-.welcome p {
-  opacity: 0.9;
-  margin-bottom: 22px;
-}
-
-.balance-big {
-  font-size: 40px;
-  font-weight: bold;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 14px;
-  margin: 20px 0;
-}
-
-.menu-card {
-  border: none;
-  background: white;
-  border-radius: 18px;
-  padding: 22px 14px;
-  text-align: left;
-  cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-}
-
-.menu-card span {
-  display: block;
-  font-size: 30px;
-  margin-bottom: 10px;
-}
-
-.menu-card b {
-  display: block;
-  font-size: 17px;
-  margin-bottom: 5px;
-}
-
-.menu-card small {
-  color: #777;
-}
-
-.section-title {
+  width: 40px;
+  height: 40px;
   font-size: 23px;
-  margin: 25px 0 12px;
 }
 
-/* =========================
-   PRODUCTS
-========================= */
-
-.product-card {
+.product {
   background: white;
-  border-radius: 20px;
-  padding: 22px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  border-radius: 15px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
 }
 
-.product-card h3 {
-  font-size: 22px;
-  margin-bottom: 10px;
+.product-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
-.product-card p {
-  color: #555;
-  margin: 7px 0;
-}
-
-.product-card .price {
-  font-size: 25px;
-  font-weight: bold;
-  color: #064d2b;
-  margin: 14px 0;
-}
-
-.product-card button {
-  width: 100%;
-  padding: 13px;
-  border: none;
-  border-radius: 12px;
-  background: #064d2b;
-  color: white;
-  font-size: 16px;
+.product-price {
+  color: #07572f;
+  font-size: 24px;
   font-weight: bold;
 }
 
-/* =========================
-   INPUTS
-========================= */
-
-label {
-  display: block;
-  font-weight: bold;
-  margin: 17px 0 8px;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  border: 1px solid #d8ddd9;
-  border-radius: 13px;
-  padding: 15px;
-  font-size: 16px;
-  outline: none;
-  background: white;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: #08733f;
-  box-shadow: 0 0 0 3px rgba(8,115,63,0.08);
-}
-
-/* =========================
-   BUTTON
-========================= */
-
-button {
-  cursor: pointer;
+.product ul {
+  margin: 13px 0;
+  padding-left: 20px;
+  line-height: 1.8;
 }
 
 .primary-btn {
   width: 100%;
-  border: none;
-  background: #064d2b;
+  background: #07572f;
   color: white;
-  padding: 16px;
-  border-radius: 14px;
-  font-size: 18px;
+  border: none;
+  padding: 14px;
+  border-radius: 9px;
+  font-size: 16px;
   font-weight: bold;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .primary-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: .6;
 }
 
-/* =========================
-   UPI PAYMENT
-========================= */
+.secondary-btn {
+  background: #e8f2ec;
+  color: #07572f;
+  border: none;
+  padding: 11px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+label {
+  display: block;
+  margin: 14px 0 7px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 9px;
+  outline: none;
+  font-size: 15px;
+}
+
+input:focus {
+  border-color: #07572f;
+}
 
 .upi-payment {
-  background: #eef8f1;
-  border: 1px solid #d5eadb;
-  border-radius: 18px;
-  padding: 20px;
-  margin-top: 20px;
+  background: #edf7f0;
+  padding: 18px;
+  border-radius: 13px;
+  margin: 16px 0;
   text-align: center;
+  border: 1px solid #d5e8da;
 }
 
-.upi-title {
-  font-size: 22px;
-  margin-bottom: 15px;
+.upi-payment h3 {
+  margin-bottom: 14px;
 }
 
 .upi-qr {
   display: block;
-  width: 240px;
-  height: 240px;
+  width: 235px;
+  height: 235px;
   object-fit: contain;
-  margin: 10px auto 15px;
+  margin: 10px auto 14px;
   background: white;
+  padding: 7px;
   border-radius: 12px;
-  padding: 8px;
   border: 1px solid #ddd;
 }
 
 .scan-note {
-  color: #555;
-  font-size: 14px;
-  margin-bottom: 16px;
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 14px;
 }
 
-.upi-id-row {
+.upi-id-box {
   background: white;
-  border-radius: 13px;
-  padding: 13px;
+  border-radius: 10px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
   flex-wrap: wrap;
-  border: 1px solid #dfe8e1;
+  gap: 8px;
 }
 
-.upi-id-row span {
-  color: #666;
+.upi-id-box span {
+  color: #777;
   font-size: 13px;
 }
 
-.upi-id-row strong {
-  color: #064d2b;
-  font-size: 16px;
+.upi-id-box strong {
+  color: #07572f;
   word-break: break-all;
 }
 
-.upi-id-row button {
+.upi-id-box button {
   border: none;
-  background: #064d2b;
+  background: #07572f;
   color: white;
-  padding: 9px 13px;
-  border-radius: 9px;
+  padding: 8px 12px;
+  border-radius: 7px;
   font-weight: bold;
 }
 
-.warning {
-  display: block;
-  color: #a45b00;
-  margin-top: 14px;
+.payment-warning {
+  color: #9a5a00;
+  font-size: 13px;
   line-height: 1.5;
+  margin-top: 13px;
 }
 
 .upload-help {
   display: block;
   color: #777;
-  margin-top: 7px;
+  margin-bottom: 5px;
 }
 
 .deposit-status {
   text-align: center;
   font-weight: bold;
-  margin-top: 15px;
+  margin-top: 13px;
   line-height: 1.5;
 }
 
-/* =========================
-   ATTENDANCE
-========================= */
+.available-balance {
+  background: #edf7f0;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 15px;
+}
 
-.calendar-head {
+.available-balance strong {
+  color: #07572f;
+}
+
+.form-title {
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+.warning,
+.notice {
+  color: #9a5a00;
+  background: #fff7df;
+  padding: 12px;
+  border-radius: 9px;
+  display: block;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.reward-item,
+.history-item {
+  background: #f8faf8;
+  border-radius: 11px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-left: 4px solid #07572f;
+}
+
+.history-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+}
+
+.amount-green {
+  color: #087a3b;
+  font-weight: bold;
+}
+
+.amount-red {
+  color: #d62929;
+  font-weight: bold;
+}
+
+.info-menu button {
+  width: 100%;
+  background: white;
+  border: none;
+  margin-bottom: 10px;
+  border-radius: 13px;
+  padding: 17px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-align: left;
+  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+}
+
+.info-menu span {
+  font-size: 25px;
+}
+
+.info-menu small {
+  display: block;
+  color: #777;
+  margin-top: 4px;
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 18px;
 }
 
 .calendar-head button {
-  width: 42px;
-  height: 42px;
   border: none;
-  border-radius: 50%;
-  background: #eaf3ed;
-  font-size: 25px;
+  background: #e9f1eb;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 22px;
 }
 
-.calendar-head h3 {
-  margin: 0;
-  font-size: 20px;
-}
-
-.weekdays {
-  display: grid;
-  grid-template-columns: repeat(7,1fr);
-  gap: 5px;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.weekdays span {
-  font-size: 12px;
-  color: #777;
-  font-weight: bold;
-}
-
+.weekdays,
 .calendar {
   display: grid;
   grid-template-columns: repeat(7,1fr);
   gap: 6px;
 }
 
-.calendar-day {
-  min-height: 42px;
-  border-radius: 9px;
-  background: #f2f4f2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 14px;
-  cursor: pointer;
+.weekdays span {
+  text-align: center;
+  font-size: 12px;
+  color: #777;
+  padding-bottom: 7px;
 }
 
-.calendar-day.empty {
+.day {
+  height: 42px;
+  border-radius: 8px;
+  background: #ffe3e3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.day.empty {
   background: transparent;
   cursor: default;
 }
 
-.calendar-day.present {
-  background: #08733f;
+.day.attended {
+  background: #07572f;
   color: white;
-  font-weight: bold;
 }
 
-.calendar-day.today {
-  border: 2px solid #08733f;
+.day.today {
+  border: 2px solid #07572f;
 }
 
 .attendance-info {
-  background: #eef8f1;
-  border-radius: 12px;
-  padding: 14px;
   margin-top: 18px;
-  text-align: center;
-}
-
-/* =========================
-   REWARDS
-========================= */
-
-.notice {
-  background: #fff7e7;
-  color: #875500;
-  padding: 14px;
-  border-radius: 12px;
-  margin-bottom: 18px;
-  line-height: 1.5;
-}
-
-.reward-card {
-  border: 1px solid #e2e7e3;
-  border-radius: 15px;
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-.reward-card h3 {
-  margin: 0 0 8px;
-}
-
-.reward-card button {
-  border: none;
-  background: #064d2b;
-  color: white;
-  padding: 11px 15px;
+  padding: 13px;
+  background: #edf7f0;
   border-radius: 9px;
-  margin-top: 10px;
-}
-
-/* =========================
-   MY INFO
-========================= */
-
-.info-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.info-menu button {
-  width: 100%;
-  border: none;
-  background: white;
-  border-radius: 17px;
-  padding: 17px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  text-align: left;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.05);
-}
-
-.info-menu button span {
-  width: 45px;
-  height: 45px;
-  background: #eef7f0;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.info-menu b {
-  display: block;
-  font-size: 17px;
-  margin-bottom: 4px;
-}
-
-.info-menu small {
-  color: #777;
-}
-
-/* =========================
-   HISTORY
-========================= */
-
-.history-card {
-  background: white;
-  padding: 18px;
-  border-radius: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.05);
-}
-
-.history-card h3 {
-  margin-bottom: 8px;
-}
-
-.history-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 7px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.history-row:last-child {
-  border-bottom: none;
-}
-
-.status-pending {
-  color: #a66b00;
-  font-weight: bold;
-}
-
-.status-approved {
-  color: #08733f;
-  font-weight: bold;
-}
-
-.status-rejected {
-  color: #c62828;
-  font-weight: bold;
-}
-
-.empty-state {
-  background: white;
-  padding: 35px 20px;
   text-align: center;
-  border-radius: 18px;
-  color: #777;
 }
-
-/* =========================
-   BOTTOM NAV
-========================= */
 
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 75px;
+  height: 68px;
   background: white;
   border-top: 1px solid #ddd;
   display: flex;
   justify-content: space-around;
-  align-items: center;
-  z-index: 1000;
+  z-index: 30;
 }
 
 .bottom-nav button {
+  background: none;
   border: none;
-  background: transparent;
-  color: #444;
-  min-width: 90px;
-  font-size: 13px;
+  color: #555;
+  font-size: 12px;
 }
 
-.bottom-nav button span {
+.bottom-nav span {
   display: block;
-  font-size: 25px;
+  font-size: 22px;
   margin-bottom: 3px;
 }
 
-/* =========================
-   MODAL
-========================= */
-
 .modal {
+  display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: none;
-  justify-content: center;
+  background: rgba(0,0,0,.55);
+  z-index: 100;
   align-items: center;
+  justify-content: center;
   padding: 20px;
-  z-index: 2000;
 }
 
 .modal.show {
@@ -616,136 +475,36 @@ button {
 }
 
 .modal-box {
-  width: 100%;
-  max-width: 500px;
   background: white;
-  border-radius: 20px;
-  padding: 25px;
+  width: 100%;
+  max-width: 430px;
+  padding: 22px;
+  border-radius: 16px;
   position: relative;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
-.modal-box h3 {
-  font-size: 23px;
-  margin-bottom: 15px;
 }
 
 .close {
   position: absolute;
   right: 15px;
-  top: 12px;
-  width: 35px;
-  height: 35px;
+  top: 10px;
   border: none;
-  background: #f1f1f1;
-  border-radius: 50%;
-  font-size: 24px;
+  background: none;
+  font-size: 27px;
 }
 
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 600px) {
-
-  .topbar {
-    padding: 15px;
-  }
-
-  .topbar h2 {
-    font-size: 23px;
-  }
-
-  .balance {
-    font-size: 17px;
-    padding: 10px 13px;
-  }
-
-  main {
-    padding: 16px 12px;
-  }
-
-  .page-title {
-    font-size: 27px;
-  }
-
-  .page-head h2 {
-    font-size: 24px;
-  }
-
-  .card {
-    padding: 20px 16px;
-    border-radius: 18px;
-  }
-
-  .grid {
-    gap: 10px;
-  }
-
-  .menu-card {
-    padding: 17px 12px;
-  }
-
-  .menu-card span {
-    font-size: 26px;
-  }
-
-  .menu-card b {
-    font-size: 15px;
-  }
-
-  .upi-qr {
-    width: 220px;
-    height: 220px;
-  }
-
-  .upi-id-row {
-    flex-direction: column;
-  }
-
-  .upi-id-row button {
-    width: 100%;
-  }
-
-  .calendar {
-    gap: 4px;
-  }
-
-  .calendar-day {
-    min-height: 39px;
-    font-size: 13px;
-  }
-
-  .bottom-nav {
-    height: 70px;
-  }
-}
-
-/* =========================
-   VERY SMALL SCREEN
-========================= */
-
-@media (max-width: 360px) {
-
-  .topbar h2 {
-    font-size: 20px;
-  }
-
-  .topbar small {
-    font-size: 12px;
-  }
-
-  .balance {
-    font-size: 15px;
-  }
+@media(max-width:380px) {
 
   .grid {
     grid-template-columns: 1fr;
   }
 
-  .upi-qr {
-    width: 190px;
-    height: 190px;
+  .product-price {
+    font-size: 21px;
   }
+
+  .upi-qr {
+    width: 200px;
+    height: 200px;
+  }
+
 }
