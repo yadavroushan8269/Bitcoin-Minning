@@ -14,7 +14,6 @@
     <h2>💰 InvestPro</h2>
     <small>Demo Investment Platform</small>
   </div>
-
   <div class="balance">
     ₹<span id="balance">0.00</span>
   </div>
@@ -88,7 +87,6 @@
     </div>
 
     <div class="card">
-
       <div class="calendar-head">
         <button onclick="changeMonth(-1)">‹</button>
         <h3 id="monthTitle"></h3>
@@ -111,7 +109,6 @@
         Total Attendance:
         <b id="attendanceTotal">0</b>
       </div>
-
     </div>
 
   </section>
@@ -126,14 +123,12 @@
     </div>
 
     <div class="card">
-
       <p class="notice">
         Rewards can only be claimed for products you have purchased
         in this demo account.
       </p>
 
       <div id="rewardsList"></div>
-
     </div>
 
   </section>
@@ -150,7 +145,7 @@
         <span>💰</span>
         <div>
           <b>Deposit</b>
-          <small>Deposit using UPI</small>
+          <small>Add demo balance</small>
         </div>
       </button>
 
@@ -204,7 +199,7 @@
 
     <div class="page-head">
       <button onclick="openPage('info')">←</button>
-      <h2>Deposit</h2>
+      <h2>Demo Deposit</h2>
     </div>
 
     <div class="card">
@@ -219,83 +214,30 @@
         max="20000"
       >
 
-      <!-- UPI PAYMENT -->
       <div class="upi-payment">
-
-        <p class="upi-title">
-          <b>Pay using UPI</b>
-        </p>
-
-        <img
-          src="assets/upi-qr.jpg"
-          class="upi-qr"
-          alt="UPI QR Code"
-        >
-
-        <p class="scan-note">
-          Scan this QR code with any UPI app
-        </p>
-
+        <p class="upi-title"><b>Pay using UPI</b></p>
+        <img src="assets/upi-qr.jpg" class="upi-qr" alt="UPI QR Code">
+        <p class="scan-note">Scan the QR code with any UPI app</p>
         <div class="upi-id-row">
           <span>UPI ID</span>
-
-          <strong>
-            yadav-rishab@fam
-          </strong>
-
-          <button
-            type="button"
-            onclick="copyUPI()"
-          >
-            Copy
-          </button>
+          <strong>yadav-rishab@fam</strong>
+          <button type="button" onclick="copyUPI()">Copy</button>
         </div>
-
-        <small class="warning">
-          Pay first, then submit your UTR and payment screenshot below.
-        </small>
-
+        <small class="warning">Pay first, then submit your UTR and payment screenshot below.</small>
       </div>
 
-
-      <!-- UTR -->
       <label>UTR / Transaction ID</label>
+      <input type="text" id="utr" placeholder="Enter UTR / Transaction ID" maxlength="50">
 
-      <input
-        type="text"
-        id="utr"
-        placeholder="Enter UTR / Transaction ID"
-        maxlength="50"
-      >
-
-
-      <!-- SCREENSHOT -->
       <label>Payment Screenshot</label>
+      <input type="file" id="paymentScreenshot" accept="image/png,image/jpeg,image/webp">
+      <small class="upload-help">Maximum screenshot size: 3 MB</small>
 
-      <input
-        type="file"
-        id="paymentScreenshot"
-        accept="image/png,image/jpeg,image/webp"
-      >
-
-      <small class="upload-help">
-        Maximum screenshot size: 3 MB
-      </small>
-
-
-      <!-- SUBMIT -->
-      <button
-        class="primary-btn"
-        id="depositSubmitBtn"
-        onclick="submitDeposit()"
-      >
+      <button class="primary-btn" id="depositSubmitBtn" onclick="submitDeposit()">
         Submit Deposit Request
       </button>
 
-      <p
-        id="depositStatus"
-        class="deposit-status"
-      ></p>
+      <p id="depositStatus" class="deposit-status"></p>
 
     </div>
 
@@ -314,9 +256,7 @@
 
       <p>
         Available Balance:
-        <b>
-          ₹<span id="withdrawBalance">0.00</span>
-        </b>
+        <b>₹<span id="withdrawBalance">0.00</span></b>
       </p>
 
       <label>Withdrawal Amount</label>
@@ -331,35 +271,13 @@
 
       <h3>Bank Details</h3>
 
-      <input
-        id="bankName"
-        placeholder="Name"
-      >
+      <input id="bankName" placeholder="Name">
+      <input id="accountNumber" placeholder="Account Number">
+      <input id="confirmAccount" placeholder="Confirm Account Number">
+      <input id="bank" placeholder="Bank Name">
+      <input id="ifsc" placeholder="IFSC Code">
 
-      <input
-        id="accountNumber"
-        placeholder="Account Number"
-      >
-
-      <input
-        id="confirmAccount"
-        placeholder="Confirm Account Number"
-      >
-
-      <input
-        id="bank"
-        placeholder="Bank Name"
-      >
-
-      <input
-        id="ifsc"
-        placeholder="IFSC Code"
-      >
-
-      <button
-        class="primary-btn"
-        onclick="submitWithdrawal()"
-      >
+      <button class="primary-btn" onclick="submitWithdrawal()">
         Submit Withdrawal Request
       </button>
 
@@ -439,12 +357,7 @@
 
   <div class="modal-box">
 
-    <button
-      class="close"
-      onclick="closeModal()"
-    >
-      ×
-    </button>
+    <button class="close" onclick="closeModal()">×</button>
 
     <h3 id="modalTitle"></h3>
 
