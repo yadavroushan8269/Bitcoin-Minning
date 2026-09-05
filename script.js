@@ -143,14 +143,14 @@ function copyUPI() {
 
 const products = [
   {
-    name: "Free Plan Plan",
-    daily: 5,
-    duration: 14,
+    name: "Gold Plan",
+    amount: 2000,
+    daily: 20,
   },
   {
-    name: "Basic Plan",
+    name: "Platinum Plan",
     amount: 6000,
-    daily: 60,
+    daily: 70,
     
   },
   {
@@ -241,8 +241,8 @@ async function submitDeposit() {
   const screenshot =
     document.getElementById("paymentScreenshot").files[0];
 
-  if (!amount || amount < 500 || amount > 20000) {
-    alert("Deposit amount ₹500 se ₹20,000 ke beech hona chahiye.");
+  if (!amount || amount < 500 || amount > 500) {
+    alert("Deposit amount ₹500 hona chahiye.");
     return;
   }
 
@@ -823,7 +823,7 @@ function renderRewards() {
     },
     {
       title: "Invite Friends",
-      reward: "Special Reward"
+      reward: "Friensh se pruct buy krake screenshot and uska Ragistered mobile number telegram pe bhej do"
     }
   ];
 
