@@ -1,856 +1,2631 @@
 const API_URL =
-  "https://script.google.com/macros/s/AKfycby6bTl_tUL1STJtWO8jQaXzjQSOhDLgvxj_2UWuI6VJBhh0ehwpCFSlQMhpDn57MfNtow/exec";
+"https://script.google.com/macros/s/AKfycby6bTl_tUL1STJtWO8jQaXzjQSOhDLgvxj_2UWuI6VJBhh0ehwpCFSlQMhpDn57MfNtow/exec";
 
 const UPI_ID = "yadav-rishab@fam";
-const SUPPORT_URL = "https://t.me/Hammerff7gcz";
 
-const STORAGE_KEY = "nsgWellfareData";
-
-let data = {
-  balance: 0,
-  deposits: [],
-  withdrawals: [],
-  transactions: [],
-  attendance: {},
-  rewards: []
-};
-
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-
-function loadData() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      data = Object.assign(data, JSON.parse(saved));
-    }
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function money(n) {
-  return Number(n || 0).toFixed(2);
-}
-
-function escapeHTML(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function openPage(page) {
-  document.querySelectorAll(".page").forEach(p => {
-    p.classList.remove("active");
-  });
-
-  const el = document.getElementById(page);
-
-  if (el) {
-    el.classList.add("active");
-  }
-
-  updateBalances();
-
-  if (page === "home") {
-    renderHomeProducts();
-  }
-
-  if (page === "products") {
-    renderProducts();
-  }
-
-  if (page === "attendance") {
-    renderCalendar();
-  }
-
-  if (page === "rewards") {
-    renderRewards();
-  }
-
-  if (page === "depositHistory") {
-    renderDepositHistory();
-  }
-
-  if (page === "withdrawHistory") {
-    renderWithdrawHistory();
-  }
-
-  if (page === "transactions") {
-    renderTransactions();
-  }
-
-  window.scrollTo(0, 0);
-}
-
-function updateBalances() {
-  const home = document.getElementById("homeBalance");
-  const info = document.getElementById("infoBalance");
-  const withdraw = document.getElementById("withdrawBalance");
-
-  if (home) home.textContent = money(data.balance);
-  if (info) info.textContent = money(data.balance);
-  if (withdraw) withdraw.textContent = money(data.balance);
-}
-
-function showModal(title, content) {
-  document.getElementById("modalTitle").textContent = title;
-  document.getElementById("modalContent").innerHTML = content;
-  document.getElementById("modal").classList.add("show");
-}
-
-function closeModal() {
-  document.getElementById("modal").classList.remove("show");
-}
-
-function customerService() {
-  window.open(SUPPORT_URL, "_blank");
-}
-
-function downloadApp() {
-  showModal(
-    "NSG Wellfare",
-    "<p>App download option will be available here.</p>"
-  );
-}
-
-function inviteNow() {
-  const text = encodeURIComponent(
-    "Join NSG Wellfare and manage your investment easily."
-  );
-
-  window.open("https://wa.me/?text=" + text, "_blank");
-}
-
-function copyUPI() {
-  navigator.clipboard
-    .writeText(UPI_ID)
-    .then(() => alert("UPI ID copied"))
-    .catch(() => alert("UPI ID: " + UPI_ID));
-}
+const SUPPORT =
+"https://t.me/Hammerff7gcz";
 
 
-/* =========================
-   PRODUCTS
-========================= */
+/* ================= PRODUCTS ================= */
 
 const products = [
+
   {
-    name: "Gold Plan",
-    amount: 2000,
-    daily: 20,
+    id:1,
+    name:"Product 1",
+    price:999,
+    daily:18
   },
+
   {
-    name: "Platinum Plan",
-    amount: 6000,
-    daily: 70,
-    
+    id:2,
+    name:"Product 2",
+    price:1999,
+    daily:36
   },
+
   {
-    name: "Premium Plan",
-    amount: 20000,
-    daily: 250,
-  },
-  {
-    name: "Elite Plan",
-    amount: 50000,
-    daily: 500,
+    id:3,
+    name:"Product 3",
+    price:4999,
+    daily:90
   }
+
 ];
 
-function productHTML(p) {
-  return `
-    <div class="product-card">
-      <h3>${escapeHTML(p.name)}</h3>
-      <p>Investment: ₹${money(p.amount)}</p>
-      <p>Daily Return: ₹${money(p.daily)}</p>
-      <p>Duration: ${p.days} Days</p>
-      <button onclick="selectProduct(${p.amount})">
-        Invest ₹${money(p.amount)}
-      </button>
-    </div>
-  `;
+
+/* ================= USER SESSION ================= */
+
+let authToken =
+localStorage.getItem("nsgAuthToken") || "";
+
+let serverUser = null;
+
+
+/* ================= LOCAL DATA ================= */
+
+let data =
+JSON.parse(
+  localStorage.getItem("nsgLocalData") || "null"
+) || {
+
+  balance:0,
+
+  attendance:{},
+
+  purchased:[],
+
+  rewards:[],
+
+  deposits:[],
+
+  withdrawals:[],
+
+  transactions:[]
+
+};
+
+
+if(!data.attendance)
+data.attendance = {};
+
+if(!Array.isArray(data.purchased))
+data.purchased = [];
+
+if(!Array.isArray(data.rewards))
+data.rewards = [];
+
+if(!Array.isArray(data.deposits))
+data.deposits = [];
+
+if(!Array.isArray(data.withdrawals))
+data.withdrawals = [];
+
+if(!Array.isArray(data.transactions))
+data.transactions = [];
+
+
+function saveData(){
+
+  localStorage.setItem(
+    "nsgLocalData",
+    JSON.stringify(data)
+  );
+
 }
 
-function renderHomeProducts() {
-  const box = document.getElementById("homeProducts");
 
-  if (!box) return;
+/* ================= MOBILE ================= */
 
-  box.innerHTML = products
-    .slice(0, 2)
+function cleanMobile(value){
+
+  return String(value || "")
+    .replace(/\D/g,"")
+    .slice(0,10);
+
+}
+
+
+function validMobile(value){
+
+  return /^[6-9]\d{9}$/.test(
+    cleanMobile(value)
+  );
+
+}
+
+
+/* ================= PASSWORD ================= */
+
+function validPassword(value){
+
+  return /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
+    .test(String(value || ""));
+
+}
+
+
+/* ================= MESSAGE ================= */
+
+function setMessage(
+  id,
+  text,
+  type="error"
+){
+
+  const element =
+    document.getElementById(id);
+
+  if(!element)
+  return;
+
+  element.textContent = text;
+
+  element.className =
+    "form-message " + type;
+
+}
+
+
+/* ================= AUTH SWITCH ================= */
+
+function showAuth(type){
+
+  document
+    .getElementById("loginBox")
+    .classList
+    .toggle(
+      "hidden",
+      type !== "login"
+    );
+
+
+  document
+    .getElementById("signupBox")
+    .classList
+    .toggle(
+      "hidden",
+      type !== "signup"
+    );
+
+
+  document
+    .getElementById("loginTab")
+    .classList
+    .toggle(
+      "active",
+      type === "login"
+    );
+
+
+  document
+    .getElementById("signupTab")
+    .classList
+    .toggle(
+      "active",
+      type === "signup"
+    );
+
+
+  setMessage(
+    "loginMessage",
+    ""
+  );
+
+  setMessage(
+    "signupMessage",
+    ""
+  );
+
+}
+
+
+/* ================= API ================= */
+
+async function apiPost(payload){
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+          "text/plain;charset=utf-8"
+        },
+
+        body:
+        JSON.stringify(payload)
+      }
+    );
+
+
+  const text =
+    await response.text();
+
+
+  let output;
+
+
+  try{
+
+    output =
+      JSON.parse(text);
+
+  }
+
+  catch(error){
+
+    throw new Error(
+      "Invalid server response"
+    );
+
+  }
+
+
+  if(!output.ok){
+
+    throw new Error(
+      output.error ||
+      "Request failed"
+    );
+
+  }
+
+
+  return output;
+
+}
+
+
+/* ================= REGISTER ================= */
+
+async function registerUser(){
+
+  const mobile =
+    cleanMobile(
+      document
+      .getElementById("signupMobile")
+      .value
+    );
+
+
+  const password =
+    document
+    .getElementById("signupPassword")
+    .value;
+
+
+  const confirm =
+    document
+    .getElementById("signupConfirm")
+    .value;
+
+
+  const button =
+    document
+    .getElementById("signupBtn");
+
+
+  setMessage(
+    "signupMessage",
+    ""
+  );
+
+
+  if(!validMobile(mobile)){
+
+    setMessage(
+      "signupMessage",
+      "Please enter a valid 10 digit mobile number."
+    );
+
+    return;
+
+  }
+
+
+  if(!validPassword(password)){
+
+    setMessage(
+      "signupMessage",
+      "Password must be at least 8 characters and contain letters and numbers."
+    );
+
+    return;
+
+  }
+
+
+  if(password !== confirm){
+
+    setMessage(
+      "signupMessage",
+      "Passwords do not match."
+    );
+
+    return;
+
+  }
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Registering...";
+
+
+  try{
+
+    const output =
+      await apiPost({
+
+        action:"register",
+
+        mobile:"+91" + mobile,
+
+        password:password
+
+      });
+
+
+    setMessage(
+      "signupMessage",
+      "Registration successful. Please login.",
+      "success"
+    );
+
+
+    document
+      .getElementById("loginMobile")
+      .value = mobile;
+
+
+    document
+      .getElementById("loginPassword")
+      .value = "";
+
+
+    document
+      .getElementById("signupPassword")
+      .value = "";
+
+
+    document
+      .getElementById("signupConfirm")
+      .value = "";
+
+
+    setTimeout(
+      function(){
+
+        showAuth("login");
+
+      },
+      700
+    );
+
+
+  }
+
+  catch(error){
+
+    setMessage(
+      "signupMessage",
+      error.message ||
+      "Registration failed. Please try again."
+    );
+
+  }
+
+  finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "Register";
+
+  }
+
+}
+
+
+/* ================= LOGIN ================= */
+
+async function loginUser(){
+
+  const mobile =
+    cleanMobile(
+      document
+      .getElementById("loginMobile")
+      .value
+    );
+
+
+  const password =
+    document
+    .getElementById("loginPassword")
+    .value;
+
+
+  const button =
+    document
+    .getElementById("loginBtn");
+
+
+  setMessage(
+    "loginMessage",
+    ""
+  );
+
+
+  if(
+    !validMobile(mobile) ||
+    !password
+  ){
+
+    setMessage(
+      "loginMessage",
+      "Wrong details pls try again"
+    );
+
+    return;
+
+  }
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Logging in...";
+
+
+  try{
+
+    const output =
+      await apiPost({
+
+        action:"login",
+
+        mobile:"+91" + mobile,
+
+        password:password
+
+      });
+
+
+    authToken =
+      String(
+        output.token ||
+        output.sessionToken ||
+        ""
+      );
+
+
+    if(!authToken){
+
+      throw new Error(
+        "Login response missing session token."
+      );
+
+    }
+
+
+    localStorage.setItem(
+      "nsgAuthToken",
+      authToken
+    );
+
+
+    serverUser =
+      output.user ||
+      {
+        mobile:"+91" + mobile
+      };
+
+
+    localStorage.setItem(
+      "nsgUser",
+      JSON.stringify(serverUser)
+    );
+
+
+    openApp();
+
+  }
+
+  catch(error){
+
+    setMessage(
+      "loginMessage",
+      "Wrong details pls try again"
+    );
+
+  }
+
+  finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "Login";
+
+  }
+
+}
+
+
+/* ================= OPEN APP ================= */
+
+function openApp(){
+
+  document
+    .getElementById("authScreen")
+    .classList
+    .add("hidden");
+
+
+  document
+    .getElementById("appScreen")
+    .classList
+    .remove("hidden");
+
+
+  const saved =
+    JSON.parse(
+      localStorage.getItem("nsgUser") ||
+      "{}"
+    );
+
+
+  const mobile =
+    (
+      serverUser &&
+      serverUser.mobile
+    ) ||
+    saved.mobile ||
+    "";
+
+
+  const clean =
+    cleanMobile(mobile);
+
+
+  document
+    .getElementById("loggedMobile")
+    .textContent = clean;
+
+
+  document
+    .getElementById("profileMobile")
+    .textContent = clean;
+
+
+  updateUI();
+
+}
+
+
+/* ================= LOGOUT ================= */
+
+function logoutUser(){
+
+  authToken = "";
+
+  serverUser = null;
+
+
+  localStorage.removeItem(
+    "nsgAuthToken"
+  );
+
+  localStorage.removeItem(
+    "nsgUser"
+  );
+
+
+  document
+    .getElementById("appScreen")
+    .classList
+    .add("hidden");
+
+
+  document
+    .getElementById("authScreen")
+    .classList
+    .remove("hidden");
+
+
+  document
+    .getElementById("loginPassword")
+    .value = "";
+
+
+  showAuth("login");
+
+}
+
+
+/* ================= PAGE NAVIGATION ================= */
+
+function openPage(id){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(
+      page =>
+      page.classList.remove("active")
+    );
+
+
+  const page =
+    document.getElementById(id);
+
+
+  if(page)
+    page.classList.add("active");
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+
+  updateUI();
+
+}
+
+
+/* ================= MONEY ================= */
+
+function money(value){
+
+  return Number(value || 0)
+    .toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+      }
+    );
+
+}
+
+
+/* ================= BALANCE ================= */
+
+function updateBalance(){
+
+  const balance =
+    document.getElementById("balance");
+
+  const home =
+    document.getElementById("homeBalance");
+
+  const withdraw =
+    document.getElementById(
+      "withdrawBalance"
+    );
+
+
+  if(balance)
+    balance.textContent =
+      money(data.balance);
+
+
+  if(home)
+    home.textContent =
+      money(data.balance);
+
+
+  if(withdraw)
+    withdraw.textContent =
+      money(data.balance);
+
+}
+
+
+/* ================= PRODUCTS ================= */
+
+function productHTML(product){
+
+  const bought =
+    data.purchased.includes(
+      product.id
+    );
+
+
+  return `
+
+    <div class="product">
+
+      <div class="product-head">
+
+        <div>
+
+          <h3>
+            ${product.name}
+          </h3>
+
+          <p>
+            Daily reward plan
+          </p>
+
+        </div>
+
+        <div class="product-price">
+          ₹${product.price}
+        </div>
+
+      </div>
+
+
+      <ul>
+
+        <li>
+          Daily reward:
+          ₹${product.daily}
+        </li>
+
+        <li>
+          Plan duration:
+          30 days
+        </li>
+
+        <li>
+          Rewards subject to
+          account eligibility
+        </li>
+
+      </ul>
+
+
+      ${
+        bought
+
+        ?
+
+        `<button
+          class="secondary-btn"
+          disabled>
+          ✓ Purchased
+        </button>`
+
+        :
+
+        `<button
+          class="primary-btn"
+          onclick="buyProduct(${product.id})">
+          Select Product
+        </button>`
+      }
+
+    </div>
+
+  `;
+
+}
+
+
+function loadProducts(){
+
+  const html =
+    products
     .map(productHTML)
     .join("");
-}
-
-function renderProducts() {
-  const box = document.getElementById("productsList");
-
-  if (!box) return;
-
-  box.innerHTML = products.map(productHTML).join("");
-}
-
-function selectProduct(amount) {
-  showModal(
-    "Investment",
-    `
-      <p>Selected investment amount: <b>₹${money(amount)}</b></p>
-      <button class="submit-btn"
-        onclick="closeModal(); showDeposit(); document.getElementById('depositAmount').value=${amount};">
-        Continue to Deposit
-      </button>
-    `
-  );
-}
 
 
-/* =========================
-   DEPOSIT
-========================= */
-
-function showDeposit() {
-  openPage("deposit");
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-
-    reader.readAsDataURL(file);
-  });
-}
-
-async function submitDeposit() {
-  const amount = Number(
-    document.getElementById("depositAmount").value
-  );
-
-  const utr = document.getElementById("utr").value.trim();
-
-  const screenshot =
-    document.getElementById("paymentScreenshot").files[0];
-
-  if (!amount || amount < 500 || amount > 500) {
-    alert("Deposit amount ₹500 hona chahiye.");
-    return;
-  }
-
-  if (!utr) {
-    alert("UTR / Transaction ID enter karein.");
-    return;
-  }
-
-  if (!screenshot) {
-    alert("Payment screenshot select karein.");
-    return;
-  }
-
-  if (screenshot.size > 3 * 1024 * 1024) {
-    alert("Screenshot 3MB se kam hona chahiye.");
-    return;
-  }
-
-  const btn = document.getElementById("depositSubmitBtn");
-
-  btn.disabled = true;
-  btn.textContent = "Submitting...";
-
-  try {
-    const imageBase64 = await fileToBase64(screenshot);
-
-    const requestId =
-      "DEP-" +
-      Date.now() +
-      "-" +
-      Math.random().toString(36).substring(2, 8);
-
-    const result = await apiPost({
-      action: "createDeposit",
-      requestId,
-      amount,
-      utr,
-      screenshot: imageBase64
-    });
-
-    if (!result || result.ok !== true) {
-      throw new Error(
-        result?.message || "Deposit request failed"
-      );
-    }
-
-    data.deposits.unshift({
-      requestId,
-      amount,
-      utr,
-      status: "PENDING",
-      createdAt: new Date().toISOString()
-    });
-
-    saveData();
-    renderDepositHistory();
-
-    alert(
-      "Deposit request submit ho gaya.\n\nAdmin verification ke baad balance update hoga."
+  const productsList =
+    document.getElementById(
+      "productsList"
     );
 
-    document.getElementById("depositAmount").value = "";
-    document.getElementById("utr").value = "";
-    document.getElementById("paymentScreenshot").value = "";
 
-    openPage("depositHistory");
-
-    pollDeposit(requestId);
-
-  } catch (error) {
-    console.error(error);
-    alert("Deposit submit nahi hua: " + error.message);
-  }
-
-  btn.disabled = false;
-  btn.textContent = "Submit Deposit";
-}
-
-
-/* =========================
-   WITHDRAWAL
-========================= */
-
-function showWithdrawal() {
-  openPage("withdraw");
-}
-
-async function submitWithdrawal() {
-  const amount = Number(
-    document.getElementById("withdrawAmount").value
-  );
-
-  const holder =
-    document.getElementById("bankName").value.trim();
-
-  const account =
-    document.getElementById("accountNumber").value.trim();
-
-  const confirmAccount =
-    document.getElementById("confirmAccount").value.trim();
-
-  const bank =
-    document.getElementById("bank").value.trim();
-
-  const ifsc =
-    document.getElementById("ifsc").value.trim();
-
-  if (!amount || amount < 300 || amount > 10000) {
-    alert("Withdrawal amount ₹300 se ₹10,000 ke beech hona chahiye.");
-    return;
-  }
-
-  if (amount > Number(data.balance)) {
-    alert("Insufficient balance.");
-    return;
-  }
-
-  if (!holder || !account || !confirmAccount || !bank || !ifsc) {
-    alert("Sabhi bank details fill karein.");
-    return;
-  }
-
-  if (account !== confirmAccount) {
-    alert("Account number match nahi kar raha.");
-    return;
-  }
-
-  const btn = document.getElementById("withdrawSubmitBtn");
-
-  btn.disabled = true;
-  btn.textContent = "Submitting...";
-
-  try {
-    const requestId =
-      "WDR-" +
-      Date.now() +
-      "-" +
-      Math.random().toString(36).substring(2, 8);
-
-    const result = await apiPost({
-      action: "createWithdrawal",
-      requestId,
-      amount,
-      accountHolder: holder,
-      accountNumber: account,
-      bankName: bank,
-      ifsc
-    });
-
-    if (!result || result.ok !== true) {
-      throw new Error(
-        result?.message || "Withdrawal request failed"
-      );
-    }
-
-    data.withdrawals.unshift({
-      requestId,
-      amount,
-      accountHolder: holder,
-      accountNumber: account,
-      bankName: bank,
-      ifsc,
-      status: "PENDING",
-      createdAt: new Date().toISOString()
-    });
-
-    saveData();
-    renderWithdrawHistory();
-
-    alert(
-      "Withdrawal request admin ko bhej diya gaya hai.\n\nAdmin payment verify karke process karega."
+  const homeProducts =
+    document.getElementById(
+      "homeProducts"
     );
 
-    document.getElementById("withdrawAmount").value = "";
-    document.getElementById("bankName").value = "";
-    document.getElementById("accountNumber").value = "";
-    document.getElementById("confirmAccount").value = "";
-    document.getElementById("bank").value = "";
-    document.getElementById("ifsc").value = "";
 
-    openPage("withdrawHistory");
+  if(productsList)
+    productsList.innerHTML =
+      html;
 
-    pollWithdrawal(requestId);
 
-  } catch (error) {
-    console.error(error);
-    alert("Withdrawal submit nahi hua: " + error.message);
-  }
+  if(homeProducts)
+    homeProducts.innerHTML =
+      html;
 
-  btn.disabled = false;
-  btn.textContent = "Submit Withdrawal";
 }
 
 
-/* =========================
-   API
-========================= */
+/* ================= BUY PRODUCT ================= */
 
-async function apiPost(payload) {
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8"
-    },
-    body: JSON.stringify(payload)
+function buyProduct(id){
+
+  const product =
+    products.find(
+      item =>
+      item.id === id
+    );
+
+
+  if(!product)
+    return;
+
+
+  if(
+    data.purchased
+    .includes(id)
+  ){
+
+    alert(
+      "This product is already selected."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    data.balance <
+    product.price
+  ){
+
+    alert(
+      "Insufficient balance. Please deposit first."
+    );
+
+    openPage("deposit");
+
+    return;
+
+  }
+
+
+  data.balance -=
+    product.price;
+
+
+  data.purchased.push(
+    id
+  );
+
+
+  data.transactions.unshift({
+
+    type:"Product Purchase",
+
+    amount:product.price,
+
+    date:new Date()
+      .toLocaleString()
+
   });
 
-  const text = await response.text();
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error("Invalid server response");
-  }
-}
-
-async function apiGet(params) {
-  const url =
-    API_URL +
-    "?" +
-    new URLSearchParams(params).toString();
-
-  const response = await fetch(url);
-  const text = await response.text();
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error("Invalid server response");
-  }
-}
-
-
-/* =========================
-   STATUS POLLING
-========================= */
-
-async function pollDeposit(requestId) {
-  try {
-    const result = await apiGet({
-      action: "depositStatus",
-      requestId
-    });
-
-    if (result && result.ok) {
-      updateDepositStatus(
-        requestId,
-        String(result.status || "").toUpperCase()
-      );
-    }
-  } catch (e) {
-    console.log("Deposit status:", e);
-  }
-}
-
-function updateDepositStatus(requestId, status) {
-  const item = data.deposits.find(
-    x => x.requestId === requestId
-  );
-
-  if (!item) return;
-
-  const oldStatus = item.status;
-
-  item.status = status;
-
-  if (
-    status === "APPROVED" &&
-    oldStatus !== "APPROVED"
-  ) {
-    data.balance += Number(item.amount);
-
-    data.transactions.unshift({
-      type: "DEPOSIT",
-      amount: Number(item.amount),
-      status: "APPROVED",
-      createdAt: new Date().toISOString()
-    });
-  }
 
   saveData();
-  updateBalances();
-  renderDepositHistory();
-  renderTransactions();
-}
 
-async function pollWithdrawal(requestId) {
-  try {
-    const result = await apiGet({
-      action: "withdrawalStatus",
-      requestId
-    });
+  updateUI();
 
-    if (result && result.ok) {
-      updateWithdrawalStatus(
-        requestId,
-        String(result.status || "").toUpperCase()
-      );
-    }
-  } catch (e) {
-    console.log("Withdrawal status:", e);
-  }
-}
 
-function updateWithdrawalStatus(requestId, status) {
-  const item = data.withdrawals.find(
-    x => x.requestId === requestId
+  alert(
+    product.name +
+    " selected successfully."
   );
 
-  if (!item) return;
-
-  const oldStatus = item.status;
-
-  item.status = status;
-
-  if (
-    status === "REJECTED" &&
-    oldStatus !== "REJECTED"
-  ) {
-    data.balance += Number(item.amount);
-  }
-
-  if (
-    (status === "PAID" || status === "APPROVED") &&
-    oldStatus === "PENDING"
-  ) {
-    data.transactions.unshift({
-      type: "WITHDRAWAL",
-      amount: Number(item.amount),
-      status,
-      createdAt: new Date().toISOString()
-    });
-  }
-
-  saveData();
-  updateBalances();
-  renderWithdrawHistory();
-  renderTransactions();
 }
 
 
-/* =========================
-   HISTORY
-========================= */
+/* ================= ATTENDANCE ================= */
 
-function statusClass(status) {
-  const s = String(status).toLowerCase();
-
-  if (s === "approved") return "approved";
-  if (s === "paid") return "paid";
-  if (s === "rejected") return "rejected";
-
-  return "pending";
-}
-
-function renderDepositHistory() {
-  const box = document.getElementById(
-    "depositHistoryList"
-  );
-
-  if (!box) return;
-
-  if (!data.deposits.length) {
-    box.innerHTML =
-      '<div class="empty">No deposit history</div>';
-    return;
-  }
-
-  box.innerHTML = data.deposits.map(item => `
-    <div class="history-card">
-      <b>Deposit ₹${money(item.amount)}</b>
-      <p>UTR: ${escapeHTML(item.utr)}</p>
-      <small>${new Date(item.createdAt).toLocaleString()}</small>
-      <br>
-      <span class="status ${statusClass(item.status)}">
-        ${escapeHTML(item.status)}
-      </span>
-    </div>
-  `).join("");
-}
-
-function renderWithdrawHistory() {
-  const box = document.getElementById(
-    "withdrawHistoryList"
-  );
-
-  if (!box) return;
-
-  if (!data.withdrawals.length) {
-    box.innerHTML =
-      '<div class="empty">No withdrawal history</div>';
-    return;
-  }
-
-  box.innerHTML = data.withdrawals.map(item => `
-    <div class="history-card">
-      <b>Withdrawal ₹${money(item.amount)}</b>
-      <p>Bank: ${escapeHTML(item.bankName)}</p>
-      <p>Account: ****${escapeHTML(
-        item.accountNumber.slice(-4)
-      )}</p>
-      <small>${new Date(item.createdAt).toLocaleString()}</small>
-      <br>
-      <span class="status ${statusClass(item.status)}">
-        ${escapeHTML(item.status)}
-      </span>
-    </div>
-  `).join("");
-}
-
-function renderTransactions() {
-  const box =
-    document.getElementById("transactionList");
-
-  if (!box) return;
-
-  if (!data.transactions.length) {
-    box.innerHTML =
-      '<div class="empty">No transactions</div>';
-    return;
-  }
-
-  box.innerHTML = data.transactions.map(item => `
-    <div class="history-card">
-      <b>${escapeHTML(item.type)}</b>
-      <p>₹${money(item.amount)}</p>
-      <span class="status ${statusClass(item.status)}">
-        ${escapeHTML(item.status)}
-      </span>
-      <br>
-      <small>
-        ${new Date(item.createdAt).toLocaleString()}
-      </small>
-    </div>
-  `).join("");
-}
+let calendarDate =
+  new Date();
 
 
-/* =========================
-   ATTENDANCE
-========================= */
-
-function changeMonth(diff) {
-  currentMonth += diff;
-
-  if (currentMonth > 11) {
-    currentMonth = 0;
-    currentYear++;
-  }
-
-  if (currentMonth < 0) {
-    currentMonth = 11;
-    currentYear--;
-  }
-
-  renderCalendar();
-}
-
-function renderCalendar() {
-  const calendar =
-    document.getElementById("calendar");
+function renderCalendar(){
 
   const title =
-    document.getElementById("monthTitle");
+    document.getElementById(
+      "monthTitle"
+    );
 
-  const total =
-    document.getElementById("attendanceTotal");
 
-  if (!calendar) return;
+  const calendar =
+    document.getElementById(
+      "calendar"
+    );
+
+
+  if(!title || !calendar)
+    return;
+
+
+  const year =
+    calendarDate
+      .getFullYear();
+
+
+  const month =
+    calendarDate
+      .getMonth();
+
+
+  const monthNames = [
+
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+
+  ];
+
+
+  title.textContent =
+    monthNames[month] +
+    " " +
+    year;
+
+
+  calendar.innerHTML = "";
+
 
   const firstDay =
-    new Date(currentYear, currentMonth, 1).getDay();
+    new Date(
+      year,
+      month,
+      1
+    ).getDay();
+
 
   const days =
-    new Date(currentYear, currentMonth + 1, 0).getDate();
-
-  const monthName =
     new Date(
-      currentYear,
-      currentMonth
-    ).toLocaleString("en-IN", {
-      month: "long",
-      year: "numeric"
-    });
+      year,
+      month + 1,
+      0
+    ).getDate();
 
-  title.textContent = monthName;
 
-  let html = "";
+  for(
+    let i=0;
+    i<firstDay;
+    i++
+  ){
 
-  ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    .forEach(day => {
-      html += `<div class="day-head">${day}</div>`;
-    });
+    const empty =
+      document.createElement(
+        "div"
+      );
 
-  for (let i = 0; i < firstDay; i++) {
-    html += "<div></div>";
+    empty.className =
+      "day empty";
+
+    calendar.appendChild(
+      empty
+    );
+
   }
+
+
+  for(
+    let day=1;
+    day<=days;
+    day++
+  ){
+
+    const element =
+      document.createElement(
+        "div"
+      );
+
+
+    const key =
+      year +
+      "-" +
+      String(month+1)
+        .padStart(2,"0") +
+      "-" +
+      String(day)
+        .padStart(2,"0");
+
+
+    element.className =
+      "day";
+
+
+    element.textContent =
+      day;
+
+
+    if(data.attendance[key])
+      element.classList.add(
+        "attended"
+      );
+
+
+    const now =
+      new Date();
+
+
+    if(
+      day === now.getDate() &&
+      month === now.getMonth() &&
+      year === now.getFullYear()
+    ){
+
+      element.classList.add(
+        "today"
+      );
+
+    }
+
+
+    element.onclick =
+      function(){
+
+        toggleAttendance(key);
+
+      };
+
+
+    calendar.appendChild(
+      element
+    );
+
+  }
+
+
+  updateAttendanceTotal();
+
+}
+
+
+function toggleAttendance(key){
+
+  const today =
+    new Date()
+    .toISOString()
+    .slice(0,10);
+
+
+  if(key !== today){
+
+    alert(
+      "Attendance can only be marked for today."
+    );
+
+    return;
+
+  }
+
+
+  data.attendance[key] =
+    !data.attendance[key];
+
+
+  if(
+    !data.attendance[key]
+  ){
+
+    delete data.attendance[key];
+
+  }
+
+
+  saveData();
+
+  renderCalendar();
+
+}
+
+
+function changeMonth(number){
+
+  calendarDate.setMonth(
+    calendarDate.getMonth() +
+    number
+  );
+
+
+  renderCalendar();
+
+}
+
+
+function updateAttendanceTotal(){
+
+  const element =
+    document.getElementById(
+      "attendanceTotal"
+    );
+
+
+  if(element){
+
+    element.textContent =
+      Object.keys(
+        data.attendance
+      ).length;
+
+  }
+
+}
+
+
+/* ================= REWARDS ================= */
+
+function renderRewards(){
+
+  const box =
+    document.getElementById(
+      "rewardsList"
+    );
+
+
+  if(!box)
+    return;
+
+
+  if(
+    !data.purchased.length
+  ){
+
+    box.innerHTML = `
+
+      <div class="reward-item">
+
+        <b>
+          No purchased products
+        </b>
+
+        <p>
+          Select a product to
+          see available rewards.
+        </p>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    data.purchased
+    .map(function(id){
+
+      const product =
+        products.find(
+          item =>
+          item.id === id
+        );
+
+
+      if(!product)
+        return "";
+
+
+      const today =
+        new Date()
+        .toISOString()
+        .slice(0,10);
+
+
+      const claimed =
+        data.rewards.some(
+          reward =>
+          reward.productId === id &&
+          reward.date === today
+        );
+
+
+      return `
+
+        <div class="reward-item">
+
+          <b>
+            ${product.name}
+          </b>
+
+          <p>
+            Daily Reward:
+            ₹${product.daily}
+          </p>
+
+
+          ${
+            claimed
+
+            ?
+
+            `<button
+              class="secondary-btn"
+              disabled>
+              ✓ Claimed Today
+            </button>`
+
+            :
+
+            `<button
+              class="primary-btn"
+              onclick="claimReward(${id})">
+              Claim Reward
+            </button>`
+          }
+
+        </div>
+
+      `;
+
+    })
+    .join("");
+
+}
+
+
+function claimReward(id){
+
+  const product =
+    products.find(
+      item =>
+      item.id === id
+    );
+
+
+  if(
+    !product ||
+    !data.purchased.includes(id)
+  )
+    return;
+
+
+  const today =
+    new Date()
+    .toISOString()
+    .slice(0,10);
+
+
+  if(
+    data.rewards.some(
+      reward =>
+      reward.productId === id &&
+      reward.date === today
+    )
+  ){
+
+    alert(
+      "Reward already claimed today."
+    );
+
+    return;
+
+  }
+
+
+  data.balance +=
+    product.daily;
+
+
+  data.rewards.push({
+
+    productId:id,
+
+    amount:product.daily,
+
+    date:today
+
+  });
+
+
+  data.transactions.unshift({
+
+    type:"Bonus",
+
+    amount:product.daily,
+
+    date:new Date()
+      .toLocaleString()
+
+  });
+
+
+  saveData();
+
+  updateUI();
+
+
+  alert(
+    "₹" +
+    product.daily +
+    " reward added."
+  );
+
+}
+
+
+/* ================= DEPOSIT ================= */
+
+function showDeposit(){
+
+  openPage("deposit");
+
+}
+
+
+function copyUPI(){
+
+  if(
+    navigator.clipboard
+  ){
+
+    navigator.clipboard
+      .writeText(UPI_ID)
+      .then(
+        function(){
+
+          alert(
+            "UPI ID copied: " +
+            UPI_ID
+          );
+
+        }
+      )
+      .catch(
+        fallbackCopyUPI
+      );
+
+  }
+
+  else{
+
+    fallbackCopyUPI();
+
+  }
+
+}
+
+
+function fallbackCopyUPI(){
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+
+  input.value =
+    UPI_ID;
+
+
+  document.body.appendChild(
+    input
+  );
+
+
+  input.select();
+
+
+  document.execCommand(
+    "copy"
+  );
+
+
+  input.remove();
+
+
+  alert(
+    "UPI ID copied: " +
+    UPI_ID
+  );
+
+}
+
+
+function fileBase64(file){
+
+  return new Promise(
+    function(resolve,reject){
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload =
+        function(){
+
+          const result =
+            String(
+              reader.result
+            );
+
+
+          resolve(
+            result.split(",")[1] ||
+            ""
+          );
+
+        };
+
+
+      reader.onerror =
+        reject;
+
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+
+}
+
+
+async function submitDeposit(){
+
+  const amount =
+    Number(
+      document
+      .getElementById(
+        "depositAmount"
+      )
+      ?.value || 0
+    );
+
+
+  const utr =
+    document
+    .getElementById("utr")
+    ?.value
+    .trim() || "";
+
+
+  const file =
+    document
+    .getElementById(
+      "paymentScreenshot"
+    )
+    ?.files?.[0];
+
+
+  if(!authToken){
+
+    logoutUser();
+
+    return;
+
+  }
+
+
+  if(amount < 500){
+
+    alert(
+      "Minimum deposit is ₹500."
+    );
+
+    return;
+
+  }
+
+
+  if(amount > 20000){
+
+    alert(
+      "Maximum deposit is ₹20,000."
+    );
+
+    return;
+
+  }
+
+
+  if(!utr){
+
+    alert(
+      "Please enter UTR / Transaction ID."
+    );
+
+    return;
+
+  }
+
+
+  if(!file){
+
+    alert(
+      "Please select payment screenshot."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    file.size >
+    3 * 1024 * 1024
+  ){
+
+    alert(
+      "Screenshot must be 3 MB or smaller."
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "depositSubmitBtn"
+    );
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Submitting...";
+
+
+  try{
+
+    const imageBase64 =
+      await fileBase64(file);
+
+
+    const output =
+      await apiPost({
+
+        action:"createDeposit",
+
+        token:authToken,
+
+        userKey:
+          (
+            serverUser &&
+            serverUser.userKey
+          ) || "",
+
+        amount:amount,
+
+        utr:utr,
+
+        imageBase64:
+          imageBase64,
+
+        imageName:
+          file.name,
+
+        imageType:
+          file.type
+
+      });
+
+
+    const requestId =
+      output.requestId;
+
+
+    data.deposits.unshift({
+
+      requestId:requestId,
+
+      amount:amount,
+
+      utr:utr,
+
+      status:"PENDING",
+
+      date:new Date()
+        .toLocaleString()
+
+    });
+
+
+    data.transactions.unshift({
+
+      type:"Deposit",
+
+      amount:amount,
+
+      status:"PENDING",
+
+      date:new Date()
+        .toLocaleString()
+
+    });
+
+
+    saveData();
+
+
+    document
+      .getElementById(
+        "depositAmount"
+      )
+      .value = "";
+
+
+    document
+      .getElementById("utr")
+      .value = "";
+
+
+    document
+      .getElementById(
+        "paymentScreenshot"
+      )
+      .value = "";
+
+
+    alert(
+      "Deposit request sent. Admin verification ke baad balance update hoga."
+    );
+
+
+    updateUI();
+
+
+    pollDeposit(
+      requestId
+    );
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(
+      error.message ||
+      "Deposit request send nahi hua."
+    );
+
+  }
+
+  finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "Submit Deposit Request";
+
+  }
+
+}
+
+
+/* ================= DEPOSIT STATUS ================= */
+
+async function pollDeposit(
+  requestId
+){
 
   let count = 0;
 
-  for (let d = 1; d <= days; d++) {
-    const key =
-      `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
-    const today =
-      new Date().toISOString().slice(0, 10);
+  const timer =
+    setInterval(
+      async function(){
 
-    let cls = "day";
+        count++;
 
-    if (data.attendance[key]) {
-      cls += " present";
-      count++;
-    } else if (key < today) {
-      cls += " past";
-    }
 
-    if (key === today) {
-      cls += " today";
-    }
+        try{
 
-    html += `
-      <div
-        class="${cls}"
-        onclick="markAttendance('${key}')">
-        ${d}
-      </div>
-    `;
-  }
+          const response =
+            await fetch(
+              API_URL +
+              "?action=status&requestId=" +
+              encodeURIComponent(
+                requestId
+              )
+            );
 
-  calendar.innerHTML = html;
 
-  if (total) {
-    total.textContent = count;
-  }
+          const output =
+            await response.json();
+
+
+          if(
+            output.ok &&
+            (
+              output.status ===
+              "APPROVED" ||
+
+              output.status ===
+              "REJECTED"
+            )
+          ){
+
+            clearInterval(
+              timer
+            );
+
+
+            const deposit =
+              data.deposits.find(
+                item =>
+                item.requestId ===
+                requestId
+              );
+
+
+            if(deposit){
+
+              const oldStatus =
+                deposit.status;
+
+
+              deposit.status =
+                output.status;
+
+
+              deposit.reviewedAt =
+                output.reviewedAt ||
+                new Date()
+                  .toLocaleString();
+
+
+              if(
+                oldStatus !==
+                "APPROVED" &&
+                output.status ===
+                "APPROVED"
+              ){
+
+                data.balance +=
+                  Number(
+                    deposit.amount
+                  );
+
+              }
+
+
+              data.transactions.unshift({
+
+                type:"Deposit",
+
+                amount:
+                  Number(
+                    deposit.amount
+                  ),
+
+                status:
+                  output.status,
+
+                date:
+                  new Date()
+                    .toLocaleString()
+
+              });
+
+
+              saveData();
+
+              updateUI();
+
+
+              alert(
+                output.status ===
+                "APPROVED"
+
+                ?
+
+                "Deposit approved. Balance updated."
+
+                :
+
+                "Deposit rejected."
+              );
+
+            }
+
+          }
+
+        }
+
+        catch(error){
+
+          // Keep polling.
+
+        }
+
+
+        if(count >= 120){
+
+          clearInterval(
+            timer
+          );
+
+        }
+
+      },
+      5000
+    );
+
 }
 
-function markAttendance(key) {
-  const today =
-    new Date().toISOString().slice(0, 10);
 
-  if (key !== today) {
-    alert("Sirf aaj ki attendance mark ki ja sakti hai.");
-    return;
-  }
+/* ================= WITHDRAWAL ================= */
 
-  if (data.attendance[key]) {
-    alert("Aaj ki attendance already marked hai.");
-    return;
-  }
+function showWithdrawal(){
 
-  data.attendance[key] = true;
+  openPage("withdraw");
 
-  saveData();
-  renderCalendar();
-
-  alert("Attendance marked successfully.");
 }
 
 
-/* =========================
-   REWARDS
-========================= */
+async function submitWithdrawal(){
 
-function renderRewards() {
+  const amount =
+    Number(
+      document
+      .getElementById(
+        "withdrawAmount"
+      )
+      ?.value || 0
+    );
+
+
+  const name =
+    document
+    .getElementById("bankName")
+    ?.value
+    .trim() || "";
+
+
+  const account =
+    document
+    .getElementById(
+      "accountNumber"
+    )
+    ?.value
+    .trim() || "";
+
+
+  const confirm =
+    document
+    .getElementById(
+      "confirmAccount"
+    )
+    ?.value
+    .trim() || "";
+
+
+  const bank =
+    document
+    .getElementById("bank")
+    ?.value
+    .trim() || "";
+
+
+  const ifsc =
+    (
+      document
+      .getElementById("ifsc")
+      ?.value
+      .trim() || ""
+    ).toUpperCase();
+
+
+  if(!authToken){
+
+    logoutUser();
+
+    return;
+
+  }
+
+
+  if(amount < 300){
+
+    alert(
+      "Minimum withdrawal is ₹300."
+    );
+
+    return;
+
+  }
+
+
+  if(amount > 10000){
+
+    alert(
+      "Maximum withdrawal is ₹10,000."
+    );
+
+    return;
+
+  }
+
+
+  if(amount > data.balance){
+
+    alert(
+      "Insufficient balance."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !name ||
+    !account ||
+    !confirm ||
+    !bank ||
+    !ifsc
+  ){
+
+    alert(
+      "Please fill all bank details."
+    );
+
+    return;
+
+  }
+
+
+  if(account !== confirm){
+
+    alert(
+      "Account numbers do not match."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !/^[A-Z]{4}0[A-Z0-9]{6}$/
+      .test(ifsc)
+  ){
+
+    alert(
+      "Invalid IFSC code."
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "withdrawSubmitBtn"
+    );
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Submitting...";
+
+
+  try{
+
+    const output =
+      await apiPost({
+
+        action:"createWithdrawal",
+
+        token:authToken,
+
+        userKey:
+          (
+            serverUser &&
+            serverUser.userKey
+          ) || "",
+
+        amount:amount,
+
+        holderName:name,
+
+        accountNumber:account,
+
+        bankName:bank,
+
+        ifsc:ifsc
+
+      });
+
+
+    const requestId =
+      output.requestId;
+
+
+    data.balance -=
+      amount;
+
+
+    data.withdrawals.unshift({
+
+      requestId:requestId,
+
+      amount:amount,
+
+      name:name,
+
+      account:account,
+
+      bank:bank,
+
+      ifsc:ifsc,
+
+      status:"PENDING",
+
+      date:new Date()
+        .toLocaleString()
+
+    });
+
+
+    data.transactions.unshift({
+
+      type:"Withdrawal",
+
+      amount:amount,
+
+      status:"PENDING",
+
+      date:new Date()
+        .toLocaleString()
+
+    });
+
+
+    saveData();
+
+
+    document
+      .getElementById(
+        "withdrawAmount"
+      )
+      .value = "";
+
+
+    alert(
+      "Withdrawal request sent. Admin payment ke baad status update hoga."
+    );
+
+
+    updateUI();
+
+
+    pollWithdrawal(
+      requestId
+    );
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(
+      error.message ||
+      "Withdrawal request send nahi hua."
+    );
+
+  }
+
+  finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "Submit Withdrawal Request";
+
+  }
+
+}
+
+
+/* ================= WITHDRAWAL STATUS ================= */
+
+async function pollWithdrawal(
+  requestId
+){
+
+  let count = 0;
+
+
+  const timer =
+    setInterval(
+      async function(){
+
+        count++;
+
+
+        try{
+
+          const response =
+            await fetch(
+              API_URL +
+              "?action=withdrawalStatus&requestId=" +
+              encodeURIComponent(
+                requestId
+              )
+            );
+
+
+          const output =
+            await response.json();
+
+
+          if(
+            output.ok &&
+            (
+              output.status ===
+              "PAID" ||
+
+              output.status ===
+              "REJECTED"
+            )
+          ){
+
+            clearInterval(
+              timer
+            );
+
+
+            const withdrawal =
+              data.withdrawals.find(
+                item =>
+                item.requestId ===
+                requestId
+              );
+
+
+            if(withdrawal){
+
+              withdrawal.status =
+                output.status;
+
+
+              withdrawal.reviewedAt =
+                output.reviewedAt ||
+                new Date()
+                  .toLocaleString();
+
+
+              if(
+                output.status ===
+                "REJECTED"
+              ){
+
+                data.balance +=
+                  Number(
+                    withdrawal.amount
+                  );
+
+              }
+
+
+              data.transactions.unshift({
+
+                type:"Withdrawal",
+
+                amount:
+                  Number(
+                    withdrawal.amount
+                  ),
+
+                status:
+                  output.status,
+
+                date:
+                  new Date()
+                    .toLocaleString()
+
+              });
+
+
+              saveData();
+
+              updateUI();
+
+
+              alert(
+
+                output.status ===
+                "PAID"
+
+                ?
+
+                "Withdrawal marked paid."
+
+                :
+
+                "Withdrawal rejected; amount returned to balance."
+
+              );
+
+            }
+
+          }
+
+        }
+
+        catch(error){
+
+          // Keep polling.
+
+        }
+
+
+        if(count >= 120){
+
+          clearInterval(
+            timer
+          );
+
+        }
+
+      },
+      5000
+    );
+
+}
+
+
+/* ================= HISTORY ================= */
+
+function renderWithdrawHistory(){
+
   const box =
-    document.getElementById("rewardsList");
+    document.getElementById(
+      "withdrawHistoryList"
+    );
 
-  if (!box) return;
 
-  const rewards = [
-    {
-      title: "Daily Login",
-      reward: "₹5"
-    },
-    {
-      title: "7 Days Attendance",
-      reward: "₹50"
-    },
-    {
-      title: "Invite Friends",
-      reward: "Friensh se pruct buy krake screenshot and uska Ragistered mobile number telegram pe bhej do"
-    }
-  ];
+  if(!box)
+    return;
 
-  box.innerHTML = rewards.map(r => `
-    <div class="reward-card">
-      <h3>🎁 ${escapeHTML(r.title)}</h3>
-      <p>Reward: <b>${escapeHTML(r.reward)}</b></p>
-    </div>
-  `).join("");
+
+  if(
+    !data.withdrawals.length
+  ){
+
+    box.innerHTML =
+      '<div class="card">No withdrawal history found.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    data.withdrawals
+    .map(
+      function(item){
+
+        return `
+
+          <div class="history-item">
+
+            <div>
+
+              <b>
+                Withdrawal
+              </b>
+
+              <p>
+                ${item.date}
+              </p>
+
+              <small>
+                Status:
+                ${item.status}
+              </small>
+
+            </div>
+
+
+            <div class="amount-red">
+
+              -₹${money(item.amount)}
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    )
+    .join("");
+
 }
 
 
-/* =========================
-   INIT
-========================= */
+function renderDepositHistory(){
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadData();
+  const box =
+    document.getElementById(
+      "depositHistoryList"
+    );
 
-  updateBalances();
-  renderHomeProducts();
-  renderProducts();
-  renderCalendar();
+
+  if(!box)
+    return;
+
+
+  if(
+    !data.deposits.length
+  ){
+
+    box.innerHTML =
+      '<div class="card">No deposit history found.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    data.deposits
+    .map(
+      function(item){
+
+        return `
+
+          <div class="history-item">
+
+            <div>
+
+              <b>
+                Deposit
+              </b>
+
+              <p>
+                ${item.date}
+              </p>
+
+              <small>
+                UTR:
+                ${item.utr}
+              </small>
+
+              <br>
+
+              <small>
+                Status:
+                ${item.status}
+              </small>
+
+            </div>
+
+
+            <div class="amount-green">
+
+              +₹${money(item.amount)}
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    )
+    .join("");
+
+}
+
+
+function renderTransactions(){
+
+  const box =
+    document.getElementById(
+      "transactionList"
+    );
+
+
+  if(!box)
+    return;
+
+
+  if(
+    !data.transactions.length
+  ){
+
+    box.innerHTML =
+      '<div class="card">No transactions found.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    data.transactions
+    .map(
+      function(item){
+
+        const positive =
+          item.type === "Deposit" ||
+          item.type === "Bonus";
+
+
+        return `
+
+          <div class="history-item">
+
+            <div>
+
+              <b>
+                ${item.type}
+              </b>
+
+              <p>
+                ${item.date}
+              </p>
+
+              <small>
+                Status:
+                ${item.status ||
+                "COMPLETED"}
+              </small>
+
+            </div>
+
+
+            <div class="${
+              positive
+              ?
+              "amount-green"
+              :
+              "amount-red"
+            }">
+
+              ${
+                positive
+                ? "+"
+                : "-"
+              }₹${money(item.amount)}
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    )
+    .join("");
+
+}
+
+
+/* ================= OTHER ================= */
+
+function customerService(){
+
+  window.open(
+    SUPPORT,
+    "_blank"
+  );
+
+}
+
+
+function inviteNow(){
+
+  const text =
+    encodeURIComponent(
+      "Join NSG Wellfare"
+    );
+
+
+  window.open(
+    "https://wa.me/?text=" +
+    text,
+    "_blank"
+  );
+
+}
+
+
+function downloadApp(){
+
+  alert(
+    "App download link will be available here."
+  );
+
+}
+
+
+function showModal(
+  title,
+  content
+){
+
+  document
+    .getElementById(
+      "modalTitle"
+    )
+    .textContent = title;
+
+
+  document
+    .getElementById(
+      "modalContent"
+    )
+    .innerHTML = content;
+
+
+  document
+    .getElementById(
+      "modal"
+    )
+    .classList
+    .add("show");
+
+}
+
+
+function closeModal(){
+
+  document
+    .getElementById(
+      "modal"
+    )
+    .classList
+    .remove("show");
+
+}
+
+
+/* ================= UPDATE UI ================= */
+
+function updateUI(){
+
+  updateBalance();
+
+  loadProducts();
+
   renderRewards();
-  renderDepositHistory();
+
+  renderCalendar();
+
   renderWithdrawHistory();
+
+  renderDepositHistory();
+
   renderTransactions();
 
-  openPage("home");
-});
+}
+
+
+/* ================= START ================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function(){
+
+    const savedUser =
+      JSON.parse(
+        localStorage.getItem(
+          "nsgUser"
+        ) || "null"
+      );
+
+
+    if(
+      authToken &&
+      savedUser
+    ){
+
+      serverUser =
+        savedUser;
+
+      openApp();
+
+    }
+
+    else{
+
+      showAuth("login");
+
+    }
+
+  }
+);
