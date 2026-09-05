@@ -584,27 +584,135 @@ function claimReward(productId) {
    DEPOSIT
 ----------------------------- */
 
+/* IMPORTANT:
+   Never put your Telegram bot token in this file.
+*/
+
+const DEPOSIT_API_URL =
+"https://script.google.com/macros/s/AKfycby6bTl_tUL1STJtWO8jQaXzjQSOhDLgvxj_2UWuI6VJBhh0ehwpCFSlQMhpDn57MfNtow/exec";
+
+
 function showDeposit() {
 
   openPage("deposit");
 
+  setDepositStatus("");
+
 }
 
 
-function submitDeposit() {
+function copyUPI() {
+
+  const upi = "yadav-rishab@fam";
+
+  if (
+    navigator.clipboard &&
+    window.isSecureContext
+  ) {
+
+    navigator.clipboard
+      .writeText(upi)
+      .then(() => {
+
+        alert("UPI ID copied.");
+
+      });
+
+  } else {
+
+    prompt(
+      "Copy this UPI ID:",
+      upi
+    );
+
+  }
+
+}
+
+
+function setDepositStatus(
+  text,
+  ok = false
+) {
+
+  const el =
+    document.getElementById(
+      "depositStatus"
+    );
+
+  if (!el) return;
+
+  el.textContent = text;
+
+  el.style.color =
+    ok
+      ? "#087a3b"
+      : "#b05c00";
+
+}
+
+
+function fileToBase64(file) {
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const reader =
+        new FileReader();
+
+      reader.onload = () => {
+
+        resolve(
+          reader.result
+            .split(",")[1]
+        );
+
+      };
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+}
+
+
+async function submitDeposit() {
 
   const amount =
     Number(
-      document.getElementById("depositAmount").value
+      document.getElementById(
+        "depositAmount"
+      ).value
     );
 
   const utr =
-    document.getElementById("utr").value.trim();
+    document.getElementById(
+      "utr"
+    ).value.trim();
+
+  const screenshot =
+    document.getElementById(
+      "paymentScreenshot"
+    ).files[0];
+
+  const btn =
+    document.getElementById(
+      "depositSubmitBtn"
+    );
 
 
-  if (amount < 500) {
+  if (
+    !Number.isFinite(amount) ||
+    amount < 500
+  ) {
 
-    alert("Minimum demo deposit is ₹500.");
+    setDepositStatus(
+      "Minimum deposit is ₹500."
+    );
 
     return;
 
@@ -613,7 +721,9 @@ function submitDeposit() {
 
   if (amount > 20000) {
 
-    alert("Maximum demo deposit is ₹20,000.");
+    setDepositStatus(
+      "Maximum deposit is ₹20,000."
+    );
 
     return;
 
@@ -622,60 +732,442 @@ function submitDeposit() {
 
   if (!utr) {
 
-    alert("Please enter a demo UTR.");
+    setDepositStatus(
+      "Please enter the UTR / Transaction ID."
+    );
 
     return;
 
   }
 
 
-  data.balance += amount;
+  if (!screenshot) {
+
+    setDepositStatus(
+      "Please upload your payment screenshot."
+    );
+
+    return;
+
+  }
 
 
-  data.deposits.unshift({
+  if (
+    screenshot.size >
+    3 * 1024 * 1024
+  ) {
 
-    amount: amount,
+    setDepositStatus(
+      "Screenshot must be 3 MB or smaller."
+    );
 
-    utr: utr,
+    return;
 
-    date: new Date().toLocaleString(),
-
-    status: "Demo Approved"
-
-  });
-
-
-  data.transactions.unshift({
-
-    type: "Deposit",
-
-    amount: amount,
-
-    date: new Date().toLocaleString(),
-
-    color: "green"
-
-  });
+  }
 
 
-  document.getElementById("depositAmount")
-    .value = "";
+  if (
+    !DEPOSIT_API_URL ||
+    DEPOSIT_API_URL.includes(
+      "PASTE_YOUR_"
+    )
+  ) {
 
-  document.getElementById("utr")
-    .value = "";
+    setDepositStatus(
+      "Admin backend URL is not configured yet."
+    );
+
+    return;
+
+  }
 
 
-  saveData();
+  btn.disabled = true;
 
-  updateUI();
+  btn.textContent =
+    "Submitting...";
 
 
-  alert(
-    `₹${amount} demo balance added successfully.`
+  setDepositStatus(
+    "Uploading payment proof..."
   );
 
 
-  openPage("info");
+  try {
+
+    const imageBase64 =
+      await fileToBase64(
+        screenshot
+      );
+
+
+    const userKey =
+      getUserKey();
+
+
+    const payload = {
+
+      action:
+        "createDeposit",
+
+      userKey:
+
+        userKey,
+
+      amount:
+
+        amount,
+
+      utr:
+
+        utr,
+
+      imageBase64:
+
+        imageBase64,
+
+      imageName:
+
+        screenshot.name,
+
+      imageType:
+
+        screenshot.type
+
+    };
+
+
+    const response =
+      await fetch(
+        DEPOSIT_API_URL,
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "text/plain;charset=utf-8"
+
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            )
+
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!result.ok) {
+
+      throw new Error(
+        result.error ||
+        "Submission failed"
+      );
+
+    }
+
+
+    data.deposits.unshift({
+
+      id:
+        result.requestId,
+
+      amount:
+        amount,
+
+      utr:
+        utr,
+
+      date:
+        new Date()
+          .toLocaleString(),
+
+      status:
+        "Pending Verification"
+
+    });
+
+
+    saveData();
+
+    updateUI();
+
+
+    document.getElementById(
+      "depositAmount"
+    ).value = "";
+
+
+    document.getElementById(
+      "utr"
+    ).value = "";
+
+
+    document.getElementById(
+      "paymentScreenshot"
+    ).value = "";
+
+
+    setDepositStatus(
+
+      "Deposit request sent. Waiting for admin verification.",
+
+      true
+
+    );
+
+
+    startDepositStatusPolling(
+      result.requestId
+    );
+
+
+  } catch (err) {
+
+    console.error(err);
+
+    setDepositStatus(
+      "Could not submit request. Please try again."
+    );
+
+  } finally {
+
+    btn.disabled = false;
+
+    btn.textContent =
+      "Submit Deposit Request";
+
+  }
+
+}
+
+
+function getUserKey() {
+
+  let key =
+    localStorage.getItem(
+      "investDemoUserKey"
+    );
+
+
+  if (!key) {
+
+    key =
+      "U" +
+      Date.now().toString(36) +
+      Math.random()
+        .toString(36)
+        .slice(2,8);
+
+
+    localStorage.setItem(
+      "investDemoUserKey",
+      key
+    );
+
+  }
+
+
+  return key;
+
+}
+
+
+async function checkDepositStatus(
+  requestId
+) {
+
+  try {
+
+    const response =
+      await fetch(
+
+        DEPOSIT_API_URL +
+        "?action=status&requestId=" +
+        encodeURIComponent(
+          requestId
+        )
+
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!result.ok)
+      return;
+
+
+    if (
+      result.status ===
+      "APPROVED"
+    ) {
+
+      const deposit =
+        data.deposits.find(
+          d =>
+            d.id ===
+            requestId
+        );
+
+
+      if (
+        deposit &&
+        deposit.status !==
+        "Approved"
+      ) {
+
+        deposit.status =
+          "Approved";
+
+
+        data.balance +=
+          Number(
+            deposit.amount
+          );
+
+
+        data.transactions.unshift({
+
+          type:
+            "Deposit",
+
+          amount:
+            Number(
+              deposit.amount
+            ),
+
+          date:
+            new Date()
+              .toLocaleString(),
+
+          color:
+            "green"
+
+        });
+
+
+        saveData();
+
+        updateUI();
+
+
+        setDepositStatus(
+
+          "Deposit successful. ₹" +
+          Number(
+            deposit.amount
+          ).toFixed(2) +
+          " added to your balance.",
+
+          true
+
+        );
+
+      }
+
+
+      return true;
+
+    }
+
+
+    if (
+      result.status ===
+      "REJECTED"
+    ) {
+
+      const deposit =
+        data.deposits.find(
+          d =>
+            d.id ===
+            requestId
+        );
+
+
+      if (deposit) {
+
+        deposit.status =
+          "Rejected";
+
+      }
+
+
+      saveData();
+
+      updateUI();
+
+
+      setDepositStatus(
+        "Deposit request was rejected by admin."
+      );
+
+
+      return true;
+
+    }
+
+  } catch (e) {
+
+    console.log(
+      "Status check failed",
+      e
+    );
+
+  }
+
+
+  return false;
+
+}
+
+
+function startDepositStatusPolling(
+  requestId
+) {
+
+  let tries = 0;
+
+
+  const timer =
+    setInterval(
+
+      async () => {
+
+        tries++;
+
+
+        const done =
+          await checkDepositStatus(
+            requestId
+          );
+
+
+        if (
+          done ||
+          tries >= 120
+        ) {
+
+          clearInterval(
+            timer
+          );
+
+        }
+
+      },
+
+      5000
+
+    );
 
 }
 
@@ -695,29 +1187,47 @@ function submitWithdrawal() {
 
   const amount =
     Number(
-      document.getElementById("withdrawAmount").value
+      document.getElementById(
+        "withdrawAmount"
+      ).value
     );
 
 
   const name =
-    document.getElementById("bankName").value.trim();
+    document.getElementById(
+      "bankName"
+    ).value.trim();
+
 
   const account =
-    document.getElementById("accountNumber").value.trim();
+    document.getElementById(
+      "accountNumber"
+    ).value.trim();
+
 
   const confirmAccount =
-    document.getElementById("confirmAccount").value.trim();
+    document.getElementById(
+      "confirmAccount"
+    ).value.trim();
+
 
   const bank =
-    document.getElementById("bank").value.trim();
+    document.getElementById(
+      "bank"
+    ).value.trim();
+
 
   const ifsc =
-    document.getElementById("ifsc").value.trim();
+    document.getElementById(
+      "ifsc"
+    ).value.trim();
 
 
   if (amount < 300) {
 
-    alert("Minimum demo withdrawal is ₹300.");
+    alert(
+      "Minimum demo withdrawal is ₹300."
+    );
 
     return;
 
@@ -726,16 +1236,23 @@ function submitWithdrawal() {
 
   if (amount > 10000) {
 
-    alert("Maximum demo withdrawal is ₹10,000.");
+    alert(
+      "Maximum demo withdrawal is ₹10,000."
+    );
 
     return;
 
   }
 
 
-  if (amount > data.balance) {
+  if (
+    amount >
+    data.balance
+  ) {
 
-    alert("Insufficient demo balance.");
+    alert(
+      "Insufficient demo balance."
+    );
 
     return;
 
@@ -750,53 +1267,74 @@ function submitWithdrawal() {
     !ifsc
   ) {
 
-    alert("Please fill all fields.");
+    alert(
+      "Please fill all fields."
+    );
 
     return;
 
   }
 
 
-  if (account !== confirmAccount) {
+  if (
+    account !==
+    confirmAccount
+  ) {
 
-    alert("Account numbers do not match.");
+    alert(
+      "Account numbers do not match."
+    );
 
     return;
 
   }
 
 
-  data.balance -= amount;
+  data.balance -=
+    amount;
 
 
   data.withdrawals.unshift({
 
-    amount: amount,
+    amount:
+      amount,
 
-    name: name,
+    name:
+      name,
 
-    account: account,
+    account:
+      account,
 
-    bank: bank,
+    bank:
+      bank,
 
-    ifsc: ifsc,
+    ifsc:
+      ifsc,
 
-    status: "Demo Pending",
+    status:
+      "Demo Pending",
 
-    date: new Date().toLocaleString()
+    date:
+      new Date()
+        .toLocaleString()
 
   });
 
 
   data.transactions.unshift({
 
-    type: "Withdrawal",
+    type:
+      "Withdrawal",
 
-    amount: amount,
+    amount:
+      amount,
 
-    date: new Date().toLocaleString(),
+    date:
+      new Date()
+        .toLocaleString(),
 
-    color: "red"
+    color:
+      "red"
 
   });
 
@@ -811,7 +1349,9 @@ function submitWithdrawal() {
   );
 
 
-  openPage("info");
+  openPage(
+    "info"
+  );
 
 }
 
@@ -828,12 +1368,19 @@ function renderWithdrawHistory() {
     );
 
 
-  if (data.withdrawals.length === 0) {
+  if (
+    data.withdrawals.length ===
+    0
+  ) {
 
     box.innerHTML = `
+
       <div class="card">
+
         No withdrawal history found.
+
       </div>
+
     `;
 
     return;
@@ -842,29 +1389,41 @@ function renderWithdrawHistory() {
 
 
   box.innerHTML =
-    data.withdrawals.map(item => `
+    data.withdrawals
+      .map(
+        item => `
 
       <div class="history-item">
 
         <div>
 
-          <b>Withdrawal</b>
+          <b>
+            Withdrawal
+          </b>
 
-          <p>${item.date}</p>
+          <p>
+            ${item.date}
+          </p>
 
           <small>
-            Status: ${item.status}
+            Status:
+            ${item.status}
           </small>
 
         </div>
 
+
         <div class="amount-red">
+
           -₹${item.amount}
+
         </div>
 
       </div>
 
-    `).join("");
+    `
+      )
+      .join("");
 
 }
 
@@ -881,12 +1440,19 @@ function renderDepositHistory() {
     );
 
 
-  if (data.deposits.length === 0) {
+  if (
+    data.deposits.length ===
+    0
+  ) {
 
     box.innerHTML = `
+
       <div class="card">
+
         No deposit history found.
+
       </div>
+
     `;
 
     return;
@@ -895,29 +1461,49 @@ function renderDepositHistory() {
 
 
   box.innerHTML =
-    data.deposits.map(item => `
+    data.deposits
+      .map(
+        item => `
 
       <div class="history-item">
 
         <div>
 
-          <b>Deposit</b>
+          <b>
+            Deposit
+          </b>
 
-          <p>${item.date}</p>
+          <p>
+            ${item.date}
+          </p>
 
           <small>
-            UTR: ${item.utr}
+
+            UTR:
+            ${item.utr}
+
+            <br>
+
+            Status:
+            ${item.status ||
+              "Pending Verification"}
+
           </small>
 
         </div>
 
+
         <div class="amount-green">
+
           +₹${item.amount}
+
         </div>
 
       </div>
 
-    `).join("");
+    `
+      )
+      .join("");
 
 }
 
@@ -934,12 +1520,19 @@ function renderTransactions() {
     );
 
 
-  if (data.transactions.length === 0) {
+  if (
+    data.transactions.length ===
+    0
+  ) {
 
     box.innerHTML = `
+
       <div class="card">
+
         No transactions found.
+
       </div>
+
     `;
 
     return;
@@ -948,32 +1541,45 @@ function renderTransactions() {
 
 
   box.innerHTML =
-    data.transactions.map(item => {
+    data.transactions
+      .map(
+        item => {
 
-      const positive =
-        item.type === "Deposit" ||
-        item.type === "Bonus";
+          const positive =
+            item.type ===
+              "Deposit" ||
+            item.type ===
+              "Bonus";
 
 
-      return `
+          return `
 
         <div class="history-item">
 
           <div>
 
-            <b>${item.type}</b>
+            <b>
+              ${item.type}
+            </b>
 
-            <p>${item.date}</p>
+            <p>
+              ${item.date}
+            </p>
 
           </div>
 
+
           <div class="${
             positive
-            ? "amount-green"
-            : "amount-red"
+              ? "amount-green"
+              : "amount-red"
           }">
 
-            ${positive ? "+" : "-"}₹${item.amount}
+            ${
+              positive
+                ? "+"
+                : "-"
+            }₹${item.amount}
 
           </div>
 
@@ -981,7 +1587,9 @@ function renderTransactions() {
 
       `;
 
-    }).join("");
+        }
+      )
+      .join("");
 
 }
 
@@ -1016,7 +1624,9 @@ function inviteNow() {
 
   const whatsapp =
     "https://wa.me/?text=" +
-    encodeURIComponent(text);
+    encodeURIComponent(
+      text
+    );
 
 
   window.open(
@@ -1034,9 +1644,13 @@ function inviteNow() {
 function downloadApp() {
 
   alert(
+
     "APK download link abhi configured nahi hai.\n\n" +
+
     "Jab aap APK file upload karoge, " +
+
     "script.js me APK URL set kar dena."
+
   );
 
 }
@@ -1046,24 +1660,39 @@ function downloadApp() {
    MODAL
 ----------------------------- */
 
-function showModal(title, content) {
+function showModal(
+  title,
+  content
+) {
 
-  document.getElementById("modalTitle")
-    .textContent = title;
+  document.getElementById(
+    "modalTitle"
+  ).textContent =
+    title;
 
-  document.getElementById("modalContent")
-    .innerHTML = content;
 
-  document.getElementById("modal")
-    .classList.add("show");
+  document.getElementById(
+    "modalContent"
+  ).innerHTML =
+    content;
+
+
+  document.getElementById(
+    "modal"
+  ).classList.add(
+    "show"
+  );
 
 }
 
 
 function closeModal() {
 
-  document.getElementById("modal")
-    .classList.remove("show");
+  document.getElementById(
+    "modal"
+  ).classList.remove(
+    "show"
+  );
 
 }
 
@@ -1096,10 +1725,13 @@ function updateUI() {
 ----------------------------- */
 
 document.addEventListener(
+
   "DOMContentLoaded",
+
   function() {
 
     updateUI();
 
   }
+
 );
