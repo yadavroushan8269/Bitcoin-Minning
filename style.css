@@ -2,49 +2,44 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
 }
 
 body {
-  background: #f2f5f3;
-  color: #17231b;
-  padding-bottom: 80px;
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  color: #222;
+  padding-bottom: 75px;
+}
+
+button,
+input {
+  font: inherit;
 }
 
 button {
   cursor: pointer;
 }
 
-.topbar {
-  background: #07572f;
+.top-header {
+  background: linear-gradient(135deg, #0b6b3a, #159447);
   color: white;
   padding: 17px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   position: sticky;
   top: 0;
   z-index: 20;
+  box-shadow: 0 2px 10px #0002;
 }
 
-.topbar h2 {
+.top-header h2 {
   font-size: 22px;
-  margin-bottom: 4px;
 }
 
-.topbar small {
-  opacity: .85;
-}
-
-.balance {
-  background: rgba(255,255,255,.15);
-  padding: 10px 14px;
-  border-radius: 20px;
-  font-weight: bold;
+.top-header small {
+  opacity: .9;
 }
 
 main {
-  max-width: 620px;
+  max-width: 650px;
   margin: auto;
   padding: 15px;
 }
@@ -57,380 +52,291 @@ main {
   display: block;
 }
 
-.card {
+.welcome-card,
+.balance-card,
+.info-card,
+.payment-card,
+.form-card,
+.withdraw-balance {
   background: white;
-  border-radius: 16px;
+  border-radius: 15px;
   padding: 18px;
   margin-bottom: 15px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+  box-shadow: 0 3px 15px #0000000d;
 }
 
-.welcome {
-  background: linear-gradient(135deg,#07572f,#0b7a43);
+.welcome-card h2 {
+  margin-bottom: 8px;
+}
+
+.welcome-card p {
+  color: #666;
+}
+
+.balance-card {
+  background: linear-gradient(135deg, #0b6b3a, #159447);
   color: white;
 }
 
-.welcome h2 {
-  margin-bottom: 7px;
-}
-
-.welcome p {
+.balance-card span {
   opacity: .9;
 }
 
-.balance-big {
-  font-size: 36px;
-  font-weight: bold;
-  margin-top: 18px;
+.balance-card h1 {
+  margin-top: 7px;
+  font-size: 32px;
 }
 
-.grid {
+.menu-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin: 15px 0 25px;
+  margin-bottom: 20px;
 }
 
-.menu-card {
+.menu-grid button {
+  border: 0;
   background: white;
-  border: none;
   border-radius: 14px;
-  padding: 18px 12px;
-  text-align: left;
-  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+  padding: 20px 10px;
+  box-shadow: 0 2px 10px #0000000c;
+  font-size: 25px;
 }
 
-.menu-card span {
+.menu-grid button span {
   display: block;
-  font-size: 27px;
-  margin-bottom: 9px;
-}
-
-.menu-card b {
-  display: block;
-}
-
-.menu-card small {
-  display: block;
-  color: #777;
-  margin-top: 5px;
+  font-size: 13px;
+  margin-top: 8px;
 }
 
 .section-title,
 .page-title {
-  margin: 10px 0 15px;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 12px 0;
 }
 
-.page-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-.page-head button {
-  border: none;
-  background: white;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 23px;
-}
-
-.product {
+.product-card {
   background: white;
   border-radius: 15px;
-  padding: 18px;
-  margin-bottom: 14px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+  padding: 17px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px #0001;
 }
 
-.product-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+.product-card h3 {
+  margin-bottom: 7px;
 }
 
-.product-price {
-  color: #07572f;
-  font-size: 24px;
-  font-weight: bold;
+.product-card p {
+  color: #666;
+  margin: 4px 0;
 }
 
-.product ul {
-  margin: 13px 0;
-  padding-left: 20px;
-  line-height: 1.8;
-}
-
-.primary-btn {
+.product-card button {
   width: 100%;
-  background: #07572f;
-  color: white;
-  border: none;
-  padding: 14px;
+  margin-top: 12px;
+  padding: 11px;
+  border: 0;
   border-radius: 9px;
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 10px;
+  background: #0b6b3a;
+  color: white;
 }
 
-.primary-btn:disabled {
-  opacity: .6;
-}
-
-.secondary-btn {
-  background: #e8f2ec;
-  color: #07572f;
-  border: none;
-  padding: 11px 15px;
-  border-radius: 8px;
-  font-weight: bold;
-}
-
-label {
-  display: block;
-  margin: 14px 0 7px;
-  font-weight: bold;
-}
-
-input {
+.big-btn,
+.submit-btn {
   width: 100%;
   padding: 13px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 9px;
-  outline: none;
-  font-size: 15px;
-}
-
-input:focus {
-  border-color: #07572f;
-}
-
-.upi-payment {
-  background: #edf7f0;
-  padding: 18px;
-  border-radius: 13px;
-  margin: 16px 0;
-  text-align: center;
-  border: 1px solid #d5e8da;
-}
-
-.upi-payment h3 {
-  margin-bottom: 14px;
-}
-
-.upi-qr {
-  display: block;
-  width: 235px;
-  height: 235px;
-  object-fit: contain;
-  margin: 10px auto 14px;
-  background: white;
-  padding: 7px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-}
-
-.scan-note {
-  color: #666;
-  font-size: 13px;
-  margin-bottom: 14px;
-}
-
-.upi-id-box {
-  background: white;
+  border: 0;
   border-radius: 10px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.upi-id-box span {
-  color: #777;
-  font-size: 13px;
-}
-
-.upi-id-box strong {
-  color: #07572f;
-  word-break: break-all;
-}
-
-.upi-id-box button {
-  border: none;
-  background: #07572f;
+  margin-top: 10px;
+  background: #0b6b3a;
   color: white;
-  padding: 8px 12px;
-  border-radius: 7px;
   font-weight: bold;
 }
 
-.payment-warning {
-  color: #9a5a00;
-  font-size: 13px;
-  line-height: 1.5;
-  margin-top: 13px;
+.big-btn {
+  background: #f1f7f3;
+  color: #0b6b3a;
+  border: 1px solid #d8eadf;
 }
 
-.upload-help {
-  display: block;
-  color: #777;
-  margin-bottom: 5px;
-}
-
-.deposit-status {
-  text-align: center;
-  font-weight: bold;
-  margin-top: 13px;
-  line-height: 1.5;
-}
-
-.available-balance {
-  background: #edf7f0;
-  padding: 15px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+.page-title {
   margin-bottom: 15px;
 }
 
-.available-balance strong {
-  color: #07572f;
-}
-
-.form-title {
-  margin-top: 20px;
-  margin-bottom: 5px;
-}
-
-.warning,
-.notice {
-  color: #9a5a00;
-  background: #fff7df;
-  padding: 12px;
-  border-radius: 9px;
-  display: block;
-  margin-top: 12px;
-  line-height: 1.5;
-}
-
-.reward-item,
-.history-item {
-  background: #f8faf8;
-  border-radius: 11px;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-left: 4px solid #07572f;
-}
-
-.history-item {
+.month-control {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-}
-
-.amount-green {
-  color: #087a3b;
-  font-weight: bold;
-}
-
-.amount-red {
-  color: #d62929;
-  font-weight: bold;
-}
-
-.info-menu button {
-  width: 100%;
+  justify-content: space-between;
   background: white;
-  border: none;
-  margin-bottom: 10px;
-  border-radius: 13px;
-  padding: 17px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  text-align: left;
-  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
 }
 
-.info-menu span {
-  font-size: 25px;
-}
-
-.info-menu small {
-  display: block;
-  color: #777;
-  margin-top: 4px;
-}
-
-.calendar-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-.calendar-head button {
-  border: none;
-  background: #e9f1eb;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+.month-control button {
+  border: 0;
+  background: #0b6b3a;
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
   font-size: 22px;
 }
 
-.weekdays,
 .calendar {
   display: grid;
-  grid-template-columns: repeat(7,1fr);
-  gap: 6px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
 }
 
-.weekdays span {
-  text-align: center;
-  font-size: 12px;
-  color: #777;
-  padding-bottom: 7px;
-}
-
-.day {
-  height: 42px;
-  border-radius: 8px;
-  background: #ffe3e3;
+.calendar div {
+  min-height: 40px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  cursor: pointer;
+  align-items: center;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.calendar .day-head {
   font-weight: bold;
+  color: #777;
 }
 
-.day.empty {
-  background: transparent;
-  cursor: default;
+.calendar .day {
+  background: #f3f3f3;
 }
 
-.day.attended {
-  background: #07572f;
+.calendar .present {
+  background: #075b30;
   color: white;
 }
 
-.day.today {
-  border: 2px solid #07572f;
+.calendar .past {
+  background: #f1dede;
+  color: #9b3333;
 }
 
-.attendance-info {
-  margin-top: 18px;
-  padding: 13px;
-  background: #edf7f0;
-  border-radius: 9px;
+.calendar .today {
+  outline: 2px solid #159447;
+}
+
+.attendance-total {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+
+.reward-card {
+  background: white;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+}
+
+.qr-box {
   text-align: center;
+  margin: 15px 0;
+}
+
+.upi-qr {
+  width: 230px;
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.upi-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f6f4;
+  padding: 10px;
+  border-radius: 9px;
+}
+
+.upi-row span {
+  flex: 1;
+  font-weight: bold;
+  word-break: break-all;
+}
+
+.upi-row button {
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 7px;
+  background: #0b6b3a;
+  color: white;
+}
+
+.form-card label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin: 12px 0 6px;
+}
+
+.form-card input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  outline: none;
+}
+
+.form-card input:focus {
+  border-color: #159447;
+}
+
+.withdraw-balance {
+  background: #e8f6ee;
+  color: #075b30;
+}
+
+.back-btn {
+  width: 100%;
+  border: 0;
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.history-card {
+  background: white;
+  padding: 15px;
+  border-radius: 13px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px #0001;
+}
+
+.status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+.status.pending {
+  background: #fff1cc;
+  color: #936500;
+}
+
+.status.approved,
+.status.paid {
+  background: #dff5e7;
+  color: #126b35;
+}
+
+.status.rejected {
+  background: #ffe0e0;
+  color: #a11;
 }
 
 .bottom-nav {
@@ -438,36 +344,37 @@ input:focus {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 68px;
+  height: 65px;
   background: white;
-  border-top: 1px solid #ddd;
   display: flex;
   justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 12px #0002;
   z-index: 30;
 }
 
 .bottom-nav button {
-  background: none;
-  border: none;
+  border: 0;
+  background: transparent;
   color: #555;
-  font-size: 12px;
+  font-size: 20px;
 }
 
 .bottom-nav span {
   display: block;
-  font-size: 22px;
-  margin-bottom: 3px;
+  font-size: 11px;
+  margin-top: 3px;
 }
 
 .modal {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.55);
+  background: #0008;
   z-index: 100;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 15px;
 }
 
 .modal.show {
@@ -478,33 +385,24 @@ input:focus {
   background: white;
   width: 100%;
   max-width: 430px;
-  padding: 22px;
-  border-radius: 16px;
+  border-radius: 15px;
+  padding: 20px;
   position: relative;
 }
 
-.close {
+.close-modal {
   position: absolute;
-  right: 15px;
-  top: 10px;
-  border: none;
-  background: none;
+  right: 12px;
+  top: 8px;
+  border: 0;
+  background: transparent;
   font-size: 27px;
 }
 
-@media(max-width:380px) {
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .product-price {
-    font-size: 21px;
-  }
-
-  .upi-qr {
-    width: 200px;
-    height: 200px;
-  }
-
+.empty {
+  background: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 12px;
+  color: #777;
 }
