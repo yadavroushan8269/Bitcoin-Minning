@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Mining App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. REGISTER SCREEN -->
+    <div id="register-screen" class="screen active">
+        <h2>Register Account</h2>
+        <div class="input-group">
+            <span class="prefix">+91</span>
+            <input type="number" id="reg-phone" placeholder="Mobile Number" required>
+        </div>
+        <input type="password" id="reg-pass" placeholder="Password" required>
+        <input type="password" id="reg-confirm" placeholder="Confirm Password" required>
+        <button onclick="handleRegister()">Register</button>
+        <p>Already have an account? <span class="link" onclick="showScreen('login-screen')">Login</span></p>
+    </div>
+
+    <!-- 2. LOGIN SCREEN -->
+    <div id="login-screen" class="screen">
+        <h2>Login</h2>
+        <div class="input-group">
+            <span class="prefix">+91</span>
+            <input type="number" id="login-phone" placeholder="Mobile Number" required>
+        </div>
+        <input type="password" id="login-pass" placeholder="Password" required>
+        <button onclick="handleLogin()">Login</button>
+    </div>
+
+    <!-- 3. MAIN MENU SCREEN -->
+    <div id="main-menu-screen" class="screen">
+        <div class="balance-card">
+            <h3>Crypto Balance</h3>
+            <div id="crypto-balance">0.0000 BTC</div>
+        </div>
+        <div class="mining-circle" onclick="handleTapMining()">
+            <span>TAP TO<br>MINE</span>
+        </div>
+        <p class="tap-info">Every tap adds 0.0001 BTC</p>
+    </div>
+
+    <!-- 4. PRODUCT SCREEN -->
+    <div id="product-screen" class="screen">
+        <h2>Investment Products</h2>
+        
+        <div class="product-card">
+            <img src="https://unsplash.com" alt="Bitcoin Light">
+            <div class="product-info">
+                <h3>Bitcoin Mining 999₹</h3>
+                <p>Daily: 0.0000005 BTC<br>Limit: 100 clicks</p>
+                <button class="invest-btn" onclick="showScreen('my-info-screen')">Invest</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <img src="https://unsplash.com" alt="Bitcoin Gold">
+            <div class="product-info">
+                <h3>Bitcoin Mining 2999₹</h3>
+                <p>Daily: 0.0000015 BTC<br>Limit: 100 clicks</p>
+                <button class="invest-btn" onclick="showScreen('my-info-screen')">Invest</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <img src="https://unsplash.com" alt="Bitcoin Dark">
+            <div class="product-info">
+                <h3>Bitcoin Mining 4999₹</h3>
+                <p>Daily: 0.0000010 BTC<br>Limit: 100 clicks</p>
+                <button class="invest-btn" onclick="showScreen('my-info-screen')">Invest</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. INVITE SCREEN -->
+    <div id="invite-screen" class="screen">
+        <h2>Invite & Earn</h2>
+        <button class="share-btn" onclick="shareApp()">Share App Link</button>
+        
+        <h3>Refer List</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.N.</th>
+                        <th>UID</th>
+                        <th>Date</th>
+                        <th>Product</th>
+                    </tr>
+                </thead>
+                <tbody id="refer-table-body">
+                    <tr>
+                        <td>1</td>
+                        <td>UID9821</td>
+                        <td>2026-09-05</td>
+                        <td>Mining 999₹</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="claim-btn" onclick="claimCommission()">10% Commission Claim Now</button>
+    </div>
+
+    <!-- 6. MY INFO SCREEN (BANK / DEPOSIT / WITHDRAWAL) -->
+    <div id="my-info-screen" class="screen">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('bank-tab')">Bank</button>
+            <button class="tab-btn" onclick="switchTab('deposit-tab')">Deposit</button>
+            <button class="tab-btn" onclick="switchTab('withdraw-tab')">Withdraw</button>
+        </div>
+
+        <!-- Bank Sub-tab -->
+        <div id="bank-tab" class="tab-content active">
+            <h3>Bank Details</h3>
+            <input type="text" id="bank-name" placeholder="Account Holder Name">
+            <input type="password" id="bank-acc" placeholder="Account Number">
+            <input type="text" id="bank-confirm-acc" placeholder="Confirm Account Number">
+            <input type="text" id="bank-branch" placeholder="Bank Name">
+            <button onclick="submitBankDetails()">Submit Details</button>
+        </div>
+
+        <!-- Deposit Sub-tab -->
+        <div id="deposit-tab" class="tab-content">
+            <h3>Deposit Fund</h3>
+            <input type="number" id="dep-amount" placeholder="Amount (Min 500, Max 20,000)">
+            <div class="upi-box">
+                <p>UPI ID: <strong>9153576962@ibl</strong></p>
+                <p>Name: <strong>ROUSHAN YADAV</strong></p>
+            </div>
+            <input type="number" id="dep-utr" placeholder="12 Digit Numerical UTR Only">
+            <label class="file-label">
+                Upload Screenshot
+                <input type="file" id="dep-screenshot" accept="image/*">
+            </label>
+            <button onclick="submitDeposit()">Submit Deposit</button>
+        </div>
+
+        <!-- Withdraw Sub-tab -->
+        <div id="withdraw-tab" class="tab-content">
+            <h3>Withdrawal</h3>
+            <input type="number" id="withdraw-amount" placeholder="Amount (Min 200, Max 10,000)">
+            <button onclick="submitWithdraw()">Withdraw Now</button>
+        </div>
+    </div>
+
+    <!-- GLOBAL NAVIGATION BAR -->
+    <nav id="bottom-nav">
+        <div class="nav-item" onclick="showScreen('main-menu-screen')">🏠<br>Home</div>
+        <div class="nav-item" onclick="showScreen('product-screen')">🛍️<br>Product</div>
+        <div class="nav-item" onclick="showScreen('invite-screen')">🔗<br>Invite</div>
+        <div class="nav-item" onclick="showScreen('my-info-screen')">👤<br>My Info</div>
+    </nav>
+
+    <script href="script.js"></script>
+</body>
+</html>
