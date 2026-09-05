@@ -1,85 +1,206 @@
-/* =====================================================
-   INVESTPRO DEMO
-   Demo/Test only - no real payment processing
-===================================================== */
+/* =========================================================
+   NSG WELLFARE - FRONTEND SCRIPT
+   ========================================================= */
+
+const DEPOSIT_API_URL =
+  "https://script.google.com/macros/s/AKfycby6bTl_tUL1STJtWO8jQaXzjQSOhDLgvxj_2UWuI6VJBhh0ehwpCFSlQMhpDn57MfNtow/exec";
+
+const CUSTOMER_SERVICE =
+  "https://t.me/Hammerff7gcz";
+
+const UPI_ID = "yadav-rishab@fam";
+
+const MIN_DEPOSIT = 500;
+const MAX_DEPOSIT = 20000;
+const MIN_WITHDRAWAL = 300;
+
+const STORAGE_KEY = "nsgWellfareData";
 
 
-/* -----------------------------
-   PRODUCT DATA
------------------------------ */
-
-const products = [
-  {
-    id: 1,
-    name: "Product 1",
-    price: 999,
-    daily: 18
-  },
-  {
-    id: 2,
-    name: "Product 2",
-    price: 1999,
-    daily: 36
-  },
-  {
-    id: 3,
-    name: "Product 3",
-    price: 4999,
-    daily: 90
-  }
-];
-
-
-/* -----------------------------
+/* =========================================================
    STORAGE
------------------------------ */
+   ========================================================= */
 
-let data = JSON.parse(
-  localStorage.getItem("investDemo")
-) || {
+function getData() {
+  const saved = localStorage.getItem(STORAGE_KEY);
 
-  balance: 0,
+  if (!saved) {
+    const data = {
+      userKey: generateUserKey(),
+      balance: 0,
+      deposits: [],
+      withdrawals: [],
+      attendance: {},
+      rewards: [],
+      transactions: [],
+      bank: {}
+    };
 
-  attendance: {},
+    saveData(data);
+    return data;
+  }
 
-  purchased: [],
+  try {
+    return JSON.parse(saved);
+  } catch (error) {
+    const data = {
+      userKey: generateUserKey(),
+      balance: 0,
+      deposits: [],
+      withdrawals: [],
+      attendance: {},
+      rewards: [],
+      transactions: [],
+      bank: {}
+    };
 
-  rewards: [],
+    saveData(data);
+    return data;
+  }
+}
 
-  deposits: [],
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 
-  withdrawals: [],
-
-  transactions: []
-
-};
-
-
-function saveData() {
-
-  localStorage.setItem(
-    "investDemo",
-    JSON.stringify(data)
+function generateUserKey() {
+  return (
+    "NSG-" +
+    Date.now().toString(36).toUpperCase() +
+    "-" +
+    Math.random().toString(36).substring(2, 8).toUpperCase()
   );
+}
 
+function getUserKey() {
+  const data = getData();
+  return data.userKey;
 }
 
 
-/* -----------------------------
+/* =========================================================
+   COMMON HELPERS
+   ========================================================= */
+
+function money(value) {
+  return "₹" + Number(value || 0).toLocaleString("en-IN");
+}
+
+function todayKey() {
+  const d = new Date();
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${day}`;
+}
+
+function createRequestId(prefix) {
+  return (
+    prefix +
+    "-" +
+    Date.now().toString(36).toUpperCase() +
+    "-" +
+    Math.random().toString(36).substring(2, 7).toUpperCase()
+  );
+}
+
+function escapeHTML(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function showMessage(message, type = "info") {
+  let box = document.getElementById("toast");
+
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "toast";
+
+    box.style.position = "fixed";
+    box.style.left = "50%";
+    box.style.bottom = "85px";
+    box.style.transform = "translateX(-50%)";
+    box.style.zIndex = "99999";
+    box.style.padding = "12px 18px";
+    box.style.borderRadius = "12px";
+    box.style.fontSize = "14px";
+    box.style.fontWeight = "600";
+    box.style.maxWidth = "90%";
+    box.style.textAlign = "center";
+
+    document.body.appendChild(box);
+  }
+
+  box.textContent = message;
+
+  if (type === "success") {
+    box.style.background = "#166534";
+    box.style.color = "#fff";
+  } else if (type === "error") {
+    box.style.background = "#b91c1c";
+    box.style.color = "#fff";
+  } else {
+    box.style.background = "#1f2937";
+    box.style.color = "#fff";
+  }
+
+  box.style.display = "block";
+
+  clearTimeout(window.toastTimer);
+
+  window.toastTimer = setTimeout(() => {
+    box.style.display = "none";
+  }, 3000);
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+
+  const d = new Date(value);
+
+  if (isNaN(d.getTime())) return value;
+
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+
+/* =========================================================
    PAGE NAVIGATION
------------------------------ */
+   ========================================================= */
 
-function openPage(pageId) {
-
-  document.querySelectorAll(".page")
-    .forEach(page => {
-      page.classList.remove("active");
-    });
+function showPage(pageId) {
+  document.querySelectorAll(".page").forEach(page => {
+    page.style.display = "none";
+  });
 
   const page = document.getElementById(pageId);
 
   if (page) {
-    page.classList.add("active");
+    page.style.display = "block";
+  }
+
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.classList.remove("active");
+  });
+
+  const nav = document.querySelector(
+    `[data-page="${pageId}"]`
+  );
+
+  if (nav) {
+    nav.classList.add("active");
   }
 
   window.scrollTo({
@@ -87,1651 +208,1335 @@ function openPage(pageId) {
     behavior: "smooth"
   });
 
-  updateUI();
-
-}
-
-
-/* -----------------------------
-   BALANCE
------------------------------ */
-
-function updateBalance() {
-
-  document.getElementById("balance")
-    .textContent = data.balance.toFixed(2);
-
-  document.getElementById("homeBalance")
-    .textContent = data.balance.toFixed(2);
-
-  const wb = document.getElementById("withdrawBalance");
-
-  if (wb) {
-    wb.textContent = data.balance.toFixed(2);
+  if (pageId === "home") {
+    updateHome();
   }
 
+  if (pageId === "deposit") {
+    updateDepositPage();
+  }
+
+  if (pageId === "withdrawal") {
+    updateWithdrawalPage();
+  }
+
+  if (pageId === "attendance") {
+    renderCalendar();
+  }
+
+  if (pageId === "history") {
+    renderHistory();
+  }
+
+  if (pageId === "transactions") {
+    renderTransactions();
+  }
+
+  if (pageId === "my-info") {
+    renderMyInfo();
+  }
 }
 
 
-/* -----------------------------
-   PRODUCT HTML
------------------------------ */
+/* =========================================================
+   HOME
+   ========================================================= */
 
-function productHTML(product) {
+function updateHome() {
+  const data = getData();
 
-  const bought = data.purchased.includes(product.id);
+  const balanceElements = [
+    "balance",
+    "homeBalance",
+    "availableBalance"
+  ];
 
-  return `
-    <div class="product">
+  balanceElements.forEach(id => {
+    const el = document.getElementById(id);
 
-      <div class="product-head">
+    if (el) {
+      el.textContent = money(data.balance);
+    }
+  });
 
-        <div>
-          <h3>${product.name}</h3>
-          <p>Daily demo reward</p>
-        </div>
+  const userId = document.getElementById("userId");
 
-        <div class="product-price">
-          ₹${product.price}
-        </div>
+  if (userId) {
+    userId.textContent = data.userKey;
+  }
+}
 
+
+/* =========================================================
+   COPY UPI
+   ========================================================= */
+
+function copyUPI() {
+  navigator.clipboard
+    .writeText(UPI_ID)
+    .then(() => {
+      showMessage("UPI ID copied successfully", "success");
+    })
+    .catch(() => {
+      const input = document.createElement("input");
+      input.value = UPI_ID;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      input.remove();
+
+      showMessage("UPI ID copied", "success");
+    });
+}
+
+
+/* =========================================================
+   DEPOSIT
+   ========================================================= */
+
+function updateDepositPage() {
+  const data = getData();
+
+  const balance = document.getElementById("depositBalance");
+
+  if (balance) {
+    balance.textContent = money(data.balance);
+  }
+
+  const upi = document.getElementById("upiId");
+
+  if (upi) {
+    upi.textContent = UPI_ID;
+  }
+}
+
+async function submitDeposit() {
+  const amountInput = document.getElementById("depositAmount");
+  const utrInput = document.getElementById("utr");
+  const screenshotInput =
+    document.getElementById("paymentScreenshot");
+
+  if (!amountInput || !utrInput || !screenshotInput) {
+    showMessage("Deposit form nahi mila", "error");
+    return;
+  }
+
+  const amount = Number(amountInput.value);
+  const utr = utrInput.value.trim();
+  const file = screenshotInput.files[0];
+
+  if (!amount || amount < MIN_DEPOSIT || amount > MAX_DEPOSIT) {
+    showMessage(
+      `Deposit amount ₹${MIN_DEPOSIT} se ₹${MAX_DEPOSIT} ke beech hona chahiye`,
+      "error"
+    );
+    return;
+  }
+
+  if (!utr || utr.length < 6) {
+    showMessage("Valid UTR / Transaction ID enter karein", "error");
+    return;
+  }
+
+  if (!file) {
+    showMessage("Payment screenshot select karein", "error");
+    return;
+  }
+
+  if (file.size > 3 * 1024 * 1024) {
+    showMessage("Screenshot maximum 3 MB ka hona chahiye", "error");
+    return;
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    showMessage(
+      "Sirf JPG, PNG ya WebP screenshot allowed hai",
+      "error"
+    );
+    return;
+  }
+
+  const button =
+    document.getElementById("depositSubmitBtn");
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Submitting...";
+  }
+
+  try {
+    const base64 = await fileToBase64(file);
+
+    const requestId = createRequestId("DEP");
+
+    const payload = {
+      action: "createDeposit",
+      requestId: requestId,
+      userKey: getUserKey(),
+      amount: amount,
+      utr: utr,
+      screenshot: base64,
+      screenshotName: file.name,
+      screenshotType: file.type
+    };
+
+    const response = await fetch(DEPOSIT_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(result.error || "Deposit request failed");
+    }
+
+    const data = getData();
+
+    data.deposits.unshift({
+      requestId: requestId,
+      amount: amount,
+      utr: utr,
+      status: "PENDING",
+      createdAt: new Date().toISOString()
+    });
+
+    data.transactions.unshift({
+      type: "DEPOSIT",
+      requestId: requestId,
+      amount: amount,
+      status: "PENDING",
+      createdAt: new Date().toISOString()
+    });
+
+    saveData(data);
+
+    amountInput.value = "";
+    utrInput.value = "";
+    screenshotInput.value = "";
+
+    showMessage(
+      "Deposit request submit ho gaya. Admin verification ke baad balance update hoga.",
+      "success"
+    );
+
+    updateHome();
+    renderHistory();
+    renderTransactions();
+
+    startDepositPolling(requestId);
+  } catch (error) {
+    console.error(error);
+
+    showMessage(
+      "Deposit submit nahi hua. Internet aur Apps Script deployment check karein.",
+      "error"
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Submit Deposit Request";
+    }
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(file);
+  });
+}
+
+
+/* =========================================================
+   DEPOSIT STATUS POLLING
+   ========================================================= */
+
+function startDepositPolling(requestId) {
+  let attempts = 0;
+
+  const timer = setInterval(async () => {
+    attempts++;
+
+    try {
+      const url =
+        DEPOSIT_API_URL +
+        "?action=depositStatus" +
+        "&requestId=" +
+        encodeURIComponent(requestId) +
+        "&userKey=" +
+        encodeURIComponent(getUserKey());
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (!result.ok) return;
+
+      if (
+        result.status === "APPROVED" ||
+        result.status === "REJECTED"
+      ) {
+        clearInterval(timer);
+
+        updateDepositLocalStatus(
+          requestId,
+          result.status,
+          result.reviewedAt
+        );
+
+        if (result.status === "APPROVED") {
+          showMessage(
+            "Deposit approved. Balance update ho gaya.",
+            "success"
+          );
+        } else {
+          showMessage(
+            "Deposit request reject kar diya gaya.",
+            "error"
+          );
+        }
+
+        updateHome();
+        renderHistory();
+        renderTransactions();
+      }
+    } catch (error) {
+      console.log("Status check:", error);
+    }
+
+    if (attempts >= 120) {
+      clearInterval(timer);
+    }
+  }, 5000);
+}
+
+function updateDepositLocalStatus(
+  requestId,
+  status,
+  reviewedAt
+) {
+  const data = getData();
+
+  const deposit = data.deposits.find(
+    item => item.requestId === requestId
+  );
+
+  if (!deposit) return;
+
+  if (deposit.status === "APPROVED") {
+    return;
+  }
+
+  const oldStatus = deposit.status;
+
+  deposit.status = status;
+  deposit.reviewedAt =
+    reviewedAt || new Date().toISOString();
+
+  if (status === "APPROVED" && oldStatus !== "APPROVED") {
+    data.balance += Number(deposit.amount);
+
+    data.transactions.unshift({
+      type: "DEPOSIT",
+      requestId: requestId,
+      amount: Number(deposit.amount),
+      status: "APPROVED",
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  if (status === "REJECTED") {
+    data.transactions.unshift({
+      type: "DEPOSIT",
+      requestId: requestId,
+      amount: Number(deposit.amount),
+      status: "REJECTED",
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  saveData(data);
+}
+
+
+/* =========================================================
+   WITHDRAWAL
+   ========================================================= */
+
+function updateWithdrawalPage() {
+  const data = getData();
+
+  const balance = document.getElementById(
+    "withdrawBalance"
+  );
+
+  if (balance) {
+    balance.textContent = money(data.balance);
+  }
+
+  const bank = data.bank || {};
+
+  const holder =
+    document.getElementById("accountHolderName");
+
+  const account =
+    document.getElementById("accountNumber");
+
+  const confirm =
+    document.getElementById("confirmAccountNumber");
+
+  const bankName =
+    document.getElementById("bankName");
+
+  const ifsc =
+    document.getElementById("ifsc");
+
+  if (holder && bank.holderName) {
+    holder.value = bank.holderName;
+  }
+
+  if (account && bank.accountNumber) {
+    account.value = bank.accountNumber;
+  }
+
+  if (confirm && bank.accountNumber) {
+    confirm.value = bank.accountNumber;
+  }
+
+  if (bankName && bank.bankName) {
+    bankName.value = bank.bankName;
+  }
+
+  if (ifsc && bank.ifsc) {
+    ifsc.value = bank.ifsc;
+  }
+}
+
+async function submitWithdrawal() {
+  const amountInput =
+    document.getElementById("withdrawAmount");
+
+  const holderInput =
+    document.getElementById("accountHolderName");
+
+  const accountInput =
+    document.getElementById("accountNumber");
+
+  const confirmInput =
+    document.getElementById("confirmAccountNumber");
+
+  const bankInput =
+    document.getElementById("bankName");
+
+  const ifscInput =
+    document.getElementById("ifsc");
+
+  if (
+    !amountInput ||
+    !holderInput ||
+    !accountInput ||
+    !confirmInput ||
+    !bankInput ||
+    !ifscInput
+  ) {
+    showMessage("Withdrawal form nahi mila", "error");
+    return;
+  }
+
+  const amount = Number(amountInput.value);
+
+  const holder = holderInput.value.trim();
+  const account = accountInput.value.trim();
+  const confirmAccount = confirmInput.value.trim();
+  const bank = bankInput.value.trim();
+  const ifsc = ifscInput.value.trim().toUpperCase();
+
+  const data = getData();
+
+  if (!amount || amount < MIN_WITHDRAWAL) {
+    showMessage(
+      `Minimum withdrawal ${money(MIN_WITHDRAWAL)} hai`,
+      "error"
+    );
+    return;
+  }
+
+  if (amount > data.balance) {
+    showMessage("Insufficient balance", "error");
+    return;
+  }
+
+  if (holder.length < 2) {
+    showMessage("Account holder name enter karein", "error");
+    return;
+  }
+
+  if (!account || account.length < 6) {
+    showMessage("Valid account number enter karein", "error");
+    return;
+  }
+
+  if (account !== confirmAccount) {
+    showMessage(
+      "Account number match nahi kar raha",
+      "error"
+    );
+    return;
+  }
+
+  if (bank.length < 2) {
+    showMessage("Bank name enter karein", "error");
+    return;
+  }
+
+  const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+  if (!ifscRegex.test(ifsc)) {
+    showMessage("Valid IFSC code enter karein", "error");
+    return;
+  }
+
+  const button =
+    document.getElementById("withdrawSubmitBtn");
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Submitting...";
+  }
+
+  try {
+    const requestId = createRequestId("WDR");
+
+    const payload = {
+      action: "createWithdrawal",
+      requestId: requestId,
+      userKey: getUserKey(),
+      amount: amount,
+      holderName: holder,
+      accountNumber: account,
+      bankName: bank,
+      ifsc: ifsc
+    };
+
+    const response = await fetch(DEPOSIT_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(
+        result.error || "Withdrawal request failed"
+      );
+    }
+
+    /*
+      Reserve the amount locally.
+      Backend admin will manually pay and mark PAID.
+    */
+
+    data.balance -= amount;
+
+    data.bank = {
+      holderName: holder,
+      accountNumber: account,
+      bankName: bank,
+      ifsc: ifsc
+    };
+
+    data.withdrawals.unshift({
+      requestId: requestId,
+      amount: amount,
+      holderName: holder,
+      accountNumber: account,
+      bankName: bank,
+      ifsc: ifsc,
+      status: "PENDING",
+      createdAt: new Date().toISOString()
+    });
+
+    data.transactions.unshift({
+      type: "WITHDRAWAL",
+      requestId: requestId,
+      amount: amount,
+      status: "PENDING",
+      createdAt: new Date().toISOString()
+    });
+
+    saveData(data);
+
+    amountInput.value = "";
+
+    showMessage(
+      "Withdrawal request submit ho gaya. Admin payment verify karega.",
+      "success"
+    );
+
+    updateHome();
+    updateWithdrawalPage();
+    renderHistory();
+    renderTransactions();
+
+    startWithdrawalPolling(requestId);
+  } catch (error) {
+    console.error(error);
+
+    showMessage(
+      "Withdrawal request submit nahi hua. Server/deployment check karein.",
+      "error"
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Submit Withdrawal Request";
+    }
+  }
+}
+
+
+/* =========================================================
+   WITHDRAWAL STATUS
+   ========================================================= */
+
+function startWithdrawalPolling(requestId) {
+  let attempts = 0;
+
+  const timer = setInterval(async () => {
+    attempts++;
+
+    try {
+      const url =
+        DEPOSIT_API_URL +
+        "?action=withdrawalStatus" +
+        "&requestId=" +
+        encodeURIComponent(requestId) +
+        "&userKey=" +
+        encodeURIComponent(getUserKey());
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (!result.ok) return;
+
+      if (
+        result.status === "PAID" ||
+        result.status === "REJECTED"
+      ) {
+        clearInterval(timer);
+
+        updateWithdrawalLocalStatus(
+          requestId,
+          result.status,
+          result.reviewedAt
+        );
+
+        if (result.status === "PAID") {
+          showMessage(
+            "Withdrawal paid successfully.",
+            "success"
+          );
+        } else {
+          showMessage(
+            "Withdrawal rejected. Amount balance me return kar diya gaya.",
+            "error"
+          );
+        }
+
+        updateHome();
+        updateWithdrawalPage();
+        renderHistory();
+        renderTransactions();
+      }
+    } catch (error) {
+      console.log("Withdrawal status:", error);
+    }
+
+    if (attempts >= 120) {
+      clearInterval(timer);
+    }
+  }, 5000);
+}
+
+function updateWithdrawalLocalStatus(
+  requestId,
+  status,
+  reviewedAt
+) {
+  const data = getData();
+
+  const withdrawal = data.withdrawals.find(
+    item => item.requestId === requestId
+  );
+
+  if (!withdrawal) return;
+
+  if (
+    withdrawal.status === "PAID" ||
+    withdrawal.status === "REJECTED"
+  ) {
+    return;
+  }
+
+  withdrawal.status = status;
+  withdrawal.reviewedAt =
+    reviewedAt || new Date().toISOString();
+
+  if (status === "REJECTED") {
+    data.balance += Number(withdrawal.amount);
+  }
+
+  data.transactions.unshift({
+    type: "WITHDRAWAL",
+    requestId: requestId,
+    amount: Number(withdrawal.amount),
+    status: status,
+    createdAt: new Date().toISOString()
+  });
+
+  saveData(data);
+}
+
+
+/* =========================================================
+   ATTENDANCE
+   ========================================================= */
+
+function renderCalendar() {
+  const container =
+    document.getElementById("calendar");
+
+  if (!container) return;
+
+  const data = getData();
+
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  let html = "";
+
+  html += `
+    <div class="calendar-header">
+      ${now.toLocaleString("en-IN", {
+        month: "long",
+        year: "numeric"
+      })}
+    </div>
+  `;
+
+  html += `
+    <div class="calendar-week">
+      <div>Sun</div>
+      <div>Mon</div>
+      <div>Tue</div>
+      <div>Wed</div>
+      <div>Thu</div>
+      <div>Fri</div>
+      <div>Sat</div>
+    </div>
+  `;
+
+  html += `<div class="calendar-grid">`;
+
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    html += `<div class="calendar-empty"></div>`;
+  }
+
+  for (
+    let day = 1;
+    day <= lastDay.getDate();
+    day++
+  ) {
+    const key =
+      `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+    const attended = !!data.attendance[key];
+
+    const date = new Date(year, month, day);
+
+    const isFuture = date > now;
+
+    let cls = "calendar-day";
+
+    if (attended) {
+      cls += " attended";
+    } else {
+      cls += " missed";
+    }
+
+    if (isFuture) {
+      cls += " future";
+    }
+
+    html += `
+      <button
+        class="${cls}"
+        ${isFuture ? "disabled" : ""}
+        onclick="markAttendance('${key}')"
+      >
+        ${day}
+      </button>
+    `;
+  }
+
+  html += `</div>`;
+
+  container.innerHTML = html;
+}
+
+function markAttendance(dateKey) {
+  const data = getData();
+
+  if (data.attendance[dateKey]) {
+    showMessage(
+      "Aaj ki attendance already marked hai",
+      "info"
+    );
+    return;
+  }
+
+  const today = todayKey();
+
+  if (dateKey !== today) {
+    showMessage(
+      "Sirf current date ki attendance mark kar sakte hain",
+      "error"
+    );
+    return;
+  }
+
+  data.attendance[dateKey] = true;
+
+  data.rewards.unshift({
+    date: dateKey,
+    amount: 0,
+    type: "Attendance",
+    createdAt: new Date().toISOString()
+  });
+
+  saveData(data);
+
+  renderCalendar();
+
+  showMessage(
+    "Attendance marked successfully",
+    "success"
+  );
+}
+
+
+/* =========================================================
+   REWARDS
+   ========================================================= */
+
+function renderRewards() {
+  const container =
+    document.getElementById("rewardsList");
+
+  if (!container) return;
+
+  const data = getData();
+
+  if (!data.rewards.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        No rewards yet
       </div>
+    `;
+    return;
+  }
 
-      <ul>
-        <li>Daily reward: ₹${product.daily}</li>
-        <li>Demo product</li>
-        <li>Rewards can be claimed after purchase</li>
-      </ul>
+  container.innerHTML = data.rewards
+    .map(reward => {
+      return `
+        <div class="history-card">
+          <div>
+            <strong>${escapeHTML(reward.type)}</strong>
+            <small>${escapeHTML(reward.date)}</small>
+          </div>
 
-      ${
-        bought
+          <strong>${money(reward.amount)}</strong>
+        </div>
+      `;
+    })
+    .join("");
+}
 
-        ? `
-          <button
-            class="secondary-btn"
-            onclick="alert('You already purchased this demo product.')"
-          >
-            ✓ Purchased
-          </button>
-        `
 
-        : `
+/* =========================================================
+   PRODUCTS
+   ========================================================= */
+
+const PRODUCTS = [
+  {
+    id: 1,
+    name: "Starter Plan",
+    price: 500,
+    daily: 15,
+    days: 30
+  },
+  {
+    id: 2,
+    name: "Growth Plan",
+    price: 1000,
+    daily: 35,
+    days: 30
+  },
+  {
+    id: 3,
+    name: "Premium Plan",
+    price: 5000,
+    daily: 200,
+    days: 30
+  },
+  {
+    id: 4,
+    name: "Elite Plan",
+    price: 10000,
+    daily: 450,
+    days: 30
+  }
+];
+
+function renderProducts() {
+  const container =
+    document.getElementById("productsList");
+
+  if (!container) return;
+
+  container.innerHTML = PRODUCTS
+    .map(product => {
+      return `
+        <div class="product-card">
+
+          <div class="product-title">
+            ${escapeHTML(product.name)}
+          </div>
+
+          <div class="product-price">
+            ${money(product.price)}
+          </div>
+
+          <div class="product-info">
+            <span>Daily</span>
+            <strong>${money(product.daily)}</strong>
+          </div>
+
+          <div class="product-info">
+            <span>Duration</span>
+            <strong>${product.days} Days</strong>
+          </div>
+
           <button
             class="primary-btn"
             onclick="buyProduct(${product.id})"
           >
-            Invest / Purchase Demo
+            Select Plan
           </button>
-        `
-      }
-
-    </div>
-  `;
-}
-
-
-/* -----------------------------
-   LOAD PRODUCTS
------------------------------ */
-
-function loadProducts() {
-
-  const html = products
-    .map(productHTML)
-    .join("");
-
-  document.getElementById("productsList")
-    .innerHTML = html;
-
-  document.getElementById("homeProducts")
-    .innerHTML = html;
-
-}
-
-
-/* -----------------------------
-   BUY PRODUCT
------------------------------ */
-
-function buyProduct(productId) {
-
-  const product = products.find(
-    p => p.id === productId
-  );
-
-  if (!product) return;
-
-  if (data.purchased.includes(productId)) {
-
-    alert("This product is already purchased.");
-
-    return;
-  }
-
-  if (data.balance < product.price) {
-
-    alert(
-      "Insufficient demo balance.\n\n" +
-      "Please use Demo Deposit first."
-    );
-
-    openPage("deposit");
-
-    return;
-  }
-
-  data.balance -= product.price;
-
-  data.purchased.push(productId);
-
-  data.transactions.unshift({
-
-    type: "Product Purchase",
-
-    amount: product.price,
-
-    date: new Date().toLocaleString(),
-
-    color: "red"
-
-  });
-
-  saveData();
-
-  updateUI();
-
-  alert(
-    `${product.name} purchased successfully in DEMO mode.`
-  );
-
-}
-
-
-/* -----------------------------
-   ATTENDANCE
------------------------------ */
-
-let calendarDate = new Date();
-
-
-function renderCalendar() {
-
-  const year = calendarDate.getFullYear();
-
-  const month = calendarDate.getMonth();
-
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  ];
-
-  document.getElementById("monthTitle")
-    .textContent =
-    `${monthNames[month]} ${year}`;
-
-
-  const firstDay =
-    new Date(year, month, 1).getDay();
-
-  const daysInMonth =
-    new Date(year, month + 1, 0).getDate();
-
-
-  const calendar =
-    document.getElementById("calendar");
-
-  calendar.innerHTML = "";
-
-
-  for (let i = 0; i < firstDay; i++) {
-
-    const empty =
-      document.createElement("div");
-
-    empty.className = "day empty";
-
-    calendar.appendChild(empty);
-
-  }
-
-
-  for (let day = 1; day <= daysInMonth; day++) {
-
-    const box =
-      document.createElement("div");
-
-    box.className = "day";
-
-    box.textContent = day;
-
-
-    const key =
-      `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-
-
-    if (data.attendance[key]) {
-
-      box.classList.add("attended");
-
-    }
-
-
-    const today = new Date();
-
-    if (
-      day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
-    ) {
-
-      box.classList.add("today");
-
-    }
-
-
-    box.onclick = function() {
-
-      toggleAttendance(key);
-
-    };
-
-
-    calendar.appendChild(box);
-
-  }
-
-
-  updateAttendanceTotal();
-
-}
-
-
-function toggleAttendance(key) {
-
-  const today =
-    new Date().toISOString().slice(0,10);
-
-  if (key !== today) {
-
-    alert(
-      "Demo attendance can only be marked for today."
-    );
-
-    return;
-
-  }
-
-  if (data.attendance[key]) {
-
-    delete data.attendance[key];
-
-  } else {
-
-    data.attendance[key] = true;
-
-  }
-
-  saveData();
-
-  renderCalendar();
-
-}
-
-
-function changeMonth(amount) {
-
-  calendarDate.setMonth(
-    calendarDate.getMonth() + amount
-  );
-
-  renderCalendar();
-
-}
-
-
-function updateAttendanceTotal() {
-
-  const total =
-    Object.keys(data.attendance).length;
-
-  document.getElementById("attendanceTotal")
-    .textContent = total;
-
-}
-
-
-/* -----------------------------
-   REWARDS
------------------------------ */
-
-function renderRewards() {
-
-  const container =
-    document.getElementById("rewardsList");
-
-  if (data.purchased.length === 0) {
-
-    container.innerHTML = `
-      <div class="reward-item">
-        <b>No purchased products</b>
-        <p>Purchase a demo product to see rewards.</p>
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  container.innerHTML =
-    data.purchased.map(productId => {
-
-      const product =
-        products.find(
-          p => p.id === productId
-        );
-
-      if (!product) return "";
-
-
-      const alreadyClaimed =
-        data.rewards.some(
-          r => r.productId === productId &&
-               r.date === new Date().toISOString().slice(0,10)
-        );
-
-
-      return `
-        <div class="reward-item">
-
-          <div style="margin-bottom:10px">
-
-            <b>${product.name}</b>
-
-            <p>
-              Daily Reward:
-              ₹${product.daily}
-            </p>
-
-          </div>
-
-
-          ${
-            alreadyClaimed
-
-            ? `
-              <button
-                class="secondary-btn"
-                disabled
-              >
-                ✓ Claimed Today
-              </button>
-            `
-
-            : `
-              <button
-                class="primary-btn"
-                onclick="claimReward(${product.id})"
-              >
-                Claim Reward
-              </button>
-            `
-          }
 
         </div>
       `;
-
-    }).join("");
-
+    })
+    .join("");
 }
 
-
-/* -----------------------------
-   CLAIM REWARD
------------------------------ */
-
-function claimReward(productId) {
-
+function buyProduct(id) {
   const product =
-    products.find(
-      p => p.id === productId
-    );
+    PRODUCTS.find(item => item.id === id);
 
   if (!product) return;
 
-
-  if (!data.purchased.includes(productId)) {
-
-    alert(
-      "You can only claim rewards for purchased products."
-    );
-
-    return;
-
-  }
-
-
-  const today =
-    new Date().toISOString().slice(0,10);
-
-
-  const claimed =
-    data.rewards.some(
-      r =>
-        r.productId === productId &&
-        r.date === today
-    );
-
-
-  if (claimed) {
-
-    alert("Reward already claimed today.");
-
-    return;
-
-  }
-
-
-  data.balance += product.daily;
-
-
-  data.rewards.push({
-
-    productId: productId,
-
-    amount: product.daily,
-
-    date: today
-
-  });
-
-
-  data.transactions.unshift({
-
-    type: "Bonus",
-
-    amount: product.daily,
-
-    date: new Date().toLocaleString(),
-
-    color: "green"
-
-  });
-
-
-  saveData();
-
-  updateUI();
-
-  alert(
-    `₹${product.daily} demo reward added to your balance.`
-  );
-
-}
-
-
-/* -----------------------------
-   DEPOSIT
------------------------------ */
-
-/* IMPORTANT:
-   Never put your Telegram bot token in this file.
-*/
-
-const DEPOSIT_API_URL =
-"https://script.google.com/macros/s/AKfycby6bTl_tUL1STJtWO8jQaXzjQSOhDLgvxj_2UWuI6VJBhh0ehwpCFSlQMhpDn57MfNtow/exec";
-
-
-function showDeposit() {
-
-  openPage("deposit");
-
-  setDepositStatus("");
-
-}
-
-
-function copyUPI() {
-
-  const upi = "yadav-rishab@fam";
-
-  if (
-    navigator.clipboard &&
-    window.isSecureContext
-  ) {
-
-    navigator.clipboard
-      .writeText(upi)
-      .then(() => {
-
-        alert("UPI ID copied.");
-
-      });
-
-  } else {
-
-    prompt(
-      "Copy this UPI ID:",
-      upi
-    );
-
-  }
-
-}
-
-
-function setDepositStatus(
-  text,
-  ok = false
-) {
-
-  const el =
-    document.getElementById(
-      "depositStatus"
-    );
-
-  if (!el) return;
-
-  el.textContent = text;
-
-  el.style.color =
-    ok
-      ? "#087a3b"
-      : "#b05c00";
-
-}
-
-
-function fileToBase64(file) {
-
-  return new Promise(
-    (resolve, reject) => {
-
-      const reader =
-        new FileReader();
-
-      reader.onload = () => {
-
-        resolve(
-          reader.result
-            .split(",")[1]
-        );
-
-      };
-
-      reader.onerror =
-        reject;
-
-      reader.readAsDataURL(file);
-
-    }
-  );
-
-}
-
-
-async function submitDeposit() {
-
-  const amount =
-    Number(
-      document.getElementById(
-        "depositAmount"
-      ).value
-    );
-
-  const utr =
-    document.getElementById(
-      "utr"
-    ).value.trim();
-
-  const screenshot =
-    document.getElementById(
-      "paymentScreenshot"
-    ).files[0];
-
-  const btn =
-    document.getElementById(
-      "depositSubmitBtn"
-    );
-
-
-  if (
-    !Number.isFinite(amount) ||
-    amount < 500
-  ) {
-
-    setDepositStatus(
-      "Minimum deposit is ₹500."
-    );
-
-    return;
-
-  }
-
-
-  if (amount > 20000) {
-
-    setDepositStatus(
-      "Maximum deposit is ₹20,000."
-    );
-
-    return;
-
-  }
-
-
-  if (!utr) {
-
-    setDepositStatus(
-      "Please enter the UTR / Transaction ID."
-    );
-
-    return;
-
-  }
-
-
-  if (!screenshot) {
-
-    setDepositStatus(
-      "Please upload your payment screenshot."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    screenshot.size >
-    3 * 1024 * 1024
-  ) {
-
-    setDepositStatus(
-      "Screenshot must be 3 MB or smaller."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !DEPOSIT_API_URL ||
-    DEPOSIT_API_URL.includes(
-      "PASTE_YOUR_"
-    )
-  ) {
-
-    setDepositStatus(
-      "Admin backend URL is not configured yet."
-    );
-
-    return;
-
-  }
-
-
-  btn.disabled = true;
-
-  btn.textContent =
-    "Submitting...";
-
-
-  setDepositStatus(
-    "Uploading payment proof..."
-  );
-
-
-  try {
-
-    const imageBase64 =
-      await fileToBase64(
-        screenshot
-      );
-
-
-    const userKey =
-      getUserKey();
-
-
-    const payload = {
-
-      action:
-        "createDeposit",
-
-      userKey:
-
-        userKey,
-
-      amount:
-
-        amount,
-
-      utr:
-
-        utr,
-
-      imageBase64:
-
-        imageBase64,
-
-      imageName:
-
-        screenshot.name,
-
-      imageType:
-
-        screenshot.type
-
-    };
-
-
-    const response =
-      await fetch(
-        DEPOSIT_API_URL,
-        {
-
-          method:
-            "POST",
-
-          headers: {
-
-            "Content-Type":
-              "text/plain;charset=utf-8"
-
-          },
-
-          body:
-            JSON.stringify(
-              payload
-            )
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if (!result.ok) {
-
-      throw new Error(
-        result.error ||
-        "Submission failed"
-      );
-
-    }
-
-
-    data.deposits.unshift({
-
-      id:
-        result.requestId,
-
-      amount:
-        amount,
-
-      utr:
-        utr,
-
-      date:
-        new Date()
-          .toLocaleString(),
-
-      status:
-        "Pending Verification"
-
-    });
-
-
-    saveData();
-
-    updateUI();
-
-
-    document.getElementById(
-      "depositAmount"
-    ).value = "";
-
-
-    document.getElementById(
-      "utr"
-    ).value = "";
-
-
-    document.getElementById(
-      "paymentScreenshot"
-    ).value = "";
-
-
-    setDepositStatus(
-
-      "Deposit request sent. Waiting for admin verification.",
-
-      true
-
-    );
-
-
-    startDepositStatusPolling(
-      result.requestId
-    );
-
-
-  } catch (err) {
-
-    console.error(err);
-
-    setDepositStatus(
-      "Could not submit request. Please try again."
-    );
-
-  } finally {
-
-    btn.disabled = false;
-
-    btn.textContent =
-      "Submit Deposit Request";
-
-  }
-
-}
-
-
-function getUserKey() {
-
-  let key =
-    localStorage.getItem(
-      "investDemoUserKey"
-    );
-
-
-  if (!key) {
-
-    key =
-      "U" +
-      Date.now().toString(36) +
-      Math.random()
-        .toString(36)
-        .slice(2,8);
-
-
-    localStorage.setItem(
-      "investDemoUserKey",
-      key
-    );
-
-  }
-
-
-  return key;
-
-}
-
-
-async function checkDepositStatus(
-  requestId
-) {
-
-  try {
-
-    const response =
-      await fetch(
-
-        DEPOSIT_API_URL +
-        "?action=status&requestId=" +
-        encodeURIComponent(
-          requestId
-        )
-
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if (!result.ok)
-      return;
-
-
-    if (
-      result.status ===
-      "APPROVED"
-    ) {
-
-      const deposit =
-        data.deposits.find(
-          d =>
-            d.id ===
-            requestId
-        );
-
-
-      if (
-        deposit &&
-        deposit.status !==
-        "Approved"
-      ) {
-
-        deposit.status =
-          "Approved";
-
-
-        data.balance +=
-          Number(
-            deposit.amount
-          );
-
-
-        data.transactions.unshift({
-
-          type:
-            "Deposit",
-
-          amount:
-            Number(
-              deposit.amount
-            ),
-
-          date:
-            new Date()
-              .toLocaleString(),
-
-          color:
-            "green"
-
-        });
-
-
-        saveData();
-
-        updateUI();
-
-
-        setDepositStatus(
-
-          "Deposit successful. ₹" +
-          Number(
-            deposit.amount
-          ).toFixed(2) +
-          " added to your balance.",
-
-          true
-
-        );
-
-      }
-
-
-      return true;
-
-    }
-
-
-    if (
-      result.status ===
-      "REJECTED"
-    ) {
-
-      const deposit =
-        data.deposits.find(
-          d =>
-            d.id ===
-            requestId
-        );
-
-
-      if (deposit) {
-
-        deposit.status =
-          "Rejected";
-
-      }
-
-
-      saveData();
-
-      updateUI();
-
-
-      setDepositStatus(
-        "Deposit request was rejected by admin."
-      );
-
-
-      return true;
-
-    }
-
-  } catch (e) {
-
-    console.log(
-      "Status check failed",
-      e
-    );
-
-  }
-
-
-  return false;
-
-}
-
-
-function startDepositStatusPolling(
-  requestId
-) {
-
-  let tries = 0;
-
-
-  const timer =
-    setInterval(
-
-      async () => {
-
-        tries++;
-
-
-        const done =
-          await checkDepositStatus(
-            requestId
-          );
-
-
-        if (
-          done ||
-          tries >= 120
-        ) {
-
-          clearInterval(
-            timer
-          );
-
-        }
-
-      },
-
-      5000
-
-    );
-
-}
-
-
-/* -----------------------------
-   WITHDRAWAL
------------------------------ */
-
-function showWithdrawal() {
-
-  openPage("withdraw");
-
-}
-
-
-function submitWithdrawal() {
-
-  const amount =
-    Number(
-      document.getElementById(
-        "withdrawAmount"
-      ).value
-    );
-
-
-  const name =
-    document.getElementById(
-      "bankName"
-    ).value.trim();
-
-
-  const account =
-    document.getElementById(
-      "accountNumber"
-    ).value.trim();
-
-
-  const confirmAccount =
-    document.getElementById(
-      "confirmAccount"
-    ).value.trim();
-
-
-  const bank =
-    document.getElementById(
-      "bank"
-    ).value.trim();
-
-
-  const ifsc =
-    document.getElementById(
-      "ifsc"
-    ).value.trim();
-
-
-  if (amount < 300) {
-
-    alert(
-      "Minimum demo withdrawal is ₹300."
-    );
-
-    return;
-
-  }
-
-
-  if (amount > 10000) {
-
-    alert(
-      "Maximum demo withdrawal is ₹10,000."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    amount >
-    data.balance
-  ) {
-
-    alert(
-      "Insufficient demo balance."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !name ||
-    !account ||
-    !confirmAccount ||
-    !bank ||
-    !ifsc
-  ) {
-
-    alert(
-      "Please fill all fields."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    account !==
-    confirmAccount
-  ) {
-
-    alert(
-      "Account numbers do not match."
-    );
-
-    return;
-
-  }
-
-
-  data.balance -=
-    amount;
-
-
-  data.withdrawals.unshift({
-
-    amount:
-      amount,
-
-    name:
-      name,
-
-    account:
-      account,
-
-    bank:
-      bank,
-
-    ifsc:
-      ifsc,
-
-    status:
-      "Demo Pending",
-
-    date:
-      new Date()
-        .toLocaleString()
-
-  });
-
-
-  data.transactions.unshift({
-
-    type:
-      "Withdrawal",
-
-    amount:
-      amount,
-
-    date:
-      new Date()
-        .toLocaleString(),
-
-    color:
-      "red"
-
-  });
-
-
-  saveData();
-
-  updateUI();
-
-
-  alert(
-    `₹${amount} demo withdrawal request created.`
-  );
-
-
-  openPage(
+  showMessage(
+    `${product.name} select kiya gaya. Deposit aur activation admin verification ke baad hoga.`,
     "info"
   );
-
 }
 
 
-/* -----------------------------
-   WITHDRAW HISTORY
------------------------------ */
+/* =========================================================
+   HISTORY
+   ========================================================= */
 
-function renderWithdrawHistory() {
+function renderHistory() {
+  const container =
+    document.getElementById("historyList");
 
-  const box =
-    document.getElementById(
-      "withdrawHistoryList"
+  if (!container) return;
+
+  const data = getData();
+
+  const deposits = data.deposits.map(item => ({
+    type: "Deposit",
+    amount: item.amount,
+    status: item.status,
+    id: item.requestId,
+    date: item.createdAt
+  }));
+
+  const withdrawals = data.withdrawals.map(item => ({
+    type: "Withdrawal",
+    amount: item.amount,
+    status: item.status,
+    id: item.requestId,
+    date: item.createdAt
+  }));
+
+  const all = [...deposits, ...withdrawals]
+    .sort(
+      (a, b) =>
+        new Date(b.date) - new Date(a.date)
     );
 
-
-  if (
-    data.withdrawals.length ===
-    0
-  ) {
-
-    box.innerHTML = `
-
-      <div class="card">
-
-        No withdrawal history found.
-
+  if (!all.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        No transaction history
       </div>
-
     `;
-
     return;
-
   }
 
-
-  box.innerHTML =
-    data.withdrawals
-      .map(
-        item => `
-
-      <div class="history-item">
-
-        <div>
-
-          <b>
-            Withdrawal
-          </b>
-
-          <p>
-            ${item.date}
-          </p>
-
-          <small>
-            Status:
-            ${item.status}
-          </small>
-
-        </div>
-
-
-        <div class="amount-red">
-
-          -₹${item.amount}
-
-        </div>
-
-      </div>
-
-    `
-      )
-      .join("");
-
-}
-
-
-/* -----------------------------
-   DEPOSIT HISTORY
------------------------------ */
-
-function renderDepositHistory() {
-
-  const box =
-    document.getElementById(
-      "depositHistoryList"
-    );
-
-
-  if (
-    data.deposits.length ===
-    0
-  ) {
-
-    box.innerHTML = `
-
-      <div class="card">
-
-        No deposit history found.
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    data.deposits
-      .map(
-        item => `
-
-      <div class="history-item">
-
-        <div>
-
-          <b>
-            Deposit
-          </b>
-
-          <p>
-            ${item.date}
-          </p>
-
-          <small>
-
-            UTR:
-            ${item.utr}
-
-            <br>
-
-            Status:
-            ${item.status ||
-              "Pending Verification"}
-
-          </small>
-
-        </div>
-
-
-        <div class="amount-green">
-
-          +₹${item.amount}
-
-        </div>
-
-      </div>
-
-    `
-      )
-      .join("");
-
-}
-
-
-/* -----------------------------
-   TRANSACTION HISTORY
------------------------------ */
-
-function renderTransactions() {
-
-  const box =
-    document.getElementById(
-      "transactionList"
-    );
-
-
-  if (
-    data.transactions.length ===
-    0
-  ) {
-
-    box.innerHTML = `
-
-      <div class="card">
-
-        No transactions found.
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    data.transactions
-      .map(
-        item => {
-
-          const positive =
-            item.type ===
-              "Deposit" ||
-            item.type ===
-              "Bonus";
-
-
-          return `
-
-        <div class="history-item">
+  container.innerHTML = all
+    .map(item => {
+      return `
+        <div class="history-card">
 
           <div>
+            <strong>${escapeHTML(item.type)}</strong>
 
-            <b>
-              ${item.type}
-            </b>
+            <small>
+              ${escapeHTML(item.id)}
+            </small>
 
-            <p>
-              ${item.date}
-            </p>
-
+            <small>
+              ${formatDate(item.date)}
+            </small>
           </div>
 
+          <div class="history-right">
 
-          <div class="${
-            positive
-              ? "amount-green"
-              : "amount-red"
-          }">
+            <strong>
+              ${money(item.amount)}
+            </strong>
 
-            ${
-              positive
-                ? "+"
-                : "-"
-            }₹${item.amount}
+            <span class="status ${String(item.status).toLowerCase()}">
+              ${escapeHTML(item.status)}
+            </span>
 
           </div>
 
         </div>
-
       `;
-
-        }
-      )
-      .join("");
-
+    })
+    .join("");
 }
 
 
-/* -----------------------------
-   CUSTOMER SERVICE
------------------------------ */
+/* =========================================================
+   TRANSACTIONS
+   ========================================================= */
 
-function customerService() {
+function renderTransactions() {
+  const container =
+    document.getElementById("transactionsList");
 
-  window.open(
-    "https://t.me/Hammerff7gcz",
-    "_blank"
-  );
+  if (!container) return;
 
-}
+  const data = getData();
 
-
-/* -----------------------------
-   INVITE
------------------------------ */
-
-function inviteNow() {
-
-  const link =
-    "https://24win.live";
-
-
-  const text =
-    `Join this app: ${link}`;
-
-
-  const whatsapp =
-    "https://wa.me/?text=" +
-    encodeURIComponent(
-      text
-    );
-
-
-  window.open(
-    whatsapp,
-    "_blank"
-  );
-
-}
-
-
-/* -----------------------------
-   DOWNLOAD APK
------------------------------ */
-
-function downloadApp() {
-
-  alert(
-
-    "APK download link abhi configured nahi hai.\n\n" +
-
-    "Jab aap APK file upload karoge, " +
-
-    "script.js me APK URL set kar dena."
-
-  );
-
-}
-
-
-/* -----------------------------
-   MODAL
------------------------------ */
-
-function showModal(
-  title,
-  content
-) {
-
-  document.getElementById(
-    "modalTitle"
-  ).textContent =
-    title;
-
-
-  document.getElementById(
-    "modalContent"
-  ).innerHTML =
-    content;
-
-
-  document.getElementById(
-    "modal"
-  ).classList.add(
-    "show"
-  );
-
-}
-
-
-function closeModal() {
-
-  document.getElementById(
-    "modal"
-  ).classList.remove(
-    "show"
-  );
-
-}
-
-
-/* -----------------------------
-   UPDATE EVERYTHING
------------------------------ */
-
-function updateUI() {
-
-  updateBalance();
-
-  loadProducts();
-
-  renderRewards();
-
-  renderCalendar();
-
-  renderWithdrawHistory();
-
-  renderDepositHistory();
-
-  renderTransactions();
-
-}
-
-
-/* -----------------------------
-   INITIAL LOAD
------------------------------ */
-
-document.addEventListener(
-
-  "DOMContentLoaded",
-
-  function() {
-
-    updateUI();
-
+  if (!data.transactions.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        No transactions yet
+      </div>
+    `;
+    return;
   }
 
-);
+  container.innerHTML = data.transactions
+    .map(tx => {
+      const isDeposit =
+        tx.type === "DEPOSIT";
+
+      return `
+        <div class="transaction-card">
+
+          <div class="transaction-icon">
+            ${isDeposit ? "↓" : "↑"}
+          </div>
+
+          <div class="transaction-details">
+
+            <strong>
+              ${isDeposit ? "Deposit" : "Withdrawal"}
+            </strong>
+
+            <small>
+              ${formatDate(tx.createdAt)}
+            </small>
+
+            <small>
+              ${escapeHTML(tx.requestId)}
+            </small>
+
+          </div>
+
+          <div class="transaction-amount">
+
+            <strong>
+              ${isDeposit ? "+" : "-"}${money(tx.amount)}
+            </strong>
+
+            <span class="status ${String(tx.status).toLowerCase()}">
+              ${escapeHTML(tx.status)}
+            </span>
+
+          </div>
+
+        </div>
+      `;
+    })
+    .join("");
+}
+
+
+/* =========================================================
+   MY INFO
+   ========================================================= */
+
+function renderMyInfo() {
+  const data = getData();
+
+  const userId =
+    document.getElementById("myUserId");
+
+  const balance =
+    document.getElementById("myBalance");
+
+  if (userId) {
+    userId.textContent = data.userKey;
+  }
+
+  if (balance) {
+    balance.textContent = money(data.balance);
+  }
+
+  const bank = data.bank || {};
+
+  const bankHolder =
+    document.getElementById("savedBankHolder");
+
+  const bankAccount =
+    document.getElementById("savedBankAccount");
+
+  const bankName =
+    document.getElementById("savedBankName");
+
+  const bankIFSC =
+    document.getElementById("savedBankIFSC");
+
+  if (bankHolder) {
+    bankHolder.textContent =
+      bank.holderName || "Not saved";
+  }
+
+  if (bankAccount) {
+    bankAccount.textContent =
+      bank.accountNumber
+        ? maskAccount(bank.accountNumber)
+        : "Not saved";
+  }
+
+  if (bankName) {
+    bankName.textContent =
+      bank.bankName || "Not saved";
+  }
+
+  if (bankIFSC) {
+    bankIFSC.textContent =
+      bank.ifsc || "Not saved";
+  }
+}
+
+function maskAccount(account) {
+  if (!account) return "";
+
+  if (account.length <= 4) {
+    return account;
+  }
+
+  return (
+    "****" +
+    account.substring(account.length - 4)
+  );
+}
+
+
+/* =========================================================
+   CUSTOMER SERVICE
+   ========================================================= */
+
+function openCustomerService() {
+  window.open(
+    CUSTOMER_SERVICE,
+    "_blank",
+    "noopener,noreferrer"
+  );
+}
+
+
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
+
+function initializeApp() {
+  getData();
+
+  updateHome();
+  updateDepositPage();
+  updateWithdrawalPage();
+
+  renderProducts();
+  renderCalendar();
+  renderRewards();
+  renderHistory();
+  renderTransactions();
+  renderMyInfo();
+
+  /*
+    Automatically check pending deposits/withdrawals
+    after page reload.
+  */
+
+  const data = getData();
+
+  data.deposits
+    .filter(item => item.status === "PENDING")
+    .forEach(item => {
+      startDepositPolling(item.requestId);
+    });
+
+  data.withdrawals
+    .filter(item => item.status === "PENDING")
+    .forEach(item => {
+      startWithdrawalPolling(item.requestId);
+    });
+}
+
+
+/* =========================================================
+   BUTTON / NAV EVENT HANDLING
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  initializeApp();
+
+  document
+    .querySelectorAll("[data-page]")
+    .forEach(item => {
+      item.addEventListener("click", () => {
+        const page = item.getAttribute("data-page");
+
+        if (page) {
+          showPage(page);
+        }
+      });
+    });
+
+  /*
+    Deposit button
+  */
+
+  const depositButton =
+    document.getElementById("depositSubmitBtn");
+
+  if (depositButton) {
+    depositButton.addEventListener(
+      "click",
+      submitDeposit
+    );
+  }
+
+  /*
+    Withdrawal button
+  */
+
+  const withdrawalButton =
+    document.getElementById("withdrawSubmitBtn");
+
+  if (withdrawalButton) {
+    withdrawalButton.addEventListener(
+      "click",
+      submitWithdrawal
+    );
+  }
+
+  /*
+    Copy UPI button
+  */
+
+  const copyButton =
+    document.getElementById("copyUpiBtn");
+
+  if (copyButton) {
+    copyButton.addEventListener(
+      "click",
+      copyUPI
+    );
+  }
+
+  /*
+    Customer service
+  */
+
+  document
+    .querySelectorAll(".customer-service")
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        openCustomerService
+      );
+    });
+});
+
+
+/* =========================================================
+   GLOBAL FUNCTIONS
+   ========================================================= */
+
+window.showPage = showPage;
+window.copyUPI = copyUPI;
+window.submitDeposit = submitDeposit;
+window.submitWithdrawal = submitWithdrawal;
+window.markAttendance = markAttendance;
+window.buyProduct = buyProduct;
+window.openCustomerService = openCustomerService;
+window.renderCalendar = renderCalendar;
+window.renderRewards = renderRewards;
+window.renderHistory = renderHistory;
+window.renderTransactions = renderTransactions;
+window.renderMyInfo = renderMyInfo;
