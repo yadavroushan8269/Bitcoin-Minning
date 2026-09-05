@@ -143,28 +143,25 @@ function copyUPI() {
 
 const products = [
   {
-    name: "Starter Plan",
-    amount: 500,
-    daily: 15,
-    days: 30
+    name: "Free Plan Plan",
+    daily: 5,
+    duration: 14,
   },
   {
-    name: "Growth Plan",
-    amount: 1000,
-    daily: 35,
-    days: 30
+    name: "Basic Plan",
+    amount: 6000,
+    daily: 60,
+    
   },
   {
     name: "Premium Plan",
-    amount: 5000,
-    daily: 200,
-    days: 30
+    amount: 20000,
+    daily: 250,
   },
   {
     name: "Elite Plan",
-    amount: 10000,
-    daily: 450,
-    days: 30
+    amount: 50000,
+    daily: 500,
   }
 ];
 
