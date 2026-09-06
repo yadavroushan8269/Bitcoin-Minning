@@ -1,195 +1,476 @@
-const funds = [
-  {
-    name:"Bitcoin",
-    type:"Equity · Growth",
-    invested:"₹3,240",
-    value:"₹7,6434",
-  },
-  {
-    name:"Nifty Fifty index",
-    type:"Indian Stock",
-    invested:"₹1750",
-    value:"₹2239",
-  },
-  
-  }
-];
+let balance = Number(localStorage.getItem("nsgCoins"));
 
-let balanceVisible = true;
+if (isNaN(balance)) {
+  balance = 50;
+  localStorage.setItem("nsgCoins", balance);
+}
 
-function fundHTML(fund){
+let playerId = localStorage.getItem("nsgPlayerId");
 
-  return `
-    <div class="fund-card">
+if (!playerId) {
+  playerId =
+    "NSG" +
+    Math.floor(100000 + Math.random() * 900000);
 
-      <div class="fund-head">
+  localStorage.setItem("nsgPlayerId", playerId);
+}
 
-        <div>
-          <div class="fund-name">${fund.name}</div>
-          <div class="fund-type">${fund.type}</div>
-        </div>
+let bets = [10,10];
+let activeBets = [null,null];
 
-        <div class="fund-return">
-          ${fund.return}
-        </div>
+let multiplier = 1;
+let crashPoint = 0;
+let running = false;
+let roundNumber = 1;
+let timer = null;
 
-      </div>
+const balanceEl =
+  document.getElementById("balance");
 
-      <div class="mini-chart">
-        <svg viewBox="0 0 300 40"
-             preserveAspectRatio="none">
+const multiplierEl =
+  document.getElementById("multiplier");
 
-          <polyline
-            points="0,34 25,29 50,31 75,22
-                    100,25 125,15 150,20
-                    175,12 200,16 225,8
-                    250,13 275,5 300,9"
-            fill="none"
-            stroke="#8bcf57"
-            stroke-width="2"/>
+const statusEl =
+  document.getElementById("status");
 
-        </svg>
-      </div>
+const playerIdEl =
+  document.getElementById("playerId");
 
-      <div class="fund-values">
+playerIdEl.textContent = playerId;
 
-        <div>
-          <small>Amount invested</small>
-          <strong>${fund.invested}</strong>
-        </div>
+function updateBalance(){
 
-        <div>
-          <small>Current value</small>
-          <strong>${fund.value}</strong>
-        </div>
+  balanceEl.textContent =
+    balance.toFixed(2);
 
-      </div>
-
-    </div>
-  `;
+  localStorage.setItem(
+    "nsgCoins",
+    balance
+  );
 }
 
 
-function loadFunds(){
+function randomCrash(){
 
-  const home =
-    document.getElementById("homeFunds");
+  // Free-play random crash point
+  const value =
+    1.05 +
+    Math.random() * 7;
+
+  return Number(value.toFixed(2));
+}
+
+
+function startRound(){
+
+  running = true;
+
+  multiplier = 1;
+  crashPoint = randomCrash();
+
+  roundNumber++;
+
+  document.getElementById("round")
+    .textContent =
+    "Round #" +
+    String(roundNumber).padStart(3,"0");
+
+  statusEl.textContent =
+    "FLYING";
+
+  document.querySelectorAll(".bet-button")
+    .forEach(btn=>{
+      btn.textContent = "BET";
+      btn.classList.remove("cashed");
+    });
+
+  activeBets = [null,null];
+
+  drawGraph(0);
+
+  clearInterval(timer);
+
+  timer = setInterval(()=>{
+
+    multiplier +=
+      0.01 + multiplier * 0.004;
+
+    multiplier =
+      Number(multiplier.toFixed(2));
+
+    multiplierEl.textContent =
+      multiplier.toFixed(2) + "x";
+
+    drawGraph(multiplier);
+
+    if(multiplier >= crashPoint){
+      crash();
+    }
+
+  },80);
+}
+
+
+function crash(){
+
+  clearInterval(timer);
+
+  running = false;
+
+  multiplierEl.textContent =
+    crashPoint.toFixed(2) + "x";
+
+  statusEl.textContent =
+    "💥 CRASHED";
+
+  activeBets.forEach((bet,i)=>{
+
+    if(!bet) return;
+
+    addHistory(
+      bet.amount,
+      crashPoint,
+      false
+    );
+
+    activeBets[i] = null;
+  });
+
+  setTimeout(startWaiting,2500);
+}
+
+
+function startWaiting(){
+
+  multiplierEl.textContent = "1.00x";
+
+  statusEl.textContent =
+    "WAITING FOR NEXT ROUND";
+
+  drawGraph(0);
+
+  setTimeout(startRound,2500);
+}
+
+
+function placeBet(index){
+
+  if(running){
+
+    if(activeBets[index]){
+      cashOut(index);
+      return;
+    }
+
+    alert(
+      "Betting is closed after the round starts."
+    );
+
+    return;
+  }
+
+  const amount =
+    Number(bets[index]);
+
+  if(amount <= 0){
+    return;
+  }
+
+  if(amount > balance){
+
+    alert(
+      "Not enough virtual coins."
+    );
+
+    return;
+  }
+
+  balance -= amount;
+
+  updateBalance();
+
+  activeBets[index] = {
+    amount:amount
+  };
+
+  const btn =
+    document.getElementById(
+      "betBtn"+index
+    );
+
+  btn.textContent = "CANCEL";
+  btn.classList.add("cashed");
+
+  setTimeout(()=>{
+
+    if(!running &&
+       activeBets[index]){
+
+      balance += amount;
+
+      updateBalance();
+
+      activeBets[index] = null;
+
+      btn.textContent = "BET";
+      btn.classList.remove("cashed");
+    }
+
+  },2000);
+}
+
+
+function cashOut(index){
+
+  const bet =
+    activeBets[index];
+
+  if(!bet || !running){
+    return;
+  }
+
+  const win =
+    bet.amount * multiplier;
+
+  balance += win;
+
+  updateBalance();
+
+  addHistory(
+    bet.amount,
+    multiplier,
+    true
+  );
+
+  activeBets[index] = null;
+
+  const btn =
+    document.getElementById(
+      "betBtn"+index
+    );
+
+  btn.textContent = "CASHED";
+  btn.classList.remove("cashed");
+}
+
+
+function changeBet(index,value){
+
+  bets[index] =
+    Math.max(
+      1,
+      Math.min(
+        1000,
+        bets[index] + value
+      )
+    );
+
+  document.getElementById(
+    "bet"+index
+  ).textContent =
+    bets[index];
+}
+
+
+function setBet(index,value){
+
+  bets[index] = value;
+
+  document.getElementById(
+    "bet"+index
+  ).textContent =
+    value;
+}
+
+
+function drawGraph(value){
+
+  const svg =
+    document.querySelector(".chart svg");
+
+  const line =
+    document.getElementById("linePath");
+
+  const area =
+    document.getElementById("areaPath");
+
+  const plane =
+    document.getElementById("plane");
+
+  const width =
+    svg.clientWidth || 600;
+
+  const height =
+    svg.clientHeight || 330;
+
+  let progress =
+    Math.min(
+      value / 8,
+      1
+    );
+
+  let x =
+    35 + progress * (width - 80);
+
+  let y =
+    height -
+    35 -
+    progress * (height - 90);
+
+  let startY =
+    height - 35;
+
+  let d =
+    `M0 ${startY}
+     Q ${x*.45} ${startY}
+       ${x} ${y}`;
+
+  line.setAttribute("d",d);
+
+  area.setAttribute(
+    "d",
+    `M0 ${startY}
+     Q ${x*.45} ${startY}
+       ${x} ${y}
+     L${x} ${startY}
+     Z`
+  );
+
+  plane.setAttribute(
+    "x",
+    Math.max(10,x-18)
+  );
+
+  plane.setAttribute(
+    "y",
+    Math.max(35,y+10)
+  );
+}
+
+
+function addHistory(
+  amount,
+  mult,
+  win
+){
 
   const list =
-    document.getElementById("fundList");
+    document.getElementById(
+      "historyList"
+    );
 
-  const explore =
-    document.getElementById("exploreList");
+  const row =
+    document.createElement("div");
 
-  home.innerHTML =
-    funds.slice(0,2)
-    .map(fundHTML)
-    .join("");
+  row.className =
+    "history-row";
 
-  list.innerHTML =
-    funds.map(fundHTML).join("");
+  const result =
+    win
+      ? "+" + (amount * mult).toFixed(2)
+      : "Lost";
 
-  explore.innerHTML =
-    funds.map(fundHTML).join("");
-}
+  row.innerHTML = `
+    <span>${playerId}</span>
+    <span>${amount.toFixed(2)}</span>
+    <span>${mult.toFixed(2)}x</span>
+    <span class="${win?"win":"loss"}">
+      ${result}
+    </span>
+  `;
 
+  list.prepend(row);
 
-function openPage(page, button){
-
-  document.querySelectorAll(".page")
-    .forEach(p => p.classList.remove("active"));
-
-  const target =
-    document.getElementById(page);
-
-  if(target){
-    target.classList.add("active");
-  }
-
-  document.querySelectorAll(".nav")
-    .forEach(n => n.classList.remove("active"));
-
-  if(button){
-    button.classList.add("active");
-  }
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-}
-
-
-function toggleBalance(){
-
-  const balance =
-    document.getElementById("balance");
-
-  balanceVisible = !balanceVisible;
-
-  balance.textContent =
-    balanceVisible
-      ? "₹20,000"
-      : "••••••";
-}
-
-
-function logout(){
-
-  if(confirm("Logout from this account?")){
-
-    localStorage.removeItem("nsgUser");
-
-    alert("Logged out successfully.");
-
-    location.reload();
+  while(list.children.length > 20){
+    list.removeChild(
+      list.lastChild
+    );
   }
 }
 
 
-function loadUser(){
+function openMenu(){
 
-  let user = null;
+  document
+    .getElementById("sideMenu")
+    .classList.add("show");
 
-  try{
-    user =
-      JSON.parse(
-        localStorage.getItem("nsgUser")
-      );
-  }catch(e){}
-
-  if(!user){
-    user = {
-      name:"ROUSHAN YADAV",
-      userId:"Mutualfund401128",
-      mobile:"9153576962"
-    };
-  }
-
-  document.getElementById("username")
-    .textContent =
-    user.name || "Investor";
-
-  document.getElementById("profileName")
-    .textContent =
-    user.name || "Investor";
-
-  document.getElementById("userId")
-    .textContent =
-    user.userId || "NSG100001";
-
-  document.getElementById("mobile")
-    .textContent =
-    user.mobile || "9153576962";
+  document
+    .getElementById("overlay")
+    .classList.add("show");
 }
 
 
-document.addEventListener(
-  "DOMContentLoaded",
-  function(){
+function closeMenu(){
 
-    loadFunds();
-    loadUser();
+  document
+    .getElementById("sideMenu")
+    .classList.remove("show");
 
-  }
+  document
+    .getElementById("overlay")
+    .classList.remove("show");
+}
+
+
+function showHistory(){
+
+  closeMenu();
+
+  document
+    .querySelector(".history")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+}
+
+
+function showRules(){
+
+  alert(
+`NSG Aviator - Free Play
+
+• This is a virtual-coin game.
+• Starting balance: 50 virtual coins.
+• Multiplier increases during each round.
+• The round ends at a randomly generated crash point.
+• Cash-out before crash gives virtual winnings.
+• No real-money deposits or withdrawals.`
+  );
+}
+
+
+function resetCoins(){
+
+  balance = 50;
+
+  updateBalance();
+
+  alert(
+    "50 virtual coins restored."
+  );
+
+  closeMenu();
+}
+
+
+updateBalance();
+
+for(let i=0;i<4;i++){
+
+  const fake =
+    1.2 + Math.random()*3;
+
+  addHistory(
+    Math.floor(
+      5 + Math.random()*40
+    ),
+    Number(fake.toFixed(2)),
+    Math.random()>.4
+  );
+}
+
+setTimeout(
+  startRound,
+  1500
 );
