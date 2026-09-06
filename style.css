@@ -1,599 +1,835 @@
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+/* =========================================
+   NSG WELLFARE - SCRIPT.JS
+   Demo / Simulation Version
+========================================= */
+
+const products = [
+  { id: 1, name: "Starter Plan", price: 999, daily: 18 },
+  { id: 2, name: "Growth Plan", price: 1999, daily: 36 },
+  { id: 3, name: "Premium Plan", price: 4999, daily: 90 }
+];
+
+let data = JSON.parse(localStorage.getItem("nsgWellfare")) || {
+  balance: 0,
+  attendance: {},
+  purchased: [],
+  rewards: [],
+  deposits: [],
+  withdrawals: [],
+  transactions: []
+};
+
+let calendarDate = new Date();
+
+function saveData() {
+  localStorage.setItem("nsgWellfare", JSON.stringify(data));
 }
 
-:root{
-  --green:#19c37d;
-  --green-dark:#0b9f63;
-  --dark:#07100d;
-  --card:#101a16;
-  --card2:#15221d;
-  --text:#f5f7f6;
-  --muted:#89948f;
-  --red:#ff405c;
-  --yellow:#ffc857;
-}
+/* =========================
+   NAVIGATION
+========================= */
 
-html{
-  scroll-behavior:smooth;
-}
+function openPage(pageId) {
+  document.querySelectorAll(".page").forEach(page => {
+    page.classList.remove("active");
+  });
 
-body{
-  margin:0;
-  background:#050806;
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-}
+  const page = document.getElementById(pageId);
 
-button,
-input{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
-
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:50;
-  height:72px;
-  padding:12px 18px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:#0b1410;
-  border-bottom:1px solid #20332a;
-  backdrop-filter:blur(12px);
-}
-
-.topbar h2{
-  font-size:21px;
-  margin-bottom:3px;
-}
-
-.topbar small{
-  color:var(--muted);
-  font-size:11px;
-}
-
-.balance{
-  padding:10px 15px;
-  border-radius:22px;
-  background:#14261e;
-  color:#8ff0be;
-  font-weight:700;
-  border:1px solid #24523b;
-}
-
-main{
-  width:100%;
-  max-width:650px;
-  margin:auto;
-  padding:15px 15px 90px;
-}
-
-.page{
-  display:none;
-  animation:fade .2s ease;
-}
-
-.page.active{
-  display:block;
-}
-
-@keyframes fade{
-  from{
-    opacity:0;
-    transform:translateY(5px);
+  if (page) {
+    page.classList.add("active");
   }
-  to{
-    opacity:1;
-    transform:translateY(0);
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  updateUI();
+}
+
+/* =========================
+   BALANCE
+========================= */
+
+function updateBalance() {
+  const balance = Number(data.balance || 0).toFixed(2);
+
+  const top = document.getElementById("balance");
+  const home = document.getElementById("homeBalance");
+  const withdraw = document.getElementById("withdrawBalance");
+
+  if (top) top.textContent = balance;
+  if (home) home.textContent = balance;
+  if (withdraw) withdraw.textContent = balance;
+}
+
+/* =========================
+   PRODUCTS
+========================= */
+
+function productHTML(product) {
+  const bought = data.purchased.includes(product.id);
+
+  return `
+    <div class="product">
+
+      <div class="product-head">
+        <div>
+          <h3>${product.name}</h3>
+          <p>Daily reward plan</p>
+        </div>
+
+        <div class="product-price">
+          ₹${product.price}
+        </div>
+      </div>
+
+      <ul>
+        <li>Daily reward: ₹${product.daily}</li>
+        <li>30 day plan</li>
+        <li>Simulation account</li>
+      </ul>
+
+      ${
+        bought
+        ? `
+          <button class="secondary-btn" disabled>
+            ✓ Purchased
+          </button>
+        `
+        : `
+          <button
+            class="primary-btn"
+            onclick="buyProduct(${product.id})"
+          >
+            Select Plan
+          </button>
+        `
+      }
+
+    </div>
+  `;
+}
+
+function loadProducts() {
+  const html = products.map(productHTML).join("");
+
+  const list = document.getElementById("productsList");
+  const home = document.getElementById("homeProducts");
+
+  if (list) list.innerHTML = html;
+  if (home) {
+    home.innerHTML = products
+      .slice(0, 2)
+      .map(productHTML)
+      .join("");
   }
 }
 
-.card{
-  background:linear-gradient(
-    145deg,
-    #122019,
-    #0c1411
+function buyProduct(productId) {
+  const product = products.find(
+    p => p.id === productId
   );
-  border:1px solid #20382c;
-  border-radius:20px;
-  padding:18px;
-  box-shadow:0 12px 35px #0007;
-}
 
-.welcome{
-  margin-bottom:15px;
-}
+  if (!product) return;
 
-.welcome h2{
-  font-size:23px;
-  margin-bottom:5px;
-}
+  if (data.purchased.includes(productId)) {
+    alert("This plan is already selected.");
+    return;
+  }
 
-.welcome p{
-  color:var(--muted);
-  font-size:13px;
-}
+  if (data.balance < product.price) {
+    alert("Insufficient demo balance.");
+    openPage("deposit");
+    return;
+  }
 
-.balance-big{
-  margin-top:22px;
-  font-size:36px;
-  font-weight:800;
-  color:#8ff0be;
-}
+  data.balance -= product.price;
 
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin:15px 0 23px;
-}
+  data.purchased.push(productId);
 
-.menu-card{
-  min-height:125px;
-  padding:15px;
-  text-align:left;
-  color:white;
-  background:#101914;
-  border:1px solid #1f3329;
-  border-radius:17px;
-  transition:.2s;
-}
+  data.transactions.unshift({
+    type: "Plan Purchase",
+    amount: product.price,
+    date: new Date().toLocaleString("en-IN"),
+    color: "red"
+  });
 
-.menu-card:hover{
-  transform:translateY(-2px);
-  border-color:#2f674c;
-}
+  saveData();
+  updateUI();
 
-.menu-card span{
-  display:block;
-  font-size:27px;
-  margin-bottom:13px;
-}
-
-.menu-card b{
-  display:block;
-  font-size:14px;
-  margin-bottom:5px;
-}
-
-.menu-card small{
-  color:var(--muted);
-  font-size:11px;
-}
-
-.section-title{
-  margin:20px 2px 12px;
-  font-size:18px;
-}
-
-.page-title{
-  font-size:25px;
-  margin:8px 0 18px;
-}
-
-.page-head{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin:5px 0 18px;
-}
-
-.page-head h2{
-  font-size:22px;
-}
-
-.page-head button{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  background:#142019;
-  color:white;
-  border:1px solid #294236;
-  font-size:20px;
-}
-
-.product{
-  padding:17px;
-  margin-bottom:12px;
-  border-radius:18px;
-  background:#101914;
-  border:1px solid #20372b;
-}
-
-.product-top{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.product h3{
-  font-size:16px;
-}
-
-.product small{
-  display:block;
-  margin-top:5px;
-  color:var(--muted);
-}
-
-.product-profit{
-  color:#80e9ad;
-  font-weight:bold;
-}
-
-.product-info{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-top:15px;
-}
-
-.product-info div{
-  padding:10px;
-  background:#0a100d;
-  border-radius:10px;
-}
-
-.product-info span{
-  display:block;
-  color:var(--muted);
-  font-size:10px;
-  margin-bottom:5px;
-}
-
-.product-info b{
-  font-size:12px;
-}
-
-.calendar-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:18px;
-}
-
-.calendar-head button{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:#17251e;
-  color:white;
-  border:1px solid #2a4939;
-  font-size:22px;
-}
-
-.calendar-head h3{
-  font-size:16px;
-}
-
-.weekdays,
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:6px;
-}
-
-.weekdays{
-  margin-bottom:7px;
-}
-
-.weekdays span{
-  text-align:center;
-  color:#77837d;
-  font-size:10px;
-}
-
-.calendar div{
-  aspect-ratio:1;
-  display:grid;
-  place-items:center;
-  border-radius:9px;
-  background:#111b16;
-  border:1px solid #1e3027;
-  font-size:12px;
-}
-
-.calendar .empty{
-  background:transparent;
-  border:0;
-}
-
-.calendar .today{
-  border:2px solid var(--green);
-}
-
-.calendar .attended{
-  background:#075e3c;
-  color:#a5ffd0;
-}
-
-.attendance-info{
-  margin-top:18px;
-  padding:13px;
-  border-radius:12px;
-  background:#0a110d;
-  color:var(--muted);
-  text-align:center;
-}
-
-.attendance-info b{
-  color:#82e8ad;
-  margin-left:5px;
-}
-
-.notice{
-  padding:13px;
-  margin-bottom:15px;
-  border-radius:12px;
-  background:#181c13;
-  color:#b8bf9e;
-  font-size:12px;
-  line-height:1.5;
-}
-
-.info-menu{
-  overflow:hidden;
-  border-radius:18px;
-  border:1px solid #20372b;
-  background:#101914;
-}
-
-.info-menu button{
-  width:100%;
-  min-height:70px;
-  padding:12px 15px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-  text-align:left;
-  color:white;
-  background:transparent;
-  border:0;
-  border-bottom:1px solid #203028;
-}
-
-.info-menu button:last-child{
-  border-bottom:0;
-}
-
-.info-menu span{
-  width:40px;
-  height:40px;
-  display:grid;
-  place-items:center;
-  border-radius:12px;
-  background:#17271f;
-  font-size:19px;
-}
-
-.info-menu div{
-  flex:1;
-}
-
-.info-menu b{
-  display:block;
-  font-size:14px;
-  margin-bottom:4px;
-}
-
-.info-menu small{
-  color:var(--muted);
-  font-size:11px;
-}
-
-label{
-  display:block;
-  margin:15px 0 7px;
-  color:#aab5b0;
-  font-size:12px;
-}
-
-input{
-  width:100%;
-  height:48px;
-  padding:0 14px;
-  color:white;
-  background:#080e0b;
-  border:1px solid #294137;
-  border-radius:12px;
-  outline:none;
-}
-
-input:focus{
-  border-color:#36b77a;
-}
-
-.primary-btn{
-  width:100%;
-  height:50px;
-  margin-top:18px;
-  border-radius:13px;
-  background:linear-gradient(
-    135deg,
-    #18c477,
-    #0b9d60
+  alert(
+    product.name +
+    " selected successfully."
   );
-  color:white;
-  font-weight:bold;
 }
 
-.demo-payment{
-  margin:15px 0;
-  padding:15px;
-  border-radius:14px;
-  background:#0a120e;
-  border:1px dashed #315440;
-  line-height:1.8;
-}
+/* =========================
+   ATTENDANCE
+========================= */
 
-.demo-payment p{
-  font-size:13px;
-}
+function renderCalendar() {
+  const calendar =
+    document.getElementById("calendar");
 
-.demo-payment small{
-  color:#79857f;
-  font-size:10px;
-}
+  const title =
+    document.getElementById("monthTitle");
 
-.warning{
-  display:block;
-  margin-top:12px;
-  color:#caa95c;
-  line-height:1.5;
-}
+  if (!calendar) return;
 
-.history-card{
-  margin-bottom:10px;
-  padding:15px;
-  background:#101914;
-  border:1px solid #20372b;
-  border-radius:15px;
-}
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
 
-.history-card{
-  display:flex;
-  justify-content:space-between;
-}
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
 
-.history-card small{
-  display:block;
-  color:var(--muted);
-  margin-top:5px;
-}
-
-.history-card .amount{
-  color:#82e8ad;
-  font-weight:bold;
-}
-
-.transaction{
-  margin-bottom:9px;
-  padding:15px;
-  border-radius:15px;
-  background:#101914;
-  border:1px solid #20372b;
-}
-
-.transaction strong{
-  display:block;
-}
-
-.transaction small{
-  display:block;
-  color:var(--muted);
-  margin-top:5px;
-}
-
-.modal{
-  position:fixed;
-  z-index:100;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:#000b;
-}
-
-.modal.show{
-  display:flex;
-}
-
-.modal-box{
-  width:min(430px,100%);
-  position:relative;
-  padding:22px;
-  border-radius:20px;
-  background:#101914;
-  border:1px solid #294438;
-}
-
-.close{
-  position:absolute;
-  right:12px;
-  top:12px;
-  width:32px;
-  height:32px;
-  border-radius:50%;
-  background:#1c2923;
-  color:white;
-  font-size:20px;
-}
-
-.modal-box h3{
-  margin-bottom:15px;
-}
-
-.bottom-nav{
-  position:fixed;
-  z-index:80;
-  left:50%;
-  bottom:0;
-  transform:translateX(-50%);
-  width:min(650px,100%);
-  height:68px;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  background:#0b1410ee;
-  border-top:1px solid #294136;
-  backdrop-filter:blur(15px);
-}
-
-.bottom-nav button{
-  background:transparent;
-  color:#78857f;
-  font-size:11px;
-}
-
-.bottom-nav button span{
-  display:block;
-  margin-bottom:4px;
-  font-size:21px;
-}
-
-.bottom-nav button:hover{
-  color:#80e9ad;
-}
-
-@media(max-width:430px){
-
-  main{
-    padding-left:11px;
-    padding-right:11px;
+  if (title) {
+    title.textContent =
+      `${months[month]} ${year}`;
   }
 
-  .topbar{
-    padding-left:13px;
-    padding-right:13px;
+  const firstDay =
+    new Date(year, month, 1).getDay();
+
+  const totalDays =
+    new Date(year, month + 1, 0).getDate();
+
+  calendar.innerHTML = "";
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty =
+      document.createElement("div");
+
+    empty.className = "day empty";
+
+    calendar.appendChild(empty);
   }
 
-  .balance{
-    font-size:12px;
-    padding:9px 12px;
+  const today = new Date();
+
+  for (let day = 1; day <= totalDays; day++) {
+
+    const box =
+      document.createElement("div");
+
+    box.className = "day";
+    box.textContent = day;
+
+    const key =
+      `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+    if (data.attendance[key]) {
+      box.classList.add("attended");
+    }
+
+    if (
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    ) {
+      box.classList.add("today");
+    }
+
+    box.onclick = () => {
+      toggleAttendance(key);
+    };
+
+    calendar.appendChild(box);
   }
 
-  .balance-big{
-    font-size:31px;
+  updateAttendanceTotal();
+}
+
+function toggleAttendance(key) {
+
+  const today =
+    new Date();
+
+  const todayKey =
+    `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  if (key !== todayKey) {
+    alert("You can mark attendance only for today.");
+    return;
   }
 
-  .menu-card{
-    min-height:115px;
-    padding:13px;
+  if (data.attendance[key]) {
+    alert("Today's attendance is already marked.");
+    return;
   }
 
-  .menu-card span{
-    font-size:24px;
-  }
+  data.attendance[key] = true;
 
-  .product-info{
-    grid-template-columns:1fr 1fr;
+  saveData();
+  renderCalendar();
+
+  alert("Attendance marked successfully.");
+}
+
+function changeMonth(amount) {
+  calendarDate.setMonth(
+    calendarDate.getMonth() + amount
+  );
+
+  renderCalendar();
+}
+
+function updateAttendanceTotal() {
+  const total =
+    Object.keys(data.attendance).length;
+
+  const element =
+    document.getElementById("attendanceTotal");
+
+  if (element) {
+    element.textContent = total;
   }
 }
+
+/* =========================
+   REWARDS
+========================= */
+
+function renderRewards() {
+
+  const container =
+    document.getElementById("rewardsList");
+
+  if (!container) return;
+
+  if (data.purchased.length === 0) {
+
+    container.innerHTML = `
+      <div class="reward-item">
+        <b>No selected plans</b>
+        <p>Select a plan to see available rewards.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML =
+    data.purchased.map(productId => {
+
+      const product =
+        products.find(
+          p => p.id === productId
+        );
+
+      if (!product) return "";
+
+      const today =
+        new Date().toISOString().slice(0, 10);
+
+      const claimed =
+        data.rewards.some(
+          reward =>
+            reward.productId === productId &&
+            reward.date === today
+        );
+
+      return `
+        <div class="reward-item">
+
+          <b>${product.name}</b>
+
+          <p>
+            Daily Reward:
+            ₹${product.daily}
+          </p>
+
+          <br>
+
+          ${
+            claimed
+            ? `
+              <button
+                class="secondary-btn"
+                disabled
+              >
+                ✓ Claimed Today
+              </button>
+            `
+            : `
+              <button
+                class="primary-btn"
+                onclick="claimReward(${product.id})"
+              >
+                Claim Reward
+              </button>
+            `
+          }
+
+        </div>
+      `;
+
+    }).join("");
+}
+
+function claimReward(productId) {
+
+  const product =
+    products.find(
+      p => p.id === productId
+    );
+
+  if (!product) return;
+
+  if (!data.purchased.includes(productId)) {
+    alert("Plan not selected.");
+    return;
+  }
+
+  const today =
+    new Date().toISOString().slice(0, 10);
+
+  const already =
+    data.rewards.some(
+      r =>
+        r.productId === productId &&
+        r.date === today
+    );
+
+  if (already) {
+    alert("Reward already claimed today.");
+    return;
+  }
+
+  data.balance += product.daily;
+
+  data.rewards.push({
+    productId,
+    amount: product.daily,
+    date: today
+  });
+
+  data.transactions.unshift({
+    type: "Daily Reward",
+    amount: product.daily,
+    date: new Date().toLocaleString("en-IN"),
+    color: "green"
+  });
+
+  saveData();
+  updateUI();
+
+  alert(
+    `₹${product.daily} reward added.`
+  );
+}
+
+/* =========================
+   DEPOSIT
+========================= */
+
+function showDeposit() {
+  openPage("deposit");
+}
+
+function submitDeposit() {
+
+  const amountElement =
+    document.getElementById("depositAmount");
+
+  const utrElement =
+    document.getElementById("utr");
+
+  if (!amountElement || !utrElement) return;
+
+  const amount =
+    Number(amountElement.value);
+
+  const utr =
+    utrElement.value.trim();
+
+  if (!amount || amount < 500) {
+    alert("Minimum amount is ₹500.");
+    return;
+  }
+
+  if (amount > 20000) {
+    alert("Maximum amount is ₹20,000.");
+    return;
+  }
+
+  if (!utr) {
+    alert("Please enter UTR.");
+    return;
+  }
+
+  /*
+    Demo only:
+    This does not process real payments.
+  */
+
+  data.balance += amount;
+
+  data.deposits.unshift({
+    amount,
+    utr,
+    status: "Demo Approved",
+    date: new Date().toLocaleString("en-IN")
+  });
+
+  data.transactions.unshift({
+    type: "Deposit",
+    amount,
+    date: new Date().toLocaleString("en-IN"),
+    color: "green"
+  });
+
+  amountElement.value = "";
+  utrElement.value = "";
+
+  saveData();
+  updateUI();
+
+  alert(
+    `₹${amount} demo balance added successfully.`
+  );
+
+  openPage("depositHistory");
+}
+
+/* =========================
+   WITHDRAWAL
+========================= */
+
+function showWithdrawal() {
+  openPage("withdraw");
+}
+
+function submitWithdrawal() {
+
+  const amount =
+    Number(
+      document.getElementById("withdrawAmount").value
+    );
+
+  const name =
+    document.getElementById("bankName").value.trim();
+
+  const account =
+    document.getElementById("accountNumber").value.trim();
+
+  const confirmAccount =
+    document.getElementById("confirmAccount").value.trim();
+
+  const bank =
+    document.getElementById("bank").value.trim();
+
+  const ifsc =
+    document.getElementById("ifsc").value.trim();
+
+  if (!amount || amount < 300) {
+    alert("Minimum withdrawal is ₹300.");
+    return;
+  }
+
+  if (amount > 10000) {
+    alert("Maximum withdrawal is ₹10,000.");
+    return;
+  }
+
+  if (amount > data.balance) {
+    alert("Insufficient balance.");
+    return;
+  }
+
+  if (
+    !name ||
+    !account ||
+    !confirmAccount ||
+    !bank ||
+    !ifsc
+  ) {
+    alert("Please fill all bank details.");
+    return;
+  }
+
+  if (account !== confirmAccount) {
+    alert("Account numbers do not match.");
+    return;
+  }
+
+  data.balance -= amount;
+
+  data.withdrawals.unshift({
+    amount,
+    name,
+    account,
+    bank,
+    ifsc,
+    status: "Demo Pending",
+    date: new Date().toLocaleString("en-IN")
+  });
+
+  data.transactions.unshift({
+    type: "Withdrawal",
+    amount,
+    date: new Date().toLocaleString("en-IN"),
+    color: "red"
+  });
+
+  document.getElementById("withdrawAmount").value = "";
+  document.getElementById("bankName").value = "";
+  document.getElementById("accountNumber").value = "";
+  document.getElementById("confirmAccount").value = "";
+  document.getElementById("bank").value = "";
+  document.getElementById("ifsc").value = "";
+
+  saveData();
+  updateUI();
+
+  alert(
+    "Withdrawal request created successfully."
+  );
+
+  openPage("withdrawHistory");
+}
+
+/* =========================
+   HISTORY
+========================= */
+
+function renderWithdrawHistory() {
+
+  const box =
+    document.getElementById(
+      "withdrawHistoryList"
+    );
+
+  if (!box) return;
+
+  if (!data.withdrawals.length) {
+    box.innerHTML = `
+      <div class="card">
+        No withdrawal history found.
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML =
+    data.withdrawals.map(item => `
+      <div class="history-item">
+
+        <div>
+          <b>Withdrawal</b>
+          <p>${item.date}</p>
+          <small>Status: ${item.status}</small>
+        </div>
+
+        <div class="amount-red">
+          -₹${item.amount}
+        </div>
+
+      </div>
+    `).join("");
+}
+
+function renderDepositHistory() {
+
+  const box =
+    document.getElementById(
+      "depositHistoryList"
+    );
+
+  if (!box) return;
+
+  if (!data.deposits.length) {
+    box.innerHTML = `
+      <div class="card">
+        No deposit history found.
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML =
+    data.deposits.map(item => `
+      <div class="history-item">
+
+        <div>
+          <b>Deposit</b>
+          <p>${item.date}</p>
+          <small>
+            UTR: ${item.utr}
+          </small>
+          <small>
+            Status: ${item.status}
+          </small>
+        </div>
+
+        <div class="amount-green">
+          +₹${item.amount}
+        </div>
+
+      </div>
+    `).join("");
+}
+
+function renderTransactions() {
+
+  const box =
+    document.getElementById(
+      "transactionList"
+    );
+
+  if (!box) return;
+
+  if (!data.transactions.length) {
+    box.innerHTML = `
+      <div class="card">
+        No transactions found.
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML =
+    data.transactions.map(item => {
+
+      const positive =
+        item.type === "Deposit" ||
+        item.type === "Bonus" ||
+        item.type === "Daily Reward";
+
+      return `
+        <div class="history-item">
+
+          <div>
+            <b>${item.type}</b>
+            <p>${item.date}</p>
+          </div>
+
+          <div class="${
+            positive
+              ? "amount-green"
+              : "amount-red"
+          }">
+            ${positive ? "+" : "-"}₹${item.amount}
+          </div>
+
+        </div>
+      `;
+
+    }).join("");
+}
+
+/* =========================
+   OTHER BUTTONS
+========================= */
+
+function customerService() {
+  window.open(
+    "https://t.me/Hammerff7gcz",
+    "_blank"
+  );
+}
+
+function inviteNow() {
+
+  const text =
+    "Join NSG Wellfare";
+
+  if (navigator.share) {
+
+    navigator.share({
+      title: "NSG Wellfare",
+      text
+    }).catch(() => {});
+
+  } else {
+
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert("Invite text copied.");
+      });
+
+  }
+}
+
+function downloadApp() {
+  alert(
+    "APK download link is not configured yet."
+  );
+}
+
+/* =========================
+   MODAL
+========================= */
+
+function showModal(title, content) {
+
+  const titleBox =
+    document.getElementById("modalTitle");
+
+  const contentBox =
+    document.getElementById("modalContent");
+
+  const modal =
+    document.getElementById("modal");
+
+  if (titleBox) {
+    titleBox.textContent = title;
+  }
+
+  if (contentBox) {
+    contentBox.innerHTML = content;
+  }
+
+  if (modal) {
+    modal.classList.add("show");
+  }
+}
+
+function closeModal() {
+
+  const modal =
+    document.getElementById("modal");
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
+}
+
+/* =========================
+   UPDATE UI
+========================= */
+
+function updateUI() {
+  updateBalance();
+  loadProducts();
+  renderRewards();
+  renderCalendar();
+  renderWithdrawHistory();
+  renderDepositHistory();
+  renderTransactions();
+}
+
+/* =========================
+   START
+========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    updateUI();
+  }
+);
