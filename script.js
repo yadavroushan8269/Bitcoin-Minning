@@ -1,695 +1,835 @@
-/* ================================
-   Investment Demo - script.js
-   ================================ */
-
-const state = {
-  balance: Number(localStorage.getItem("balance") || 0),
-  attendance: JSON.parse(localStorage.getItem("attendance") || "[]"),
-  purchased: JSON.parse(localStorage.getItem("purchased") || "[]"),
-  rewards: JSON.parse(localStorage.getItem("rewards") || "[]"),
-  deposits: JSON.parse(localStorage.getItem("deposits") || "[]"),
-  withdrawals: JSON.parse(localStorage.getItem("withdrawals") || "[]"),
-  transactions: JSON.parse(localStorage.getItem("transactions") || "[]"),
-  month: new Date()
-};
+/* =========================================
+   NSG WELLFARE - SCRIPT.JS
+   Demo / Simulation Version
+========================================= */
 
 const products = [
-  {
-    id: 1,
-    name: "Starter Plan",
-    price: 500,
-    daily: 25,
-    days: 30,
-    total: 750
-  },
-  {
-    id: 2,
-    name: "Growth Plan",
-    price: 1000,
-    daily: 60,
-    days: 30,
-    total: 1800
-  },
-  {
-    id: 3,
-    name: "Premium Plan",
-    price: 5000,
-    daily: 350,
-    days: 30,
-    total: 10500
-  }
+  { id: 1, name: "Starter Plan", price: 999, daily: 18 },
+  { id: 2, name: "Growth Plan", price: 1999, daily: 36 },
+  { id: 3, name: "Premium Plan", price: 4999, daily: 90 }
 ];
 
-/* ---------- Storage ---------- */
+let data = JSON.parse(localStorage.getItem("nsgWellfare")) || {
+  balance: 0,
+  attendance: {},
+  purchased: [],
+  rewards: [],
+  deposits: [],
+  withdrawals: [],
+  transactions: []
+};
 
-function saveState() {
-  localStorage.setItem("balance", state.balance);
-  localStorage.setItem("attendance", JSON.stringify(state.attendance));
-  localStorage.setItem("purchased", JSON.stringify(state.purchased));
-  localStorage.setItem("rewards", JSON.stringify(state.rewards));
-  localStorage.setItem("deposits", JSON.stringify(state.deposits));
-  localStorage.setItem("withdrawals", JSON.stringify(state.withdrawals));
-  localStorage.setItem("transactions", JSON.stringify(state.transactions));
+let calendarDate = new Date();
+
+function saveData() {
+  localStorage.setItem("nsgWellfare", JSON.stringify(data));
 }
 
-/* ---------- Helpers ---------- */
+/* =========================
+   NAVIGATION
+========================= */
 
-function money(value) {
-  return "₹" + Number(value || 0).toLocaleString("en-IN");
-}
-
-function createId(prefix = "TXN") {
-  return (
-    prefix +
-    Date.now() +
-    Math.floor(Math.random() * 1000)
-  );
-}
-
-function addTransaction(type, amount, status = "Success") {
-  state.transactions.unshift({
-    id: createId("TXN"),
-    type,
-    amount: Number(amount),
-    status,
-    date: new Date().toLocaleString("en-IN")
-  });
-}
-
-/* ---------- UI ---------- */
-
-function updateUI() {
-  const balanceElements = [
-    document.getElementById("balance"),
-    document.getElementById("homeBalance"),
-    document.getElementById("withdrawBalance")
-  ];
-
-  balanceElements.forEach(el => {
-    if (el) el.textContent = money(state.balance);
+function openPage(pageId) {
+  document.querySelectorAll(".page").forEach(page => {
+    page.classList.remove("active");
   });
 
-  renderProducts();
-  renderAttendance();
-  renderRewards();
-  renderDepositHistory();
-  renderWithdrawHistory();
-  renderTransactions();
-}
+  const page = document.getElementById(pageId);
 
-/* ---------- Page Navigation ---------- */
-
-function openPage(page) {
-  document.querySelectorAll(".page").forEach(el => {
-    el.classList.remove("active");
-  });
-
-  const target = document.getElementById(page);
-
-  if (target) {
-    target.classList.add("active");
+  if (page) {
+    page.classList.add("active");
   }
 
-  document.querySelectorAll(".nav-item").forEach(el => {
-    el.classList.remove("active");
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
   });
 
-  const nav = document.querySelector(
-    `.nav-item[data-page="${page}"]`
-  );
-
-  if (nav) {
-    nav.classList.add("active");
-  }
-
-  if (page === "home") {
-    updateUI();
-  }
+  updateUI();
 }
 
-/* ---------- Products ---------- */
+/* =========================
+   BALANCE
+========================= */
 
-function renderProducts() {
-  const box = document.getElementById("productsList");
-  const homeBox = document.getElementById("homeProducts");
+function updateBalance() {
+  const balance = Number(data.balance || 0).toFixed(2);
 
-  if (!box && !homeBox) return;
+  const top = document.getElementById("balance");
+  const home = document.getElementById("homeBalance");
+  const withdraw = document.getElementById("withdrawBalance");
 
-  const html = products.map(product => `
-    <div class="product-card">
-      <div class="product-header">
+  if (top) top.textContent = balance;
+  if (home) home.textContent = balance;
+  if (withdraw) withdraw.textContent = balance;
+}
+
+/* =========================
+   PRODUCTS
+========================= */
+
+function productHTML(product) {
+  const bought = data.purchased.includes(product.id);
+
+  return `
+    <div class="product">
+
+      <div class="product-head">
         <div>
           <h3>${product.name}</h3>
-          <small>30 Days Plan</small>
-        </div>
-        <span class="product-badge">ACTIVE</span>
-      </div>
-
-      <div class="product-info">
-        <div>
-          <span>Price</span>
-          <strong>${money(product.price)}</strong>
+          <p>Daily reward plan</p>
         </div>
 
-        <div>
-          <span>Daily Income</span>
-          <strong>${money(product.daily)}</strong>
-        </div>
-
-        <div>
-          <span>Total Return</span>
-          <strong>${money(product.total)}</strong>
+        <div class="product-price">
+          ₹${product.price}
         </div>
       </div>
 
-      <button onclick="buyProduct(${product.id})">
-        Buy Plan
-      </button>
-    </div>
-  `).join("");
+      <ul>
+        <li>Daily reward: ₹${product.daily}</li>
+        <li>30 day plan</li>
+        <li>Simulation account</li>
+      </ul>
 
-  if (box) box.innerHTML = html;
-
-  if (homeBox) {
-    homeBox.innerHTML = products.slice(0, 2)
-      .map(product => `
-        <div class="product-card">
-          <h3>${product.name}</h3>
-          <p>${money(product.price)}</p>
-          <button onclick="buyProduct(${product.id})">
-            Buy Now
+      ${
+        bought
+        ? `
+          <button class="secondary-btn" disabled>
+            ✓ Purchased
           </button>
-        </div>
-      `).join("");
+        `
+        : `
+          <button
+            class="primary-btn"
+            onclick="buyProduct(${product.id})"
+          >
+            Select Plan
+          </button>
+        `
+      }
+
+    </div>
+  `;
+}
+
+function loadProducts() {
+  const html = products.map(productHTML).join("");
+
+  const list = document.getElementById("productsList");
+  const home = document.getElementById("homeProducts");
+
+  if (list) list.innerHTML = html;
+  if (home) {
+    home.innerHTML = products
+      .slice(0, 2)
+      .map(productHTML)
+      .join("");
   }
 }
 
-function buyProduct(id) {
-  const product = products.find(p => p.id === id);
+function buyProduct(productId) {
+  const product = products.find(
+    p => p.id === productId
+  );
 
   if (!product) return;
 
-  if (state.balance < product.price) {
-    alert("Insufficient demo balance.");
-    showDeposit();
+  if (data.purchased.includes(productId)) {
+    alert("This plan is already selected.");
     return;
   }
 
-  state.balance -= product.price;
+  if (data.balance < product.price) {
+    alert("Insufficient demo balance.");
+    openPage("deposit");
+    return;
+  }
 
-  state.purchased.unshift({
-    id: createId("PLAN"),
-    productId: product.id,
-    name: product.name,
-    price: product.price,
-    daily: product.daily,
-    date: new Date().toLocaleString("en-IN")
+  data.balance -= product.price;
+
+  data.purchased.push(productId);
+
+  data.transactions.unshift({
+    type: "Plan Purchase",
+    amount: product.price,
+    date: new Date().toLocaleString("en-IN"),
+    color: "red"
   });
 
-  addTransaction(
-    "Plan Purchase",
-    product.price,
-    "Success"
-  );
-
-  saveState();
+  saveData();
   updateUI();
 
-  alert(`${product.name} purchased successfully.`);
+  alert(
+    product.name +
+    " selected successfully."
+  );
 }
 
-/* ---------- Deposit ---------- */
+/* =========================
+   ATTENDANCE
+========================= */
+
+function renderCalendar() {
+  const calendar =
+    document.getElementById("calendar");
+
+  const title =
+    document.getElementById("monthTitle");
+
+  if (!calendar) return;
+
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  if (title) {
+    title.textContent =
+      `${months[month]} ${year}`;
+  }
+
+  const firstDay =
+    new Date(year, month, 1).getDay();
+
+  const totalDays =
+    new Date(year, month + 1, 0).getDate();
+
+  calendar.innerHTML = "";
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty =
+      document.createElement("div");
+
+    empty.className = "day empty";
+
+    calendar.appendChild(empty);
+  }
+
+  const today = new Date();
+
+  for (let day = 1; day <= totalDays; day++) {
+
+    const box =
+      document.createElement("div");
+
+    box.className = "day";
+    box.textContent = day;
+
+    const key =
+      `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+    if (data.attendance[key]) {
+      box.classList.add("attended");
+    }
+
+    if (
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    ) {
+      box.classList.add("today");
+    }
+
+    box.onclick = () => {
+      toggleAttendance(key);
+    };
+
+    calendar.appendChild(box);
+  }
+
+  updateAttendanceTotal();
+}
+
+function toggleAttendance(key) {
+
+  const today =
+    new Date();
+
+  const todayKey =
+    `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  if (key !== todayKey) {
+    alert("You can mark attendance only for today.");
+    return;
+  }
+
+  if (data.attendance[key]) {
+    alert("Today's attendance is already marked.");
+    return;
+  }
+
+  data.attendance[key] = true;
+
+  saveData();
+  renderCalendar();
+
+  alert("Attendance marked successfully.");
+}
+
+function changeMonth(amount) {
+  calendarDate.setMonth(
+    calendarDate.getMonth() + amount
+  );
+
+  renderCalendar();
+}
+
+function updateAttendanceTotal() {
+  const total =
+    Object.keys(data.attendance).length;
+
+  const element =
+    document.getElementById("attendanceTotal");
+
+  if (element) {
+    element.textContent = total;
+  }
+}
+
+/* =========================
+   REWARDS
+========================= */
+
+function renderRewards() {
+
+  const container =
+    document.getElementById("rewardsList");
+
+  if (!container) return;
+
+  if (data.purchased.length === 0) {
+
+    container.innerHTML = `
+      <div class="reward-item">
+        <b>No selected plans</b>
+        <p>Select a plan to see available rewards.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML =
+    data.purchased.map(productId => {
+
+      const product =
+        products.find(
+          p => p.id === productId
+        );
+
+      if (!product) return "";
+
+      const today =
+        new Date().toISOString().slice(0, 10);
+
+      const claimed =
+        data.rewards.some(
+          reward =>
+            reward.productId === productId &&
+            reward.date === today
+        );
+
+      return `
+        <div class="reward-item">
+
+          <b>${product.name}</b>
+
+          <p>
+            Daily Reward:
+            ₹${product.daily}
+          </p>
+
+          <br>
+
+          ${
+            claimed
+            ? `
+              <button
+                class="secondary-btn"
+                disabled
+              >
+                ✓ Claimed Today
+              </button>
+            `
+            : `
+              <button
+                class="primary-btn"
+                onclick="claimReward(${product.id})"
+              >
+                Claim Reward
+              </button>
+            `
+          }
+
+        </div>
+      `;
+
+    }).join("");
+}
+
+function claimReward(productId) {
+
+  const product =
+    products.find(
+      p => p.id === productId
+    );
+
+  if (!product) return;
+
+  if (!data.purchased.includes(productId)) {
+    alert("Plan not selected.");
+    return;
+  }
+
+  const today =
+    new Date().toISOString().slice(0, 10);
+
+  const already =
+    data.rewards.some(
+      r =>
+        r.productId === productId &&
+        r.date === today
+    );
+
+  if (already) {
+    alert("Reward already claimed today.");
+    return;
+  }
+
+  data.balance += product.daily;
+
+  data.rewards.push({
+    productId,
+    amount: product.daily,
+    date: today
+  });
+
+  data.transactions.unshift({
+    type: "Daily Reward",
+    amount: product.daily,
+    date: new Date().toLocaleString("en-IN"),
+    color: "green"
+  });
+
+  saveData();
+  updateUI();
+
+  alert(
+    `₹${product.daily} reward added.`
+  );
+}
+
+/* =========================
+   DEPOSIT
+========================= */
 
 function showDeposit() {
   openPage("deposit");
 }
 
 function submitDeposit() {
-  const amountInput = document.getElementById("depositAmount");
-  const utrInput = document.getElementById("utr");
 
-  if (!amountInput || !utrInput) return;
+  const amountElement =
+    document.getElementById("depositAmount");
 
-  const amount = Number(amountInput.value);
-  const utr = utrInput.value.trim();
+  const utrElement =
+    document.getElementById("utr");
 
-  if (!amount || amount <= 0) {
-    alert("Please enter a valid amount.");
+  if (!amountElement || !utrElement) return;
+
+  const amount =
+    Number(amountElement.value);
+
+  const utr =
+    utrElement.value.trim();
+
+  if (!amount || amount < 500) {
+    alert("Minimum amount is ₹500.");
+    return;
+  }
+
+  if (amount > 20000) {
+    alert("Maximum amount is ₹20,000.");
     return;
   }
 
   if (!utr) {
-    alert("Please enter UTR number.");
+    alert("Please enter UTR.");
     return;
   }
 
-  const deposit = {
-    id: createId("DEP"),
+  /*
+    Demo only:
+    This does not process real payments.
+  */
+
+  data.balance += amount;
+
+  data.deposits.unshift({
     amount,
     utr,
-    status: "Pending",
+    status: "Demo Approved",
     date: new Date().toLocaleString("en-IN")
-  };
+  });
 
-  state.deposits.unshift(deposit);
-
-  addTransaction(
-    "Deposit",
+  data.transactions.unshift({
+    type: "Deposit",
     amount,
-    "Pending"
-  );
+    date: new Date().toLocaleString("en-IN"),
+    color: "green"
+  });
 
-  saveState();
+  amountElement.value = "";
+  utrElement.value = "";
 
-  amountInput.value = "";
-  utrInput.value = "";
-
-  const screenshot =
-    document.getElementById("paymentScreenshot");
-
-  if (screenshot) screenshot.value = "";
-
-  renderDepositHistory();
-  renderTransactions();
+  saveData();
+  updateUI();
 
   alert(
-    "Deposit request submitted successfully.\nStatus: Pending"
+    `₹${amount} demo balance added successfully.`
   );
 
   openPage("depositHistory");
 }
 
-/* ---------- Withdrawal ---------- */
+/* =========================
+   WITHDRAWAL
+========================= */
 
 function showWithdrawal() {
   openPage("withdraw");
 }
 
 function submitWithdrawal() {
-  const amountInput =
-    document.getElementById("withdrawAmount");
 
-  const bankName =
-    document.getElementById("bankName");
+  const amount =
+    Number(
+      document.getElementById("withdrawAmount").value
+    );
 
-  const accountNumber =
-    document.getElementById("accountNumber");
+  const name =
+    document.getElementById("bankName").value.trim();
+
+  const account =
+    document.getElementById("accountNumber").value.trim();
 
   const confirmAccount =
-    document.getElementById("confirmAccount");
+    document.getElementById("confirmAccount").value.trim();
 
   const bank =
-    document.getElementById("bank");
+    document.getElementById("bank").value.trim();
 
   const ifsc =
-    document.getElementById("ifsc");
+    document.getElementById("ifsc").value.trim();
 
-  if (!amountInput) return;
-
-  const amount = Number(amountInput.value);
-
-  if (!amount || amount <= 0) {
-    alert("Please enter a valid withdrawal amount.");
+  if (!amount || amount < 300) {
+    alert("Minimum withdrawal is ₹300.");
     return;
   }
 
-  if (amount > state.balance) {
-    alert("Insufficient demo balance.");
+  if (amount > 10000) {
+    alert("Maximum withdrawal is ₹10,000.");
+    return;
+  }
+
+  if (amount > data.balance) {
+    alert("Insufficient balance.");
     return;
   }
 
   if (
-    accountNumber &&
-    confirmAccount &&
-    accountNumber.value !== confirmAccount.value
+    !name ||
+    !account ||
+    !confirmAccount ||
+    !bank ||
+    !ifsc
   ) {
+    alert("Please fill all bank details.");
+    return;
+  }
+
+  if (account !== confirmAccount) {
     alert("Account numbers do not match.");
     return;
   }
 
-  if (bankName && !bankName.value.trim()) {
-    alert("Please enter bank name.");
-    return;
-  }
+  data.balance -= amount;
 
-  if (accountNumber && !accountNumber.value.trim()) {
-    alert("Please enter account number.");
-    return;
-  }
-
-  state.balance -= amount;
-
-  const withdrawal = {
-    id: createId("WD"),
+  data.withdrawals.unshift({
     amount,
-    bankName: bankName ? bankName.value.trim() : "",
-    accountNumber: accountNumber
-      ? accountNumber.value.trim()
-      : "",
-    bank: bank ? bank.value.trim() : "",
-    ifsc: ifsc ? ifsc.value.trim() : "",
-    status: "Pending",
-    date: new Date().toLocaleString("en-IN")
-  };
-
-  state.withdrawals.unshift(withdrawal);
-
-  addTransaction(
-    "Withdrawal",
-    amount,
-    "Pending"
-  );
-
-  saveState();
-  updateUI();
-
-  [
-    amountInput,
-    bankName,
-    accountNumber,
-    confirmAccount,
+    name,
+    account,
     bank,
-    ifsc
-  ].forEach(el => {
-    if (el) el.value = "";
+    ifsc,
+    status: "Demo Pending",
+    date: new Date().toLocaleString("en-IN")
   });
 
+  data.transactions.unshift({
+    type: "Withdrawal",
+    amount,
+    date: new Date().toLocaleString("en-IN"),
+    color: "red"
+  });
+
+  document.getElementById("withdrawAmount").value = "";
+  document.getElementById("bankName").value = "";
+  document.getElementById("accountNumber").value = "";
+  document.getElementById("confirmAccount").value = "";
+  document.getElementById("bank").value = "";
+  document.getElementById("ifsc").value = "";
+
+  saveData();
+  updateUI();
+
   alert(
-    "Withdrawal request submitted successfully.\nStatus: Pending"
+    "Withdrawal request created successfully."
   );
 
   openPage("withdrawHistory");
 }
 
-/* ---------- Attendance ---------- */
-
-function renderAttendance() {
-  const calendar = document.getElementById("calendar");
-  const title = document.getElementById("monthTitle");
-
-  if (!calendar) return;
-
-  const year = state.month.getFullYear();
-  const month = state.month.getMonth();
-
-  const monthName = state.month.toLocaleString(
-    "en-IN",
-    {
-      month: "long",
-      year: "numeric"
-    }
-  );
-
-  if (title) {
-    title.textContent = monthName;
-  }
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const days = new Date(year, month + 1, 0).getDate();
-
-  let html = "";
-
-  const headings = [
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat"
-  ];
-
-  headings.forEach(day => {
-    html += `<div class="calendar-heading">${day}</div>`;
-  });
-
-  for (let i = 0; i < firstDay; i++) {
-    html += `<div class="calendar-empty"></div>`;
-  }
-
-  for (let day = 1; day <= days; day++) {
-    const key =
-      `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-    const marked = state.attendance.includes(key);
-
-    html += `
-      <div
-        class="calendar-day ${marked ? "present" : ""}"
-        onclick="markAttendance('${key}')"
-      >
-        ${day}
-      </div>
-    `;
-  }
-
-  calendar.innerHTML = html;
-
-  const total =
-    document.getElementById("attendanceTotal");
-
-  if (total) {
-    total.textContent = state.attendance.length;
-  }
-}
-
-function markAttendance(dateKey) {
-  const today = new Date();
-
-  const todayKey =
-    `${today.getFullYear()}-${String(
-      today.getMonth() + 1
-    ).padStart(2, "0")}-${String(
-      today.getDate()
-    ).padStart(2, "0")}`;
-
-  if (dateKey !== todayKey) {
-    alert("Attendance can only be marked for today.");
-    return;
-  }
-
-  if (state.attendance.includes(dateKey)) {
-    alert("Attendance already marked today.");
-    return;
-  }
-
-  state.attendance.push(dateKey);
-
-  state.rewards.unshift({
-    id: createId("REWARD"),
-    title: "Daily Attendance Reward",
-    amount: 10,
-    date: new Date().toLocaleString("en-IN")
-  });
-
-  state.balance += 10;
-
-  addTransaction(
-    "Attendance Reward",
-    10,
-    "Success"
-  );
-
-  saveState();
-  updateUI();
-
-  alert("Attendance marked! ₹10 demo reward added.");
-}
-
-function changeMonth(direction) {
-  state.month.setMonth(
-    state.month.getMonth() + direction
-  );
-
-  renderAttendance();
-}
-
-/* ---------- Rewards ---------- */
-
-function renderRewards() {
-  const box = document.getElementById("rewardsList");
-
-  if (!box) return;
-
-  if (!state.rewards.length) {
-    box.innerHTML = `
-      <div class="empty-state">
-        No rewards yet.
-      </div>
-    `;
-    return;
-  }
-
-  box.innerHTML = state.rewards.map(reward => `
-    <div class="history-item">
-      <div>
-        <strong>${reward.title}</strong>
-        <small>${reward.date}</small>
-      </div>
-
-      <strong>+${money(reward.amount)}</strong>
-    </div>
-  `).join("");
-}
-
-/* ---------- Deposit History ---------- */
-
-function renderDepositHistory() {
-  const box =
-    document.getElementById("depositHistory");
-
-  if (!box) return;
-
-  if (!state.deposits.length) {
-    box.innerHTML = `
-      <div class="empty-state">
-        No deposit records found.
-      </div>
-    `;
-    return;
-  }
-
-  box.innerHTML = state.deposits.map(item => `
-    <div class="history-item">
-      <div>
-        <strong>${money(item.amount)}</strong>
-        <small>UTR: ${item.utr}</small>
-        <small>${item.date}</small>
-      </div>
-
-      <span class="status ${item.status.toLowerCase()}">
-        ${item.status}
-      </span>
-    </div>
-  `).join("");
-}
-
-/* ---------- Withdrawal History ---------- */
+/* =========================
+   HISTORY
+========================= */
 
 function renderWithdrawHistory() {
+
   const box =
-    document.getElementById("withdrawHistory");
+    document.getElementById(
+      "withdrawHistoryList"
+    );
 
   if (!box) return;
 
-  if (!state.withdrawals.length) {
+  if (!data.withdrawals.length) {
     box.innerHTML = `
-      <div class="empty-state">
-        No withdrawal records found.
+      <div class="card">
+        No withdrawal history found.
       </div>
     `;
     return;
   }
 
-  box.innerHTML = state.withdrawals.map(item => `
-    <div class="history-item">
-      <div>
-        <strong>${money(item.amount)}</strong>
-        <small>${item.bankName || "Bank"}</small>
-        <small>${item.date}</small>
-      </div>
+  box.innerHTML =
+    data.withdrawals.map(item => `
+      <div class="history-item">
 
-      <span class="status ${item.status.toLowerCase()}">
-        ${item.status}
-      </span>
-    </div>
-  `).join("");
+        <div>
+          <b>Withdrawal</b>
+          <p>${item.date}</p>
+          <small>Status: ${item.status}</small>
+        </div>
+
+        <div class="amount-red">
+          -₹${item.amount}
+        </div>
+
+      </div>
+    `).join("");
 }
 
-/* ---------- Transactions ---------- */
+function renderDepositHistory() {
+
+  const box =
+    document.getElementById(
+      "depositHistoryList"
+    );
+
+  if (!box) return;
+
+  if (!data.deposits.length) {
+    box.innerHTML = `
+      <div class="card">
+        No deposit history found.
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML =
+    data.deposits.map(item => `
+      <div class="history-item">
+
+        <div>
+          <b>Deposit</b>
+          <p>${item.date}</p>
+          <small>
+            UTR: ${item.utr}
+          </small>
+          <small>
+            Status: ${item.status}
+          </small>
+        </div>
+
+        <div class="amount-green">
+          +₹${item.amount}
+        </div>
+
+      </div>
+    `).join("");
+}
 
 function renderTransactions() {
+
   const box =
-    document.getElementById("transactions");
+    document.getElementById(
+      "transactionList"
+    );
 
   if (!box) return;
 
-  if (!state.transactions.length) {
+  if (!data.transactions.length) {
     box.innerHTML = `
-      <div class="empty-state">
-        No transactions yet.
+      <div class="card">
+        No transactions found.
       </div>
     `;
     return;
   }
 
-  box.innerHTML = state.transactions.map(item => `
-    <div class="history-item">
-      <div>
-        <strong>${item.type}</strong>
-        <small>${item.id}</small>
-        <small>${item.date}</small>
-      </div>
+  box.innerHTML =
+    data.transactions.map(item => {
 
-      <div>
-        <strong>${money(item.amount)}</strong>
-        <span class="status ${item.status.toLowerCase()}">
-          ${item.status}
-        </span>
-      </div>
-    </div>
-  `).join("");
+      const positive =
+        item.type === "Deposit" ||
+        item.type === "Bonus" ||
+        item.type === "Daily Reward";
+
+      return `
+        <div class="history-item">
+
+          <div>
+            <b>${item.type}</b>
+            <p>${item.date}</p>
+          </div>
+
+          <div class="${
+            positive
+              ? "amount-green"
+              : "amount-red"
+          }">
+            ${positive ? "+" : "-"}₹${item.amount}
+          </div>
+
+        </div>
+      `;
+
+    }).join("");
 }
 
-/* ---------- Other Buttons ---------- */
+/* =========================
+   OTHER BUTTONS
+========================= */
 
 function customerService() {
-  alert("Customer service is available in this demo.");
-}
-
-function downloadApp() {
-  alert("App download is not available in this demo.");
+  window.open(
+    "https://t.me/Hammerff7gcz",
+    "_blank"
+  );
 }
 
 function inviteNow() {
+
   const text =
-    "Join me on this Investment Demo platform.";
+    "Join NSG Wellfare";
 
   if (navigator.share) {
+
     navigator.share({
-      title: "Investment Demo",
+      title: "NSG Wellfare",
       text
     }).catch(() => {});
+
   } else {
+
     navigator.clipboard
       .writeText(text)
-      .then(() => alert("Invite text copied."));
+      .then(() => {
+        alert("Invite text copied.");
+      });
+
   }
 }
 
-function closeModal() {
-  const modal = document.getElementById("modal");
-
-  if (modal) {
-    modal.classList.remove("show");
-  }
+function downloadApp() {
+  alert(
+    "APK download link is not configured yet."
+  );
 }
 
-/* ---------- Edit Profile ---------- */
+/* =========================
+   MODAL
+========================= */
 
-function editProfile() {
-  const modal = document.getElementById("modal");
+function showModal(title, content) {
+
+  const titleBox =
+    document.getElementById("modalTitle");
+
+  const contentBox =
+    document.getElementById("modalContent");
+
+  const modal =
+    document.getElementById("modal");
+
+  if (titleBox) {
+    titleBox.textContent = title;
+  }
+
+  if (contentBox) {
+    contentBox.innerHTML = content;
+  }
 
   if (modal) {
     modal.classList.add("show");
   }
 }
 
-/* ---------- Deposit Shortcut ---------- */
+function closeModal() {
 
-function openDeposit() {
-  showDeposit();
+  const modal =
+    document.getElementById("modal");
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
 }
 
-/* ---------- Initialize ---------- */
+/* =========================
+   UPDATE UI
+========================= */
 
-document.addEventListener("DOMContentLoaded", () => {
-  updateUI();
+function updateUI() {
+  updateBalance();
+  loadProducts();
+  renderRewards();
+  renderCalendar();
+  renderWithdrawHistory();
+  renderDepositHistory();
+  renderTransactions();
+}
 
-  // Default page
-  const home = document.getElementById("home");
+/* =========================
+   START
+========================= */
 
-  if (home) {
-    openPage("home");
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    updateUI();
   }
-});
+);
