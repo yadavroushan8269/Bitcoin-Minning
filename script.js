@@ -1,31 +1,17 @@
 const funds = [
   {
-    name:"NSG Growth Fund",
+    name:"Bitcoin",
     type:"Equity · Growth",
-    invested:"₹50,000",
-    value:"₹62,500",
-    return:"+25.0%"
+    invested:"₹3,240",
+    value:"₹7,6434",
   },
   {
-    name:"NSG Balanced Fund",
-    type:"Hybrid · Balanced",
-    invested:"₹30,000",
-    value:"₹35,400",
-    return:"+18.0%"
+    name:"Nifty Fifty index",
+    type:"Indian Stock",
+    invested:"₹1750",
+    value:"₹2239",
   },
-  {
-    name:"NSG Equity Opportunities",
-    type:"Equity · Diversified",
-    invested:"₹40,000",
-    value:"₹48,600",
-    return:"+21.5%"
-  },
-  {
-    name:"NSG Income Fund",
-    type:"Debt · Income",
-    invested:"₹20,000",
-    value:"₹23,000",
-    return:"+15.0%"
+  
   }
 ];
 
@@ -143,7 +129,7 @@ function toggleBalance(){
 
   balance.textContent =
     balanceVisible
-      ? "₹1,70,500"
+      ? "₹20,000"
       : "••••••";
 }
 
@@ -174,9 +160,9 @@ function loadUser(){
 
   if(!user){
     user = {
-      name:"Investor",
-      userId:"NSG100001",
-      mobile:"XXXXXXXXXX"
+      name:"ROUSHAN YADAV",
+      userId:"Mutualfund401128",
+      mobile:"9153576962"
     };
   }
 
@@ -194,7 +180,7 @@ function loadUser(){
 
   document.getElementById("mobile")
     .textContent =
-    user.mobile || "XXXXXXXXXX";
+    user.mobile || "9153576962";
 }
 
 
