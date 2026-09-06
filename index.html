@@ -1,253 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>NSG Wellfare</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NSG Aviator</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div id="app">
+<div class="app">
 
-  <!-- HEADER -->
-  <header class="topbar">
+<header>
+  <div class="logo">✈ <b>NSG</b><small>AVIATOR</small></div>
+  <div class="top-right">
+    <div class="balance">🪙 <span id="balance">50.00</span></div>
+    <button class="menu-btn" onclick="openMenu()">☰</button>
+  </div>
+</header>
+
+<div class="recent" id="recent"></div>
+
+<main>
+
+  <div class="game-head">
+    <b>AVIATOR</b>
+    <span id="round">Round #001</span>
+  </div>
+
+  <div class="chart">
+
+    <div class="multiplier" id="multiplier">1.00x</div>
+
+    <div class="grid-lines"></div>
+
+    <svg viewBox="0 0 600 330" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e90038" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#e90038" stop-opacity=".03"/>
+        </linearGradient>
+      </defs>
+
+      <path id="areaPath"
+        fill="url(#area)"
+        d="M0 320 L0 320"/>
+
+      <path id="linePath"
+        fill="none"
+        stroke="#ff003c"
+        stroke-width="5"
+        d="M0 320"/>
+
+      <text id="plane" x="25" y="305">✈</text>
+    </svg>
+
+    <div class="status" id="status">WAITING FOR NEXT ROUND</div>
+  </div>
+
+  <div class="bets">
+
+    <div class="bet-box">
+      <div class="tabs">
+        <button class="selected">Bet</button>
+        <button>Auto</button>
+      </div>
+
+      <div class="bet-row">
+        <div>
+          <div class="amount">
+            <button onclick="changeBet(0,-1)">−</button>
+            <span id="bet0">10</span>
+            <button onclick="changeBet(0,1)">+</button>
+          </div>
+
+          <div class="presets">
+            <button onclick="setBet(0,1)">1</button>
+            <button onclick="setBet(0,5)">5</button>
+            <button onclick="setBet(0,10)">10</button>
+            <button onclick="setBet(0,25)">25</button>
+          </div>
+        </div>
+
+        <button class="bet-button" id="betBtn0" onclick="placeBet(0)">
+          BET
+        </button>
+      </div>
+    </div>
+
+
+    <div class="bet-box">
+      <div class="tabs">
+        <button class="selected">Bet</button>
+        <button>Auto</button>
+      </div>
+
+      <div class="bet-row">
+        <div>
+          <div class="amount">
+            <button onclick="changeBet(1,-1)">−</button>
+            <span id="bet1">10</span>
+            <button onclick="changeBet(1,1)">+</button>
+          </div>
+
+          <div class="presets">
+            <button onclick="setBet(1,1)">1</button>
+            <button onclick="setBet(1,5)">5</button>
+            <button onclick="setBet(1,10)">10</button>
+            <button onclick="setBet(1,25)">25</button>
+          </div>
+        </div>
+
+        <button class="bet-button" id="betBtn1" onclick="placeBet(1)">
+          BET
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="history-tabs">
+    <button class="active">All Bets</button>
+    <button>My Bets</button>
+  </div>
+
+  <div class="history">
+    <div class="history-head">
+      <span>User</span>
+      <span>Bet</span>
+      <span>Mult.</span>
+      <span>Result</span>
+    </div>
+
+    <div id="historyList"></div>
+  </div>
+
+</main>
+
+<nav>
+  <button class="active">⌂<small>Game</small></button>
+  <button onclick="showHistory()">◷<small>History</small></button>
+  <button onclick="openMenu()">☰<small>Menu</small></button>
+</nav>
+
+
+<!-- SIDE MENU -->
+
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<aside id="sideMenu">
+
+  <div class="profile">
+    <div class="avatar">N</div>
     <div>
-      <div class="brand">NSG <span>Wellfare</span></div>
-      <small>Investment Portfolio</small>
+      <b>Player <span id="playerId"></span></b>
+      <small>NSG Aviator</small>
     </div>
+  </div>
 
-    <button class="icon-btn" onclick="openPage('profile')">◯</button>
-  </header>
+  <div class="menu-item">
+    🔊 <span>Sound</span>
+    <label class="switch">
+      <input type="checkbox" checked>
+      <i></i>
+    </label>
+  </div>
 
-  <!-- HOME -->
-  <section id="home" class="page active">
+  <div class="menu-item">
+    🎵 <span>Music</span>
+    <label class="switch">
+      <input type="checkbox">
+      <i></i>
+    </label>
+  </div>
 
-    <div class="welcome">
-      <small>Good evening</small>
-      <h2 id="username">Investor</h2>
-    </div>
+  <div class="menu-item">
+    ✨ <span>Animation</span>
+    <label class="switch">
+      <input type="checkbox" checked>
+      <i></i>
+    </label>
+  </div>
 
-    <div class="portfolio-card">
-      <div class="card-top">
-        <span>Portfolio Value</span>
-        <button onclick="toggleBalance()">◉</button>
-      </div>
+  <button class="link-item" onclick="showHistory()">◉ Game History</button>
+  <button class="link-item" onclick="resetCoins()">↻ Reset Virtual Coins</button>
+  <button class="link-item" onclick="showRules()">ⓘ Game Rules</button>
 
-      <h1 id="balance">₹1,70,500</h1>
+  <div class="menu-note">
+    Virtual coins only.<br>
+    No real-money betting or withdrawals.
+  </div>
 
-      <div class="profit">
-        <b>+21.4%</b>
-        <span> simulated return</span>
-      </div>
-
-      <div class="portfolio-stats">
-        <div>
-          <small>Invested</small>
-          <strong>₹1,40,000</strong>
-        </div>
-        <div>
-          <small>Funds</small>
-          <strong>4</strong>
-        </div>
-      </div>
-    </div>
-
-    <div class="quick-grid">
-      <button onclick="openPage('funds')">
-        <i>◉</i>
-        <span>My Funds</span>
-      </button>
-
-      <button onclick="openPage('explore')">
-        <i>↗</i>
-        <span>Explore</span>
-      </button>
-
-      <button onclick="openPage('transactions')">
-        <i>≡</i>
-        <span>Transactions</span>
-      </button>
-
-      <button onclick="openPage('profile')">
-        <i>♙</i>
-        <span>Account</span>
-      </button>
-    </div>
-
-    <div class="section-title">
-      <h3>My Investments</h3>
-      <button onclick="openPage('funds')">See all</button>
-    </div>
-
-    <div id="homeFunds"></div>
-
-    <div class="section-title">
-      <h3>Market Overview</h3>
-    </div>
-
-    <div class="market-card">
-      <div>
-        <span>Market Index</span>
-        <strong>24,685.20</strong>
-      </div>
-
-      <div class="market-up">+1.42%</div>
-    </div>
-
-  </section>
-
-
-  <!-- FUNDS -->
-  <section id="funds" class="page">
-
-    <div class="page-heading">
-      <small>Portfolio</small>
-      <h2>My Funds</h2>
-    </div>
-
-    <div id="fundList"></div>
-
-  </section>
-
-
-  <!-- EXPLORE -->
-  <section id="explore" class="page">
-
-    <div class="page-heading">
-      <small>Discover</small>
-      <h2>Explore Funds</h2>
-    </div>
-
-    <div class="category-row">
-      <button class="category active">All</button>
-      <button class="category">Equity</button>
-      <button class="category">Debt</button>
-      <button class="category">Hybrid</button>
-    </div>
-
-    <div id="exploreList"></div>
-
-  </section>
-
-
-  <!-- TRANSACTIONS -->
-  <section id="transactions" class="page">
-
-    <div class="page-heading">
-      <small>Activity</small>
-      <h2>Transactions</h2>
-    </div>
-
-    <div class="transaction">
-      <div class="tx-icon">↗</div>
-      <div class="tx-info">
-        <strong>Fund Investment</strong>
-        <small>Mutual Growth Fund · Today</small>
-      </div>
-      <b>₹50,000</b>
-    </div>
-
-    <div class="transaction">
-      <div class="tx-icon">+</div>
-      <div class="tx-info">
-        <strong>Portfolio Added</strong>
-        <small>Account balance · Yesterday</small>
-      </div>
-      <b>₹30,000</b>
-    </div>
-
-    <div class="transaction">
-      <div class="tx-icon">↗</div>
-      <div class="tx-info">
-        <strong>Fund Investment</strong>
-        <small>Equity Opportunities · 02 Sep</small>
-      </div>
-      <b>₹60,000</b>
-    </div>
-
-  </section>
-
-
-  <!-- PROFILE -->
-  <section id="profile" class="page">
-
-    <div class="profile-head">
-      <div class="avatar">N</div>
-      <h2 id="profileName">Investor</h2>
-      <small>NSG Wellfare Member</small>
-    </div>
-
-    <div class="profile-card">
-      <div>
-        <span>User ID</span>
-        <strong id="userId">NSG100001</strong>
-      </div>
-
-      <div>
-        <span>Mobile</span>
-        <strong id="mobile">XXXXXXXXXX</strong>
-      </div>
-
-      <div>
-        <span>Account Status</span>
-        <strong class="status">Active</strong>
-      </div>
-    </div>
-
-    <button class="menu-item">
-      <span>👤</span>
-      Personal Information
-      <b>›</b>
-    </button>
-
-    <button class="menu-item">
-      <span>🔒</span>
-      Security
-      <b>›</b>
-    </button>
-
-    <button class="menu-item">
-      <span>❓</span>
-      Customer Support
-      <b>›</b>
-    </button>
-
-    <button class="logout" onclick="logout()">Logout</button>
-
-  </section>
-
-
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-
-    <button class="nav active" onclick="openPage('home',this)">
-      <span>⌂</span>
-      Home
-    </button>
-
-    <button class="nav" onclick="openPage('funds',this)">
-      <span>◉</span>
-      Funds
-    </button>
-
-    <button class="nav" onclick="openPage('explore',this)">
-      <span>▣</span>
-      Explore
-    </button>
-
-    <button class="nav" onclick="openPage('transactions',this)">
-      <span>≡</span>
-      Activity
-    </button>
-
-    <button class="nav" onclick="openPage('profile',this)">
-      <span>♙</span>
-      Account
-    </button>
-
-  </nav>
+</aside>
 
 </div>
 
