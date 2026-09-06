@@ -1,496 +1,238 @@
+/* =========================================================
+   NSG WELLFARE - MAIN SCRIPT
+   ========================================================= */
+
 const API_URL =
-"https://script.google.com/macros/s/AKfycby6bTl_tUL1STJtWO8jQaXzjQSOhDLgvxj_2UWuI6VJBhh0ehwpCFSlQMhpDn57MfNtow/exec";
+  "https://script.google.com/macros/s/AKfycby6bTl_tUL1STJtWO8jQaXzjQSOhDLgvxj_2UWuI6VJBhh0ehwpCFSlQMhpDn57MfNtow/exec";
 
-const UPI_ID = "yadav-rishab@fam";
+const SUPPORT_URL = "https://t.me/Hammerff7gcz";
 
-const SUPPORT =
-"https://t.me/Hammerff7gcz";
+let authToken = localStorage.getItem("nsgAuthToken") || "";
 
+let user = null;
 
-/* ================= PRODUCTS ================= */
+try {
+  user = JSON.parse(localStorage.getItem("nsgUser") || "null");
+} catch (e) {
+  user = null;
+}
 
-const products = [
-
-  {
-    id:1,
-    name:"Product 1",
-    price:999,
-    daily:18
-  },
-
-  {
-    id:2,
-    name:"Product 2",
-    price:1999,
-    daily:36
-  },
-
-  {
-    id:3,
-    name:"Product 3",
-    price:4999,
-    daily:90
-  }
-
-];
+let currentMonth = new Date();
 
 
-/* ================= USER SESSION ================= */
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
-let authToken =
-localStorage.getItem("nsgAuthToken") || "";
-
-let serverUser = null;
-
-
-/* ================= LOCAL DATA ================= */
-
-let data =
-JSON.parse(
-  localStorage.getItem("nsgLocalData") || "null"
-) || {
-
-  balance:0,
-
-  attendance:{},
-
-  purchased:[],
-
-  rewards:[],
-
-  deposits:[],
-
-  withdrawals:[],
-
-  transactions:[]
-
-};
-
-
-if(!data.attendance)
-data.attendance = {};
-
-if(!Array.isArray(data.purchased))
-data.purchased = [];
-
-if(!Array.isArray(data.rewards))
-data.rewards = [];
-
-if(!Array.isArray(data.deposits))
-data.deposits = [];
-
-if(!Array.isArray(data.withdrawals))
-data.withdrawals = [];
-
-if(!Array.isArray(data.transactions))
-data.transactions = [];
-
-
-function saveData(){
-
-  localStorage.setItem(
-    "nsgLocalData",
-    JSON.stringify(data)
-  );
-
+function $(id) {
+  return document.getElementById(id);
 }
 
 
-/* ================= MOBILE ================= */
+function showMessage(id, text) {
+  const element = $(id);
 
-function cleanMobile(value){
+  if (element) {
+    element.textContent = text;
+  }
+}
 
+
+function money(value) {
+  const number = Number(value || 0);
+
+  return "₹" + number.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+
+function cleanMobile(value) {
   return String(value || "")
-    .replace(/\D/g,"")
-    .slice(0,10);
-
+    .replace(/\D/g, "")
+    .replace(/^91/, "")
+    .slice(-10);
 }
 
 
-function validMobile(value){
+function validMobile(value) {
+  return /^\d{10}$/.test(cleanMobile(value));
+}
 
-  return /^[6-9]\d{9}$/.test(
-    cleanMobile(value)
+
+function validPassword(value) {
+  return (
+    value.length >= 8 &&
+    /[A-Za-z]/.test(value) &&
+    /\d/.test(value)
   );
-
 }
 
 
-/* ================= PASSWORD ================= */
+/* =========================================================
+   API
+   ========================================================= */
 
-function validPassword(value){
+async function apiPost(data) {
 
-  return /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
-    .test(String(value || ""));
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify(data)
+  });
 
-}
+  const text = await response.text();
 
+  let result;
 
-/* ================= MESSAGE ================= */
-
-function setMessage(
-  id,
-  text,
-  type="error"
-){
-
-  const element =
-    document.getElementById(id);
-
-  if(!element)
-  return;
-
-  element.textContent = text;
-
-  element.className =
-    "form-message " + type;
-
-}
-
-
-/* ================= AUTH SWITCH ================= */
-
-function showAuth(type){
-
-  document
-    .getElementById("loginBox")
-    .classList
-    .toggle(
-      "hidden",
-      type !== "login"
-    );
-
-
-  document
-    .getElementById("signupBox")
-    .classList
-    .toggle(
-      "hidden",
-      type !== "signup"
-    );
-
-
-  document
-    .getElementById("loginTab")
-    .classList
-    .toggle(
-      "active",
-      type === "login"
-    );
-
-
-  document
-    .getElementById("signupTab")
-    .classList
-    .toggle(
-      "active",
-      type === "signup"
-    );
-
-
-  setMessage(
-    "loginMessage",
-    ""
-  );
-
-  setMessage(
-    "signupMessage",
-    ""
-  );
-
-}
-
-
-/* ================= API ================= */
-
-async function apiPost(payload){
-
-  const response =
-    await fetch(
-      API_URL,
-      {
-        method:"POST",
-
-        headers:{
-          "Content-Type":
-          "text/plain;charset=utf-8"
-        },
-
-        body:
-        JSON.stringify(payload)
-      }
-    );
-
-
-  const text =
-    await response.text();
-
-
-  let output;
-
-
-  try{
-
-    output =
-      JSON.parse(text);
-
+  try {
+    result = JSON.parse(text);
+  } catch (error) {
+    throw new Error("Server response is not valid.");
   }
 
-  catch(error){
-
-    throw new Error(
-      "Invalid server response"
-    );
-
-  }
-
-
-  if(!output.ok){
-
-    throw new Error(
-      output.error ||
-      "Request failed"
-    );
-
-  }
-
-
-  return output;
-
+  return result;
 }
 
 
-/* ================= REGISTER ================= */
+async function apiGet(data) {
 
-async function registerUser(){
+  const query = new URLSearchParams(data);
 
-  const mobile =
-    cleanMobile(
-      document
-      .getElementById("signupMobile")
-      .value
-    );
+  const response = await fetch(
+    API_URL + "?" + query.toString()
+  );
 
+  const text = await response.text();
+
+  let result;
+
+  try {
+    result = JSON.parse(text);
+  } catch (error) {
+    throw new Error("Server response is not valid.");
+  }
+
+  return result;
+}
+
+
+/* =========================================================
+   AUTH SCREEN
+   ========================================================= */
+
+function showSignup() {
+
+  $("loginBox").classList.add("hidden");
+  $("signupBox").classList.remove("hidden");
+
+  showMessage("authMsg", "");
+}
+
+
+function showLogin() {
+
+  $("signupBox").classList.add("hidden");
+  $("loginBox").classList.remove("hidden");
+
+  showMessage("authMsg", "");
+}
+
+
+/* =========================================================
+   REGISTER
+   ========================================================= */
+
+async function register() {
+
+  const mobile = cleanMobile($("signupMobile").value);
 
   const password =
-    document
-    .getElementById("signupPassword")
-    .value;
+    $("signupPassword").value;
+
+  const confirmPassword =
+    $("signupConfirm").value;
 
 
-  const confirm =
-    document
-    .getElementById("signupConfirm")
-    .value;
+  if (!validMobile(mobile)) {
 
-
-  const button =
-    document
-    .getElementById("signupBtn");
-
-
-  setMessage(
-    "signupMessage",
-    ""
-  );
-
-
-  if(!validMobile(mobile)){
-
-    setMessage(
-      "signupMessage",
-      "Please enter a valid 10 digit mobile number."
+    showMessage(
+      "authMsg",
+      "Enter a valid 10 digit mobile number."
     );
 
     return;
-
   }
 
 
-  if(!validPassword(password)){
+  if (!validPassword(password)) {
 
-    setMessage(
-      "signupMessage",
-      "Password must be at least 8 characters and contain letters and numbers."
+    showMessage(
+      "authMsg",
+      "Password must be 8+ characters with letters and numbers."
     );
 
     return;
-
   }
 
 
-  if(password !== confirm){
+  if (password !== confirmPassword) {
 
-    setMessage(
-      "signupMessage",
+    showMessage(
+      "authMsg",
       "Passwords do not match."
     );
 
     return;
-
   }
 
 
-  button.disabled = true;
+  $("signupBtn").disabled = true;
 
-  button.textContent =
-    "Registering...";
-
-
-  try{
-
-    const output =
-      await apiPost({
-
-        action:"register",
-
-        mobile:"+91" + mobile,
-
-        password:password
-
-      });
-
-
-    setMessage(
-      "signupMessage",
-      "Registration successful. Please login.",
-      "success"
-    );
-
-
-    document
-      .getElementById("loginMobile")
-      .value = mobile;
-
-
-    document
-      .getElementById("loginPassword")
-      .value = "";
-
-
-    document
-      .getElementById("signupPassword")
-      .value = "";
-
-
-    document
-      .getElementById("signupConfirm")
-      .value = "";
-
-
-    setTimeout(
-      function(){
-
-        showAuth("login");
-
-      },
-      700
-    );
-
-
-  }
-
-  catch(error){
-
-    setMessage(
-      "signupMessage",
-      error.message ||
-      "Registration failed. Please try again."
-    );
-
-  }
-
-  finally{
-
-    button.disabled = false;
-
-    button.textContent =
-      "Register";
-
-  }
-
-}
-
-
-/* ================= LOGIN ================= */
-
-async function loginUser(){
-
-  const mobile =
-    cleanMobile(
-      document
-      .getElementById("loginMobile")
-      .value
-    );
-
-
-  const password =
-    document
-    .getElementById("loginPassword")
-    .value;
-
-
-  const button =
-    document
-    .getElementById("loginBtn");
-
-
-  setMessage(
-    "loginMessage",
-    ""
+  showMessage(
+    "authMsg",
+    "Creating your account..."
   );
 
 
-  if(
-    !validMobile(mobile) ||
-    !password
-  ){
+  try {
 
-    setMessage(
-      "loginMessage",
-      "Wrong details pls try again"
-    );
+    const result = await apiPost({
 
-    return;
+      action: "register",
 
-  }
+      mobile: "+91" + mobile,
+
+      password: password
+
+    });
 
 
-  button.disabled = true;
-
-  button.textContent =
-    "Logging in...";
-
-
-  try{
-
-    const output =
-      await apiPost({
-
-        action:"login",
-
-        mobile:"+91" + mobile,
-
-        password:password
-
-      });
-
-
-    authToken =
-      String(
-        output.token ||
-        output.sessionToken ||
-        ""
-      );
-
-
-    if(!authToken){
+    if (!result.ok) {
 
       throw new Error(
-        "Login response missing session token."
+        result.error ||
+        "Registration failed."
       );
 
     }
+
+
+    authToken =
+      result.token ||
+      result.sessionToken ||
+      "";
+
+
+    user =
+      result.user ||
+      {
+        mobile: "+91" + mobile,
+        userKey: result.userKey || ""
+      };
 
 
     localStorage.setItem(
@@ -499,102 +241,250 @@ async function loginUser(){
     );
 
 
-    serverUser =
-      output.user ||
-      {
-        mobile:"+91" + mobile
-      };
+    localStorage.setItem(
+      "nsgUser",
+      JSON.stringify(user)
+    );
+
+
+    /*
+      Registration successful.
+
+      User is immediately taken to HOME.
+    */
+
+    showApp();
+
+    openPage("home");
+
+    fillUserData();
+
+    await refreshBalance();
+
+    await loadTransactions();
+
+
+    showMessage(
+      "authMsg",
+      ""
+    );
+
+  } catch (error) {
+
+    showMessage(
+      "authMsg",
+      error.message ||
+      "Registration failed."
+    );
+
+  } finally {
+
+    $("signupBtn").disabled = false;
+
+  }
+}
+
+
+/* =========================================================
+   LOGIN
+   ========================================================= */
+
+async function login() {
+
+  const mobile =
+    cleanMobile($("loginMobile").value);
+
+  const password =
+    $("loginPassword").value;
+
+
+  if (!validMobile(mobile)) {
+
+    showMessage(
+      "authMsg",
+      "Enter a valid 10 digit mobile number."
+    );
+
+    return;
+  }
+
+
+  if (!password) {
+
+    showMessage(
+      "authMsg",
+      "Enter your password."
+    );
+
+    return;
+  }
+
+
+  $("loginBtn").disabled = true;
+
+  showMessage(
+    "authMsg",
+    "Logging in..."
+  );
+
+
+  try {
+
+    const result = await apiPost({
+
+      action: "login",
+
+      mobile: "+91" + mobile,
+
+      password: password
+
+    });
+
+
+    if (!result.ok) {
+
+      throw new Error(
+        result.error ||
+        "Wrong details pls try again"
+      );
+
+    }
+
+
+    authToken =
+      result.token ||
+      result.sessionToken ||
+      "";
+
+
+    user =
+      result.user ||
+      {};
+
+
+    localStorage.setItem(
+      "nsgAuthToken",
+      authToken
+    );
 
 
     localStorage.setItem(
       "nsgUser",
-      JSON.stringify(serverUser)
+      JSON.stringify(user)
     );
 
 
-    openApp();
+    showApp();
 
-  }
+    openPage("home");
 
-  catch(error){
+    fillUserData();
 
-    setMessage(
-      "loginMessage",
+    await refreshBalance();
+
+    await loadTransactions();
+
+
+    showMessage(
+      "authMsg",
+      ""
+    );
+
+  } catch (error) {
+
+    showMessage(
+      "authMsg",
+      error.message ||
       "Wrong details pls try again"
     );
 
-  }
+  } finally {
 
-  finally{
-
-    button.disabled = false;
-
-    button.textContent =
-      "Login";
+    $("loginBtn").disabled = false;
 
   }
+}
+
+
+/* =========================================================
+   SHOW APP
+   ========================================================= */
+
+function showApp() {
+
+  $("authScreen").classList.add("hidden");
+
+  $("app").classList.remove("hidden");
+
+  fillUserData();
 
 }
 
 
-/* ================= OPEN APP ================= */
+/* =========================================================
+   USER DATA
+   ========================================================= */
 
-function openApp(){
+function fillUserData() {
 
-  document
-    .getElementById("authScreen")
-    .classList
-    .add("hidden");
-
-
-  document
-    .getElementById("appScreen")
-    .classList
-    .remove("hidden");
-
-
-  const saved =
-    JSON.parse(
-      localStorage.getItem("nsgUser") ||
-      "{}"
-    );
+  if (!user) return;
 
 
   const mobile =
-    (
-      serverUser &&
-      serverUser.mobile
-    ) ||
-    saved.mobile ||
-    "";
+    user.mobile ||
+    user.phone ||
+    "—";
 
 
-  const clean =
-    cleanMobile(mobile);
+  const userKey =
+    user.userKey ||
+    user.key ||
+    "—";
 
 
-  document
-    .getElementById("loggedMobile")
-    .textContent = clean;
+  if ($("homeUser")) {
+    $("homeUser").textContent =
+      userKey;
+  }
 
 
-  document
-    .getElementById("profileMobile")
-    .textContent = clean;
+  if ($("infoMobile")) {
+    $("infoMobile").textContent =
+      mobile;
+  }
 
 
-  updateUI();
+  if ($("infoUserKey")) {
+    $("infoUserKey").textContent =
+      userKey;
+  }
 
 }
 
 
-/* ================= LOGOUT ================= */
+/* =========================================================
+   LOGOUT
+   ========================================================= */
 
-function logoutUser(){
+async function logout() {
 
-  authToken = "";
+  try {
 
-  serverUser = null;
+    if (authToken) {
+
+      await apiPost({
+
+        action: "logout",
+
+        token: authToken
+
+      });
+
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
 
 
   localStorage.removeItem(
@@ -606,182 +496,195 @@ function logoutUser(){
   );
 
 
-  document
-    .getElementById("appScreen")
-    .classList
-    .add("hidden");
+  authToken = "";
+
+  user = null;
 
 
-  document
-    .getElementById("authScreen")
-    .classList
-    .remove("hidden");
-
-
-  document
-    .getElementById("loginPassword")
-    .value = "";
-
-
-  showAuth("login");
+  location.reload();
 
 }
 
 
-/* ================= PAGE NAVIGATION ================= */
+/* =========================================================
+   PAGE NAVIGATION
+   ========================================================= */
 
-function openPage(id){
+function openPage(pageId) {
 
-  document
-    .querySelectorAll(".page")
-    .forEach(
-      page =>
-      page.classList.remove("active")
-    );
+  const pages =
+    document.querySelectorAll(".page");
 
 
-  const page =
-    document.getElementById(id);
+  pages.forEach(function(page) {
 
+    page.classList.remove("active");
 
-  if(page)
-    page.classList.add("active");
-
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
   });
 
 
-  updateUI();
+  const page =
+    $(pageId);
+
+
+  if (!page) return;
+
+
+  page.classList.add("active");
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+
+  if (pageId === "products") {
+
+    renderProducts();
+
+  }
+
+
+  if (pageId === "attendance") {
+
+    renderCalendar();
+
+  }
+
+
+  if (pageId === "depositHistory") {
+
+    loadDepositHistory();
+
+  }
+
+
+  if (pageId === "withdrawHistory") {
+
+    loadWithdrawalHistory();
+
+  }
+
+
+  if (pageId === "transactions") {
+
+    loadTransactions();
+
+  }
+
+
+  if (pageId === "home") {
+
+    refreshBalance();
+
+    loadTransactions();
+
+  }
 
 }
 
 
-/* ================= MONEY ================= */
+/* =========================================================
+   SHORTCUTS
+   ========================================================= */
 
-function money(value){
+function showDeposit() {
 
-  return Number(value || 0)
-    .toLocaleString(
-      "en-IN",
-      {
-        minimumFractionDigits:2,
-        maximumFractionDigits:2
-      }
-    );
+  openPage("deposit");
 
 }
 
 
-/* ================= BALANCE ================= */
+function showWithdrawal() {
 
-function updateBalance(){
-
-  const balance =
-    document.getElementById("balance");
-
-  const home =
-    document.getElementById("homeBalance");
-
-  const withdraw =
-    document.getElementById(
-      "withdrawBalance"
-    );
-
-
-  if(balance)
-    balance.textContent =
-      money(data.balance);
-
-
-  if(home)
-    home.textContent =
-      money(data.balance);
-
-
-  if(withdraw)
-    withdraw.textContent =
-      money(data.balance);
+  openPage("withdraw");
 
 }
 
 
-/* ================= PRODUCTS ================= */
+function customerService() {
 
-function productHTML(product){
+  window.open(
+    SUPPORT_URL,
+    "_blank"
+  );
 
-  const bought =
-    data.purchased.includes(
-      product.id
-    );
+}
 
+
+function closeModal() {
+
+  $("modal").classList.add("hidden");
+
+}
+
+
+function showEditProfile() {
+
+  $("modalBody").innerHTML = `
+
+    <h3>Edit Details</h3>
+
+    <p style="margin-top:10px;color:#778397;font-size:13px;line-height:1.6">
+
+      Your registered mobile number is linked
+      to your account.
+
+      Bank details can be updated by entering
+      the latest details during withdrawal.
+
+    </p>
+
+  `;
+
+  $("modal").classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   PRODUCTS
+   ========================================================= */
+
+const products = [
+
+  {
+    name: "Starter",
+    price: 500,
+    info: "Starter product"
+  },
+
+  {
+    name: "Growth",
+    price: 1000,
+    info: "Growth product"
+  },
+
+  {
+    name: "Premium",
+    price: 5000,
+    info: "Premium product"
+  }
+
+];
+
+
+function productHTML(product) {
 
   return `
 
     <div class="product">
 
-      <div class="product-head">
+      <b>${product.name}</b>
 
-        <div>
-
-          <h3>
-            ${product.name}
-          </h3>
-
-          <p>
-            Daily reward plan
-          </p>
-
-        </div>
-
-        <div class="product-price">
-          ₹${product.price}
-        </div>
-
+      <div class="price">
+        ₹${Number(product.price).toLocaleString("en-IN")}
       </div>
 
-
-      <ul>
-
-        <li>
-          Daily reward:
-          ₹${product.daily}
-        </li>
-
-        <li>
-          Plan duration:
-          30 days
-        </li>
-
-        <li>
-          Rewards subject to
-          account eligibility
-        </li>
-
-      </ul>
-
-
-      ${
-        bought
-
-        ?
-
-        `<button
-          class="secondary-btn"
-          disabled>
-          ✓ Purchased
-        </button>`
-
-        :
-
-        `<button
-          class="primary-btn"
-          onclick="buyProduct(${product.id})">
-          Select Product
-        </button>`
-      }
+      <div class="meta">
+        ${product.info}
+      </div>
 
     </div>
 
@@ -790,799 +693,169 @@ function productHTML(product){
 }
 
 
-function loadProducts(){
+function renderProducts() {
 
-  const html =
-    products
-    .map(productHTML)
-    .join("");
+  if ($("productsList")) {
 
+    $("productsList").innerHTML =
+      products.map(productHTML).join("");
 
-  const productsList =
-    document.getElementById(
-      "productsList"
-    );
+  }
 
 
-  const homeProducts =
-    document.getElementById(
-      "homeProducts"
-    );
+  if ($("homeProducts")) {
 
+    $("homeProducts").innerHTML =
+      products
+        .slice(0, 2)
+        .map(productHTML)
+        .join("");
 
-  if(productsList)
-    productsList.innerHTML =
-      html;
-
-
-  if(homeProducts)
-    homeProducts.innerHTML =
-      html;
+  }
 
 }
 
 
-/* ================= BUY PRODUCT ================= */
+/* =========================================================
+   BALANCE
+   ========================================================= */
 
-function buyProduct(id){
+async function refreshBalance() {
 
-  const product =
-    products.find(
-      item =>
-      item.id === id
-    );
+  if (!authToken) return;
 
 
-  if(!product)
-    return;
+  try {
 
+    const result =
+      await apiGet({
 
-  if(
-    data.purchased
-    .includes(id)
-  ){
+        action: "balance",
 
-    alert(
-      "This product is already selected."
-    );
+        token: authToken,
 
-    return;
+        userKey:
+          user?.userKey || ""
 
-  }
+      });
 
 
-  if(
-    data.balance <
-    product.price
-  ){
+    const balance =
+      Number(result.balance || 0);
 
-    alert(
-      "Insufficient balance. Please deposit first."
-    );
 
-    openPage("deposit");
+    if ($("homeBalance")) {
 
-    return;
-
-  }
-
-
-  data.balance -=
-    product.price;
-
-
-  data.purchased.push(
-    id
-  );
-
-
-  data.transactions.unshift({
-
-    type:"Product Purchase",
-
-    amount:product.price,
-
-    date:new Date()
-      .toLocaleString()
-
-  });
-
-
-  saveData();
-
-  updateUI();
-
-
-  alert(
-    product.name +
-    " selected successfully."
-  );
-
-}
-
-
-/* ================= ATTENDANCE ================= */
-
-let calendarDate =
-  new Date();
-
-
-function renderCalendar(){
-
-  const title =
-    document.getElementById(
-      "monthTitle"
-    );
-
-
-  const calendar =
-    document.getElementById(
-      "calendar"
-    );
-
-
-  if(!title || !calendar)
-    return;
-
-
-  const year =
-    calendarDate
-      .getFullYear();
-
-
-  const month =
-    calendarDate
-      .getMonth();
-
-
-  const monthNames = [
-
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-
-  ];
-
-
-  title.textContent =
-    monthNames[month] +
-    " " +
-    year;
-
-
-  calendar.innerHTML = "";
-
-
-  const firstDay =
-    new Date(
-      year,
-      month,
-      1
-    ).getDay();
-
-
-  const days =
-    new Date(
-      year,
-      month + 1,
-      0
-    ).getDate();
-
-
-  for(
-    let i=0;
-    i<firstDay;
-    i++
-  ){
-
-    const empty =
-      document.createElement(
-        "div"
-      );
-
-    empty.className =
-      "day empty";
-
-    calendar.appendChild(
-      empty
-    );
-
-  }
-
-
-  for(
-    let day=1;
-    day<=days;
-    day++
-  ){
-
-    const element =
-      document.createElement(
-        "div"
-      );
-
-
-    const key =
-      year +
-      "-" +
-      String(month+1)
-        .padStart(2,"0") +
-      "-" +
-      String(day)
-        .padStart(2,"0");
-
-
-    element.className =
-      "day";
-
-
-    element.textContent =
-      day;
-
-
-    if(data.attendance[key])
-      element.classList.add(
-        "attended"
-      );
-
-
-    const now =
-      new Date();
-
-
-    if(
-      day === now.getDate() &&
-      month === now.getMonth() &&
-      year === now.getFullYear()
-    ){
-
-      element.classList.add(
-        "today"
-      );
+      $("homeBalance").textContent =
+        money(balance);
 
     }
 
 
-    element.onclick =
-      function(){
+    if ($("withdrawBalance")) {
 
-        toggleAttendance(key);
-
-      };
-
-
-    calendar.appendChild(
-      element
-    );
-
-  }
-
-
-  updateAttendanceTotal();
-
-}
-
-
-function toggleAttendance(key){
-
-  const today =
-    new Date()
-    .toISOString()
-    .slice(0,10);
-
-
-  if(key !== today){
-
-    alert(
-      "Attendance can only be marked for today."
-    );
-
-    return;
-
-  }
-
-
-  data.attendance[key] =
-    !data.attendance[key];
-
-
-  if(
-    !data.attendance[key]
-  ){
-
-    delete data.attendance[key];
-
-  }
-
-
-  saveData();
-
-  renderCalendar();
-
-}
-
-
-function changeMonth(number){
-
-  calendarDate.setMonth(
-    calendarDate.getMonth() +
-    number
-  );
-
-
-  renderCalendar();
-
-}
-
-
-function updateAttendanceTotal(){
-
-  const element =
-    document.getElementById(
-      "attendanceTotal"
-    );
-
-
-  if(element){
-
-    element.textContent =
-      Object.keys(
-        data.attendance
-      ).length;
-
-  }
-
-}
-
-
-/* ================= REWARDS ================= */
-
-function renderRewards(){
-
-  const box =
-    document.getElementById(
-      "rewardsList"
-    );
-
-
-  if(!box)
-    return;
-
-
-  if(
-    !data.purchased.length
-  ){
-
-    box.innerHTML = `
-
-      <div class="reward-item">
-
-        <b>
-          No purchased products
-        </b>
-
-        <p>
-          Select a product to
-          see available rewards.
-        </p>
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    data.purchased
-    .map(function(id){
-
-      const product =
-        products.find(
-          item =>
-          item.id === id
-        );
-
-
-      if(!product)
-        return "";
-
-
-      const today =
-        new Date()
-        .toISOString()
-        .slice(0,10);
-
-
-      const claimed =
-        data.rewards.some(
-          reward =>
-          reward.productId === id &&
-          reward.date === today
-        );
-
-
-      return `
-
-        <div class="reward-item">
-
-          <b>
-            ${product.name}
-          </b>
-
-          <p>
-            Daily Reward:
-            ₹${product.daily}
-          </p>
-
-
-          ${
-            claimed
-
-            ?
-
-            `<button
-              class="secondary-btn"
-              disabled>
-              ✓ Claimed Today
-            </button>`
-
-            :
-
-            `<button
-              class="primary-btn"
-              onclick="claimReward(${id})">
-              Claim Reward
-            </button>`
-          }
-
-        </div>
-
-      `;
-
-    })
-    .join("");
-
-}
-
-
-function claimReward(id){
-
-  const product =
-    products.find(
-      item =>
-      item.id === id
-    );
-
-
-  if(
-    !product ||
-    !data.purchased.includes(id)
-  )
-    return;
-
-
-  const today =
-    new Date()
-    .toISOString()
-    .slice(0,10);
-
-
-  if(
-    data.rewards.some(
-      reward =>
-      reward.productId === id &&
-      reward.date === today
-    )
-  ){
-
-    alert(
-      "Reward already claimed today."
-    );
-
-    return;
-
-  }
-
-
-  data.balance +=
-    product.daily;
-
-
-  data.rewards.push({
-
-    productId:id,
-
-    amount:product.daily,
-
-    date:today
-
-  });
-
-
-  data.transactions.unshift({
-
-    type:"Bonus",
-
-    amount:product.daily,
-
-    date:new Date()
-      .toLocaleString()
-
-  });
-
-
-  saveData();
-
-  updateUI();
-
-
-  alert(
-    "₹" +
-    product.daily +
-    " reward added."
-  );
-
-}
-
-
-/* ================= DEPOSIT ================= */
-
-function showDeposit(){
-
-  openPage("deposit");
-
-}
-
-
-function copyUPI(){
-
-  if(
-    navigator.clipboard
-  ){
-
-    navigator.clipboard
-      .writeText(UPI_ID)
-      .then(
-        function(){
-
-          alert(
-            "UPI ID copied: " +
-            UPI_ID
-          );
-
-        }
-      )
-      .catch(
-        fallbackCopyUPI
-      );
-
-  }
-
-  else{
-
-    fallbackCopyUPI();
-
-  }
-
-}
-
-
-function fallbackCopyUPI(){
-
-  const input =
-    document.createElement(
-      "input"
-    );
-
-
-  input.value =
-    UPI_ID;
-
-
-  document.body.appendChild(
-    input
-  );
-
-
-  input.select();
-
-
-  document.execCommand(
-    "copy"
-  );
-
-
-  input.remove();
-
-
-  alert(
-    "UPI ID copied: " +
-    UPI_ID
-  );
-
-}
-
-
-function fileBase64(file){
-
-  return new Promise(
-    function(resolve,reject){
-
-      const reader =
-        new FileReader();
-
-
-      reader.onload =
-        function(){
-
-          const result =
-            String(
-              reader.result
-            );
-
-
-          resolve(
-            result.split(",")[1] ||
-            ""
-          );
-
-        };
-
-
-      reader.onerror =
-        reject;
-
-
-      reader.readAsDataURL(
-        file
-      );
+      $("withdrawBalance").textContent =
+        money(balance);
 
     }
-  );
+
+  } catch (error) {
+
+    console.log(
+      "Balance error:",
+      error
+    );
+
+  }
 
 }
 
 
-async function submitDeposit(){
+/* =========================================================
+   DEPOSIT
+   ========================================================= */
+
+async function submitDeposit() {
 
   const amount =
     Number(
-      document
-      .getElementById(
-        "depositAmount"
-      )
-      ?.value || 0
+      $("depositAmount").value
     );
 
 
   const utr =
-    document
-    .getElementById("utr")
-    ?.value
-    .trim() || "";
+    $("utr").value.trim();
 
 
   const file =
-    document
-    .getElementById(
-      "paymentScreenshot"
-    )
-    ?.files?.[0];
+    $("paymentScreenshot").files[0];
 
 
-  if(!authToken){
+  if (!amount || amount <= 0) {
 
-    logoutUser();
-
-    return;
-
-  }
-
-
-  if(amount < 500){
-
-    alert(
-      "Minimum deposit is ₹500."
+    showMessage(
+      "depositMsg",
+      "Enter a valid amount."
     );
 
     return;
-
   }
 
 
-  if(amount > 20000){
+  if (!utr) {
 
-    alert(
-      "Maximum deposit is ₹20,000."
+    showMessage(
+      "depositMsg",
+      "Enter UTR / Transaction ID."
     );
 
     return;
-
   }
 
 
-  if(!utr){
+  if (!file) {
 
-    alert(
-      "Please enter UTR / Transaction ID."
+    showMessage(
+      "depositMsg",
+      "Select payment screenshot."
     );
 
     return;
-
   }
 
 
-  if(!file){
-
-    alert(
-      "Please select payment screenshot."
-    );
-
-    return;
-
-  }
+  $("depositSubmitBtn").disabled = true;
 
 
-  if(
-    file.size >
-    3 * 1024 * 1024
-  ){
-
-    alert(
-      "Screenshot must be 3 MB or smaller."
-    );
-
-    return;
-
-  }
+  showMessage(
+    "depositMsg",
+    "Submitting deposit..."
+  );
 
 
-  const button =
-    document.getElementById(
-      "depositSubmitBtn"
-    );
+  try {
 
+    const base64 =
+      await fileToBase64(file);
 
-  button.disabled = true;
-
-  button.textContent =
-    "Submitting...";
-
-
-  try{
 
     const imageBase64 =
-      await fileBase64(file);
+      base64.split(",")[1];
 
 
-    const output =
+    const result =
       await apiPost({
 
-        action:"createDeposit",
+        action: "createDeposit",
 
-        token:authToken,
+        token: authToken,
 
         userKey:
-          (
-            serverUser &&
-            serverUser.userKey
-          ) || "",
+          user?.userKey || "",
 
-        amount:amount,
+        amount: amount,
 
-        utr:utr,
+        utr: utr,
 
         imageBase64:
           imageBase64,
@@ -1596,1036 +869,860 @@ async function submitDeposit(){
       });
 
 
-    const requestId =
-      output.requestId;
+    if (!result.ok) {
+
+      throw new Error(
+        result.error ||
+        "Deposit request failed."
+      );
+
+    }
 
 
-    data.deposits.unshift({
-
-      requestId:requestId,
-
-      amount:amount,
-
-      utr:utr,
-
-      status:"PENDING",
-
-      date:new Date()
-        .toLocaleString()
-
-    });
-
-
-    data.transactions.unshift({
-
-      type:"Deposit",
-
-      amount:amount,
-
-      status:"PENDING",
-
-      date:new Date()
-        .toLocaleString()
-
-    });
-
-
-    saveData();
-
-
-    document
-      .getElementById(
-        "depositAmount"
-      )
-      .value = "";
-
-
-    document
-      .getElementById("utr")
-      .value = "";
-
-
-    document
-      .getElementById(
-        "paymentScreenshot"
-      )
-      .value = "";
-
-
-    alert(
-      "Deposit request sent. Admin verification ke baad balance update hoga."
+    showMessage(
+      "depositMsg",
+      "Deposit submitted. Waiting for verification."
     );
 
 
-    updateUI();
+    $("depositAmount").value = "";
+
+    $("utr").value = "";
+
+    $("paymentScreenshot").value = "";
 
 
-    pollDeposit(
-      requestId
-    );
+  } catch (error) {
 
-  }
-
-  catch(error){
-
-    console.error(error);
-
-    alert(
+    showMessage(
+      "depositMsg",
       error.message ||
-      "Deposit request send nahi hua."
+      "Deposit failed."
     );
 
-  }
+  } finally {
 
-  finally{
-
-    button.disabled = false;
-
-    button.textContent =
-      "Submit Deposit Request";
+    $("depositSubmitBtn").disabled =
+      false;
 
   }
 
 }
 
 
-/* ================= DEPOSIT STATUS ================= */
+/* =========================================================
+   FILE TO BASE64
+   ========================================================= */
 
-async function pollDeposit(
-  requestId
-){
+function fileToBase64(file) {
 
-  let count = 0;
+  return new Promise(
+    function(resolve, reject) {
 
-
-  const timer =
-    setInterval(
-      async function(){
-
-        count++;
+      const reader =
+        new FileReader();
 
 
-        try{
+      reader.onload =
+        function() {
 
-          const response =
-            await fetch(
-              API_URL +
-              "?action=status&requestId=" +
-              encodeURIComponent(
-                requestId
-              )
-            );
-
-
-          const output =
-            await response.json();
-
-
-          if(
-            output.ok &&
-            (
-              output.status ===
-              "APPROVED" ||
-
-              output.status ===
-              "REJECTED"
-            )
-          ){
-
-            clearInterval(
-              timer
-            );
-
-
-            const deposit =
-              data.deposits.find(
-                item =>
-                item.requestId ===
-                requestId
-              );
-
-
-            if(deposit){
-
-              const oldStatus =
-                deposit.status;
-
-
-              deposit.status =
-                output.status;
-
-
-              deposit.reviewedAt =
-                output.reviewedAt ||
-                new Date()
-                  .toLocaleString();
-
-
-              if(
-                oldStatus !==
-                "APPROVED" &&
-                output.status ===
-                "APPROVED"
-              ){
-
-                data.balance +=
-                  Number(
-                    deposit.amount
-                  );
-
-              }
-
-
-              data.transactions.unshift({
-
-                type:"Deposit",
-
-                amount:
-                  Number(
-                    deposit.amount
-                  ),
-
-                status:
-                  output.status,
-
-                date:
-                  new Date()
-                    .toLocaleString()
-
-              });
-
-
-              saveData();
-
-              updateUI();
-
-
-              alert(
-                output.status ===
-                "APPROVED"
-
-                ?
-
-                "Deposit approved. Balance updated."
-
-                :
-
-                "Deposit rejected."
-              );
-
-            }
-
-          }
-
-        }
-
-        catch(error){
-
-          // Keep polling.
-
-        }
-
-
-        if(count >= 120){
-
-          clearInterval(
-            timer
+          resolve(
+            reader.result
           );
 
-        }
+        };
 
-      },
-      5000
-    );
+
+      reader.onerror =
+        function() {
+
+          reject(
+            new Error(
+              "Could not read screenshot."
+            )
+          );
+
+        };
+
+
+      reader.readAsDataURL(file);
+
+    }
+  );
 
 }
 
 
-/* ================= WITHDRAWAL ================= */
+/* =========================================================
+   WITHDRAWAL
+   ========================================================= */
 
-function showWithdrawal(){
-
-  openPage("withdraw");
-
-}
-
-
-async function submitWithdrawal(){
+async function submitWithdrawal() {
 
   const amount =
     Number(
-      document
-      .getElementById(
-        "withdrawAmount"
-      )
-      ?.value || 0
+      $("withdrawAmount").value
     );
 
 
-  const name =
-    document
-    .getElementById("bankName")
-    ?.value
-    .trim() || "";
+  const bankName =
+    $("bankName").value.trim();
 
 
-  const account =
-    document
-    .getElementById(
-      "accountNumber"
-    )
-    ?.value
-    .trim() || "";
+  const accountNumber =
+    $("accountNumber").value.trim();
 
 
-  const confirm =
-    document
-    .getElementById(
-      "confirmAccount"
-    )
-    ?.value
-    .trim() || "";
+  const confirmAccount =
+    $("confirmAccount").value.trim();
 
 
-  const bank =
-    document
-    .getElementById("bank")
-    ?.value
-    .trim() || "";
+  const holderName =
+    $("bank").value.trim();
 
 
   const ifsc =
-    (
-      document
-      .getElementById("ifsc")
-      ?.value
-      .trim() || ""
-    ).toUpperCase();
+    $("ifsc").value.trim();
 
 
-  if(!authToken){
+  if (!amount || amount <= 0) {
 
-    logoutUser();
-
-    return;
-
-  }
-
-
-  if(amount < 300){
-
-    alert(
-      "Minimum withdrawal is ₹300."
+    showMessage(
+      "withdrawMsg",
+      "Enter a valid withdrawal amount."
     );
 
     return;
-
   }
 
 
-  if(amount > 10000){
+  if (!bankName) {
 
-    alert(
-      "Maximum withdrawal is ₹10,000."
+    showMessage(
+      "withdrawMsg",
+      "Enter bank name."
     );
 
     return;
-
   }
 
 
-  if(amount > data.balance){
+  if (!accountNumber) {
 
-    alert(
-      "Insufficient balance."
+    showMessage(
+      "withdrawMsg",
+      "Enter account number."
     );
 
     return;
-
   }
 
 
-  if(
-    !name ||
-    !account ||
-    !confirm ||
-    !bank ||
-    !ifsc
-  ){
+  if (accountNumber !== confirmAccount) {
 
-    alert(
-      "Please fill all bank details."
-    );
-
-    return;
-
-  }
-
-
-  if(account !== confirm){
-
-    alert(
+    showMessage(
+      "withdrawMsg",
       "Account numbers do not match."
     );
 
     return;
-
   }
 
 
-  if(
-    !/^[A-Z]{4}0[A-Z0-9]{6}$/
-      .test(ifsc)
-  ){
+  if (!holderName) {
 
-    alert(
-      "Invalid IFSC code."
+    showMessage(
+      "withdrawMsg",
+      "Enter account holder name."
     );
 
     return;
-
   }
 
 
-  const button =
-    document.getElementById(
-      "withdrawSubmitBtn"
+  if (!ifsc) {
+
+    showMessage(
+      "withdrawMsg",
+      "Enter IFSC code."
     );
 
-
-  button.disabled = true;
-
-  button.textContent =
-    "Submitting...";
+    return;
+  }
 
 
-  try{
+  $("withdrawSubmitBtn").disabled =
+    true;
 
-    const output =
+
+  showMessage(
+    "withdrawMsg",
+    "Submitting withdrawal..."
+  );
+
+
+  try {
+
+    const result =
       await apiPost({
 
-        action:"createWithdrawal",
+        action: "createWithdrawal",
 
-        token:authToken,
+        token: authToken,
 
         userKey:
-          (
-            serverUser &&
-            serverUser.userKey
-          ) || "",
+          user?.userKey || "",
 
-        amount:amount,
+        amount: amount,
 
-        holderName:name,
+        holderName:
+          holderName,
 
-        accountNumber:account,
+        accountHolder:
+          holderName,
 
-        bankName:bank,
+        accountNumber:
+          accountNumber,
 
-        ifsc:ifsc
+        bankName:
+          bankName,
+
+        ifsc:
+          ifsc
 
       });
 
 
-    const requestId =
-      output.requestId;
+    if (!result.ok) {
+
+      throw new Error(
+        result.error ||
+        "Withdrawal request failed."
+      );
+
+    }
 
 
-    data.balance -=
-      amount;
-
-
-    data.withdrawals.unshift({
-
-      requestId:requestId,
-
-      amount:amount,
-
-      name:name,
-
-      account:account,
-
-      bank:bank,
-
-      ifsc:ifsc,
-
-      status:"PENDING",
-
-      date:new Date()
-        .toLocaleString()
-
-    });
-
-
-    data.transactions.unshift({
-
-      type:"Withdrawal",
-
-      amount:amount,
-
-      status:"PENDING",
-
-      date:new Date()
-        .toLocaleString()
-
-    });
-
-
-    saveData();
-
-
-    document
-      .getElementById(
-        "withdrawAmount"
-      )
-      .value = "";
-
-
-    alert(
-      "Withdrawal request sent. Admin payment ke baad status update hoga."
+    showMessage(
+      "withdrawMsg",
+      "Withdrawal request submitted for manual processing."
     );
 
 
-    updateUI();
+    $("withdrawAmount").value = "";
+
+    $("accountNumber").value = "";
+
+    $("confirmAccount").value = "";
 
 
-    pollWithdrawal(
-      requestId
-    );
+  } catch (error) {
 
-  }
-
-  catch(error){
-
-    console.error(error);
-
-    alert(
+    showMessage(
+      "withdrawMsg",
       error.message ||
-      "Withdrawal request send nahi hua."
+      "Withdrawal failed."
     );
 
-  }
+  } finally {
 
-  finally{
-
-    button.disabled = false;
-
-    button.textContent =
-      "Submit Withdrawal Request";
+    $("withdrawSubmitBtn").disabled =
+      false;
 
   }
 
 }
 
 
-/* ================= WITHDRAWAL STATUS ================= */
+/* =========================================================
+   DEPOSIT HISTORY
+   ========================================================= */
 
-async function pollWithdrawal(
-  requestId
-){
-
-  let count = 0;
-
-
-  const timer =
-    setInterval(
-      async function(){
-
-        count++;
-
-
-        try{
-
-          const response =
-            await fetch(
-              API_URL +
-              "?action=withdrawalStatus&requestId=" +
-              encodeURIComponent(
-                requestId
-              )
-            );
-
-
-          const output =
-            await response.json();
-
-
-          if(
-            output.ok &&
-            (
-              output.status ===
-              "PAID" ||
-
-              output.status ===
-              "REJECTED"
-            )
-          ){
-
-            clearInterval(
-              timer
-            );
-
-
-            const withdrawal =
-              data.withdrawals.find(
-                item =>
-                item.requestId ===
-                requestId
-              );
-
-
-            if(withdrawal){
-
-              withdrawal.status =
-                output.status;
-
-
-              withdrawal.reviewedAt =
-                output.reviewedAt ||
-                new Date()
-                  .toLocaleString();
-
-
-              if(
-                output.status ===
-                "REJECTED"
-              ){
-
-                data.balance +=
-                  Number(
-                    withdrawal.amount
-                  );
-
-              }
-
-
-              data.transactions.unshift({
-
-                type:"Withdrawal",
-
-                amount:
-                  Number(
-                    withdrawal.amount
-                  ),
-
-                status:
-                  output.status,
-
-                date:
-                  new Date()
-                    .toLocaleString()
-
-              });
-
-
-              saveData();
-
-              updateUI();
-
-
-              alert(
-
-                output.status ===
-                "PAID"
-
-                ?
-
-                "Withdrawal marked paid."
-
-                :
-
-                "Withdrawal rejected; amount returned to balance."
-
-              );
-
-            }
-
-          }
-
-        }
-
-        catch(error){
-
-          // Keep polling.
-
-        }
-
-
-        if(count >= 120){
-
-          clearInterval(
-            timer
-          );
-
-        }
-
-      },
-      5000
-    );
-
-}
-
-
-/* ================= HISTORY ================= */
-
-function renderWithdrawHistory(){
+async function loadDepositHistory() {
 
   const box =
-    document.getElementById(
-      "withdrawHistoryList"
-    );
-
-
-  if(!box)
-    return;
-
-
-  if(
-    !data.withdrawals.length
-  ){
-
-    box.innerHTML =
-      '<div class="card">No withdrawal history found.</div>';
-
-    return;
-
-  }
+    $("depositHistoryList");
 
 
   box.innerHTML =
-    data.withdrawals
-    .map(
-      function(item){
+    "Loading...";
+
+
+  try {
+
+    const result =
+      await apiGet({
+
+        action: "depositHistory",
+
+        token: authToken,
+
+        userKey:
+          user?.userKey || ""
+
+      });
+
+
+    const rows =
+      result.items ||
+      result.data ||
+      [];
+
+
+    if (!rows.length) {
+
+      box.innerHTML =
+        `<div class="muted">
+          No deposit records yet.
+        </div>`;
+
+      return;
+    }
+
+
+    box.innerHTML =
+      rows.map(function(row) {
 
         return `
 
-          <div class="history-item">
+          <div class="list-item">
 
-            <div>
+            <b>
+              ${money(row.amount)}
+            </b>
 
-              <b>
-                Withdrawal
-              </b>
+            <br>
 
-              <p>
-                ${item.date}
-              </p>
+            <span style="float:none;color:#7c8798">
 
-              <small>
-                Status:
-                ${item.status}
-              </small>
+              ${row.createdAt || ""}
 
-            </div>
+            </span>
 
+            <br>
 
-            <div class="amount-red">
+            <span>
 
-              -₹${money(item.amount)}
+              ${row.status || "Pending"}
 
-            </div>
+            </span>
 
           </div>
 
         `;
 
-      }
-    )
-    .join("");
+      }).join("");
+
+
+  } catch (error) {
+
+    box.innerHTML =
+      `<div class="muted">
+        No deposit records yet.
+      </div>`;
+
+  }
 
 }
 
 
-function renderDepositHistory(){
+/* =========================================================
+   WITHDRAWAL HISTORY
+   ========================================================= */
+
+async function loadWithdrawalHistory() {
 
   const box =
-    document.getElementById(
-      "depositHistoryList"
-    );
-
-
-  if(!box)
-    return;
-
-
-  if(
-    !data.deposits.length
-  ){
-
-    box.innerHTML =
-      '<div class="card">No deposit history found.</div>';
-
-    return;
-
-  }
+    $("withdrawHistoryList");
 
 
   box.innerHTML =
-    data.deposits
-    .map(
-      function(item){
+    "Loading...";
+
+
+  try {
+
+    const result =
+      await apiGet({
+
+        action: "withdrawalHistory",
+
+        token: authToken,
+
+        userKey:
+          user?.userKey || ""
+
+      });
+
+
+    const rows =
+      result.items ||
+      result.data ||
+      [];
+
+
+    if (!rows.length) {
+
+      box.innerHTML =
+        `<div class="muted">
+          No withdrawal records yet.
+        </div>`;
+
+      return;
+    }
+
+
+    box.innerHTML =
+      rows.map(function(row) {
 
         return `
 
-          <div class="history-item">
+          <div class="list-item">
 
-            <div>
+            <b>
+              ${money(row.amount)}
+            </b>
 
-              <b>
-                Deposit
-              </b>
+            <br>
 
-              <p>
-                ${item.date}
-              </p>
+            <span style="float:none;color:#7c8798">
 
-              <small>
-                UTR:
-                ${item.utr}
-              </small>
+              ${row.createdAt || ""}
 
-              <br>
+            </span>
 
-              <small>
-                Status:
-                ${item.status}
-              </small>
+            <br>
 
-            </div>
+            <span>
 
+              ${row.status || "Pending"}
 
-            <div class="amount-green">
-
-              +₹${money(item.amount)}
-
-            </div>
+            </span>
 
           </div>
 
         `;
 
-      }
-    )
-    .join("");
-
-}
+      }).join("");
 
 
-function renderTransactions(){
-
-  const box =
-    document.getElementById(
-      "transactionList"
-    );
-
-
-  if(!box)
-    return;
-
-
-  if(
-    !data.transactions.length
-  ){
+  } catch (error) {
 
     box.innerHTML =
-      '<div class="card">No transactions found.</div>';
-
-    return;
+      `<div class="muted">
+        No withdrawal records yet.
+      </div>`;
 
   }
 
-
-  box.innerHTML =
-    data.transactions
-    .map(
-      function(item){
-
-        const positive =
-          item.type === "Deposit" ||
-          item.type === "Bonus";
-
-
-        return `
-
-          <div class="history-item">
-
-            <div>
-
-              <b>
-                ${item.type}
-              </b>
-
-              <p>
-                ${item.date}
-              </p>
-
-              <small>
-                Status:
-                ${item.status ||
-                "COMPLETED"}
-              </small>
-
-            </div>
-
-
-            <div class="${
-              positive
-              ?
-              "amount-green"
-              :
-              "amount-red"
-            }">
-
-              ${
-                positive
-                ? "+"
-                : "-"
-              }₹${money(item.amount)}
-
-            </div>
-
-          </div>
-
-        `;
-
-      }
-    )
-    .join("");
-
 }
 
 
-/* ================= OTHER ================= */
+/* =========================================================
+   TRANSACTIONS
+   ========================================================= */
 
-function customerService(){
+async function loadTransactions() {
 
-  window.open(
-    SUPPORT,
-    "_blank"
-  );
-
-}
+  if (!authToken) return;
 
 
-function inviteNow(){
+  try {
 
-  const text =
-    encodeURIComponent(
-      "Join NSG Wellfare"
+    const result =
+      await apiGet({
+
+        action: "transactions",
+
+        token: authToken,
+
+        userKey:
+          user?.userKey || ""
+
+      });
+
+
+    const rows =
+      result.items ||
+      result.data ||
+      [];
+
+
+    let html;
+
+
+    if (!rows.length) {
+
+      html =
+        `<div class="muted">
+          No transactions yet.
+        </div>`;
+
+    } else {
+
+      html =
+        rows.slice(0, 20)
+          .map(function(row) {
+
+            return `
+
+              <div class="list-item">
+
+                <b>
+                  ${row.type || "Transaction"}
+                </b>
+
+                <br>
+
+                ${money(row.amount)}
+
+                <br>
+
+                <span style="float:none;color:#7c8798">
+
+                  ${row.createdAt || ""}
+
+                </span>
+
+              </div>
+
+            `;
+
+          })
+          .join("");
+
+    }
+
+
+    if ($("transactionsList")) {
+
+      $("transactionsList").innerHTML =
+        html;
+
+    }
+
+
+    if ($("homeTransactions")) {
+
+      $("homeTransactions").innerHTML =
+        html;
+
+    }
+
+
+  } catch (error) {
+
+    console.log(
+      "Transaction error:",
+      error
     );
 
+  }
 
-  window.open(
-    "https://wa.me/?text=" +
-    text,
-    "_blank"
+}
+
+
+/* =========================================================
+   ATTENDANCE
+   ========================================================= */
+
+function changeMonth(number) {
+
+  currentMonth.setMonth(
+    currentMonth.getMonth() + number
   );
 
-}
-
-
-function downloadApp(){
-
-  alert(
-    "App download link will be available here."
-  );
-
-}
-
-
-function showModal(
-  title,
-  content
-){
-
-  document
-    .getElementById(
-      "modalTitle"
-    )
-    .textContent = title;
-
-
-  document
-    .getElementById(
-      "modalContent"
-    )
-    .innerHTML = content;
-
-
-  document
-    .getElementById(
-      "modal"
-    )
-    .classList
-    .add("show");
-
-}
-
-
-function closeModal(){
-
-  document
-    .getElementById(
-      "modal"
-    )
-    .classList
-    .remove("show");
-
-}
-
-
-/* ================= UPDATE UI ================= */
-
-function updateUI(){
-
-  updateBalance();
-
-  loadProducts();
-
-  renderRewards();
 
   renderCalendar();
 
-  renderWithdrawHistory();
+}
 
-  renderDepositHistory();
 
-  renderTransactions();
+function renderCalendar() {
+
+  const calendar =
+    $("calendar");
+
+
+  if (!calendar) return;
+
+
+  const year =
+    currentMonth.getFullYear();
+
+
+  const month =
+    currentMonth.getMonth();
+
+
+  const monthName =
+    new Date(
+      year,
+      month,
+      1
+    ).toLocaleString(
+      "en-IN",
+      {
+        month: "long",
+        year: "numeric"
+      }
+    );
+
+
+  $("monthLabel").textContent =
+    monthName;
+
+
+  const days =
+    [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ];
+
+
+  calendar.innerHTML =
+    days.map(function(day) {
+
+      return `
+        <div class="dow">
+          ${day}
+        </div>
+      `;
+
+    }).join("");
+
+
+  const firstDay =
+    new Date(
+      year,
+      month,
+      1
+    ).getDay();
+
+
+  const totalDays =
+    new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
+
+
+  for (
+    let i = 0;
+    i < firstDay;
+    i++
+  ) {
+
+    calendar.innerHTML +=
+      "<div></div>";
+
+  }
+
+
+  const today =
+    new Date();
+
+
+  let attendanceCount = 0;
+
+
+  for (
+    let day = 1;
+    day <= totalDays;
+    day++
+  ) {
+
+    const key =
+      "nsg_att_" +
+      year +
+      "-" +
+      (month + 1) +
+      "-" +
+      day;
+
+
+    const attended =
+      localStorage.getItem(key) === "1";
+
+
+    if (attended) {
+
+      attendanceCount++;
+
+    }
+
+
+    const isToday =
+      year === today.getFullYear() &&
+      month === today.getMonth() &&
+      day === today.getDate();
+
+
+    calendar.innerHTML += `
+
+      <button
+        class="day
+          ${attended ? "attended" : ""}
+          ${isToday ? "today" : ""}
+        "
+        onclick="
+          markAttendance(
+            ${year},
+            ${month},
+            ${day}
+          )
+        "
+      >
+        ${day}
+      </button>
+
+    `;
+
+  }
+
+
+  $("attendanceTotal").textContent =
+    attendanceCount;
 
 }
 
 
-/* ================= START ================= */
+/* =========================================================
+   MARK TODAY ATTENDANCE
+   ========================================================= */
+
+function markAttendance(
+  year,
+  month,
+  day
+) {
+
+  const today =
+    new Date();
+
+
+  const isToday =
+    year === today.getFullYear() &&
+    month === today.getMonth() &&
+    day === today.getDate();
+
+
+  if (!isToday) {
+
+    alert(
+      "Attendance can only be marked for today."
+    );
+
+    return;
+  }
+
+
+  const key =
+    "nsg_att_" +
+    year +
+    "-" +
+    (month + 1) +
+    "-" +
+    day;
+
+
+  if (
+    localStorage.getItem(key) === "1"
+  ) {
+
+    alert(
+      "Today's attendance is already marked."
+    );
+
+    return;
+
+  }
+
+
+  localStorage.setItem(
+    key,
+    "1"
+  );
+
+
+  renderCalendar();
+
+
+  alert(
+    "Today's attendance marked successfully."
+  );
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+function initializeApp() {
+
+  renderProducts();
+
+  renderCalendar();
+
+
+  if (
+    authToken &&
+    user
+  ) {
+
+    showApp();
+
+    openPage("home");
+
+    refreshBalance();
+
+    loadTransactions();
+
+  } else {
+
+    $("authScreen").classList.remove(
+      "hidden"
+    );
+
+    $("app").classList.add(
+      "hidden"
+    );
+
+    showLogin();
+
+  }
+
+}
+
+
+/* =========================================================
+   BUTTON EVENTS
+   ========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
-  function(){
+  function() {
 
-    const savedUser =
-      JSON.parse(
-        localStorage.getItem(
-          "nsgUser"
-        ) || "null"
-      );
+    $("signupBtn").addEventListener(
+      "click",
+      register
+    );
 
 
-    if(
-      authToken &&
-      savedUser
-    ){
+    $("loginBtn").addEventListener(
+      "click",
+      login
+    );
 
-      serverUser =
-        savedUser;
 
-      openApp();
-
-    }
-
-    else{
-
-      showAuth("login");
-
-    }
+    initializeApp();
 
   }
 );
