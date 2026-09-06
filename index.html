@@ -1,115 +1,395 @@
-let currentPage = "authPage";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 
-function showPage(pageId) {
+<body>
 
-  document.querySelectorAll(".page").forEach(page => {
-    page.classList.remove("active");
-  });
+<header class="topbar">
+  <div>
+    <h2>💰 InvestPro</h2>
+    <small>Demo Investment Platform</small>
+  </div>
 
-  const page = document.getElementById(pageId);
+  <div class="balance">
+    ₹<span id="balance">0.00</span>
+  </div>
+</header>
 
-  if (page) {
-    page.classList.add("active");
-    currentPage = pageId;
-  }
+<main>
 
-  const nav = document.getElementById("bottomNav");
+<section id="home" class="page active">
 
-  if (pageId === "authPage") {
-    nav.style.display = "none";
-  } else {
-    nav.style.display = "flex";
-  }
+  <div class="welcome card">
+    <h2>Welcome 👋</h2>
+    <p>Your demo investment dashboard</p>
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-}
+    <div class="balance-big">
+      ₹<span id="homeBalance">0.00</span>
+    </div>
+  </div>
 
+  <div class="grid">
 
-function showLogin() {
-  showToast("Login is available in this demo UI.");
-}
+    <button class="menu-card"
+      onclick="openPage('attendance')">
+      <span>📅</span>
+      <b>Daily Attendance</b>
+      <small>Attendance Calendar</small>
+    </button>
 
+    <button class="menu-card"
+      onclick="openPage('rewards')">
+      <span>🎁</span>
+      <b>Redeem Rewards</b>
+      <small>Claim available rewards</small>
+    </button>
 
-function registerDemo() {
+    <button class="menu-card"
+      onclick="customerService()">
+      <span>💬</span>
+      <b>Customer Services</b>
+      <small>Contact Support</small>
+    </button>
 
-  const phone = document.getElementById("phone").value.trim();
+    <button class="menu-card"
+      onclick="downloadApp()">
+      <span>📱</span>
+      <b>Download APK</b>
+      <small>Download application</small>
+    </button>
 
-  if (!phone) {
-    showToast("Please enter a demo phone number.");
-    return;
-  }
+  </div>
 
-  showToast("Demo registration successful.");
+  <h3 class="section-title">Products</h3>
 
-  setTimeout(() => {
-    showPage("homePage");
-  }, 700);
-}
+  <div id="homeProducts"></div>
 
-
-function togglePassword() {
-
-  const password = document.getElementById("password");
-
-  if (password.type === "password") {
-    password.type = "text";
-  } else {
-    password.type = "password";
-  }
-}
-
-
-function openProducts() {
-  showPage("homePage");
-  showToast("Products opened.");
-}
-
-
-function demoAction(action) {
-  showToast(action + " — demo only.");
-}
-
-
-function showToast(message) {
-
-  const toast = document.getElementById("toast");
-
-  toast.textContent = message;
-  toast.classList.add("show");
-
-  clearTimeout(window.toastTimer);
-
-  window.toastTimer = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2200);
-}
+</section>
 
 
-/* LOGIN TAB */
+<section id="products" class="page">
 
-document.getElementById("loginTab").addEventListener("click", function () {
+  <h2 class="page-title">📦 Products</h2>
 
-  document.getElementById("loginTab").classList.add("selected");
-  document.getElementById("registerTab").classList.remove("selected");
+  <div id="productsList"></div>
 
-  showToast("Login mode — demo only.");
-});
+</section>
 
 
-/* REGISTER TAB */
+<section id="attendance" class="page">
 
-document.getElementById("registerTab").addEventListener("click", function () {
+  <div class="page-head">
+    <button onclick="openPage('home')">←</button>
+    <h2>Daily Attendance</h2>
+  </div>
 
-  document.getElementById("registerTab").classList.add("selected");
-  document.getElementById("loginTab").classList.remove("selected");
+  <div class="card">
 
-  showToast("Register mode.");
-});
+    <div class="calendar-head">
+      <button onclick="changeMonth(-1)">‹</button>
+
+      <h3 id="monthTitle"></h3>
+
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="weekdays">
+      <span>Sun</span>
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
+    </div>
+
+    <div id="calendar" class="calendar"></div>
+
+    <div class="attendance-info">
+      Total Attendance:
+      <b id="attendanceTotal">0</b>
+    </div>
+
+  </div>
+
+</section>
 
 
-/* START */
+<section id="rewards" class="page">
 
-showPage("authPage");
+  <div class="page-head">
+    <button onclick="openPage('home')">←</button>
+    <h2>Redeem Rewards</h2>
+  </div>
+
+  <div class="card">
+
+    <p class="notice">
+      Rewards can only be claimed for products
+      purchased in this demo account.
+    </p>
+
+    <div id="rewardsList"></div>
+
+  </div>
+
+</section>
+
+
+<section id="info" class="page">
+
+  <h2 class="page-title">👤 My Info</h2>
+
+  <div class="info-menu">
+
+    <button onclick="showDeposit()">
+      <span>💰</span>
+      <div>
+        <b>Deposit</b>
+        <small>Add demo balance</small>
+      </div>
+    </button>
+
+    <button onclick="showWithdrawal()">
+      <span>🏦</span>
+      <div>
+        <b>Withdrawal</b>
+        <small>Demo withdrawal request</small>
+      </div>
+    </button>
+
+    <button onclick="openPage('withdrawHistory')">
+      <span>📋</span>
+      <div>
+        <b>Withdrawal History</b>
+        <small>View withdrawal requests</small>
+      </div>
+    </button>
+
+    <button onclick="openPage('depositHistory')">
+      <span>📥</span>
+      <div>
+        <b>Deposit History</b>
+        <small>View deposits</small>
+      </div>
+    </button>
+
+    <button onclick="openPage('transactions')">
+      <span>📊</span>
+      <div>
+        <b>Transaction History</b>
+        <small>All transactions</small>
+      </div>
+    </button>
+
+    <button onclick="inviteNow()">
+      <span>🎁</span>
+      <div>
+        <b>Invite Now</b>
+        <small>Share with friends</small>
+      </div>
+    </button>
+
+  </div>
+
+</section>
+
+
+<section id="deposit" class="page">
+
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Demo Deposit</h2>
+  </div>
+
+  <div class="card">
+
+    <label>Deposit Amount</label>
+
+    <input
+      type="number"
+      id="depositAmount"
+      placeholder="Minimum ₹500"
+      min="500"
+      max="20000"
+    >
+
+    <div class="demo-payment">
+
+      <p><b>Demo Payment Details</b></p>
+
+      <p>UPI ID: demo@example</p>
+
+      <p>Name: DEMO ACCOUNT</p>
+
+      <small>
+        This is a simulation only.
+        No real payment is processed.
+      </small>
+
+    </div>
+
+    <label>Demo UTR</label>
+
+    <input
+      type="text"
+      id="utr"
+      placeholder="Enter demo UTR"
+    >
+
+    <button
+      class="primary-btn"
+      onclick="submitDeposit()">
+      Deposit Now
+    </button>
+
+  </div>
+
+</section>
+
+
+<section id="withdraw" class="page">
+
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Demo Withdrawal</h2>
+  </div>
+
+  <div class="card">
+
+    <p>
+      Available Balance:
+      <b>₹<span id="withdrawBalance">0.00</span></b>
+    </p>
+
+    <label>Withdrawal Amount</label>
+
+    <input
+      type="number"
+      id="withdrawAmount"
+      placeholder="Minimum ₹300"
+      min="300"
+      max="10000"
+    >
+
+    <h3>Bank Details</h3>
+
+    <input
+      id="bankName"
+      placeholder="Name">
+
+    <input
+      id="accountNumber"
+      placeholder="Account Number">
+
+    <input
+      id="confirmAccount"
+      placeholder="Confirm Account Number">
+
+    <input
+      id="bank"
+      placeholder="Bank Name">
+
+    <input
+      id="ifsc"
+      placeholder="IFSC Code">
+
+    <button
+      class="primary-btn"
+      onclick="submitWithdrawal()">
+      Submit Withdrawal Request
+    </button>
+
+    <small class="warning">
+      Demo mode: no real bank transaction will occur.
+    </small>
+
+  </div>
+
+</section>
+
+
+<section id="withdrawHistory" class="page">
+
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Withdrawal History</h2>
+  </div>
+
+  <div id="withdrawHistoryList"></div>
+
+</section>
+
+
+<section id="depositHistory" class="page">
+
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Deposit History</h2>
+  </div>
+
+  <div id="depositHistoryList"></div>
+
+</section>
+
+
+<section id="transactions" class="page">
+
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Transaction History</h2>
+  </div>
+
+  <div id="transactionList"></div>
+
+</section>
+
+</main>
+
+
+<nav class="bottom-nav">
+
+  <button onclick="openPage('home')">
+    <span>🏠</span>
+    Home
+  </button>
+
+  <button onclick="openPage('products')">
+    <span>📦</span>
+    Product
+  </button>
+
+  <button onclick="openPage('info')">
+    <span>👤</span>
+    My Info
+  </button>
+
+</nav>
+
+
+<div id="modal" class="modal">
+
+  <div class="modal-box">
+
+    <button
+      class="close"
+      onclick="closeModal()">×</button>
+
+    <h3 id="modalTitle"></h3>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
