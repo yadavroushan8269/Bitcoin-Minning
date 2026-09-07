@@ -1,835 +1,943 @@
+```javascript
+"use strict";
+
 /* =========================================
-   NSG WELLFARE - SCRIPT.JS
-   Demo / Simulation Version
+   APP SETTINGS
 ========================================= */
 
-const products = [
-  { id: 1, name: "Starter Plan", price: 999, daily: 18 },
-  { id: 2, name: "Growth Plan", price: 1999, daily: 36 },
-  { id: 3, name: "Premium Plan", price: 4999, daily: 90 }
-];
+const APP_LINK =
+  "https://yadavroushan8269.github.io/Bitcoin-Minning/";
 
-let data = JSON.parse(localStorage.getItem("nsgWellfare")) || {
-  balance: 0,
-  attendance: {},
-  purchased: [],
-  rewards: [],
-  deposits: [],
-  withdrawals: [],
-  transactions: []
-};
+const USER_ID_KEY = "bitcoin_user_id";
+const PROFILE_IMAGE_KEY = "bitcoin_profile_image";
+const BANK_KEY = "bitcoin_bank_details";
+const BALANCE_KEY = "bitcoin_balance";
+const WITHDRAW_KEY = "bitcoin_withdrawals";
 
-let calendarDate = new Date();
 
-function saveData() {
-  localStorage.setItem("nsgWellfare", JSON.stringify(data));
+/* =========================================
+   USER ID
+========================================= */
+
+function createUserId() {
+
+  let savedId = localStorage.getItem(USER_ID_KEY);
+
+  if (!savedId) {
+
+    let counter =
+      parseInt(localStorage.getItem("bitcoin_user_counter") || "0", 10);
+
+    counter++;
+
+    if (counter > 999) {
+      counter = 999;
+    }
+
+    localStorage.setItem(
+      "bitcoin_user_counter",
+      String(counter)
+    );
+
+    const serial = String(counter).padStart(3, "0");
+
+    savedId = "You-7519" + serial;
+
+    localStorage.setItem(
+      USER_ID_KEY,
+      savedId
+    );
+  }
+
+  const element = document.getElementById("userId");
+
+  if (element) {
+    element.textContent = savedId;
+  }
 }
 
-/* =========================
-   NAVIGATION
-========================= */
 
-function openPage(pageId) {
-  document.querySelectorAll(".page").forEach(page => {
+/* =========================================
+   NAVIGATION
+========================================= */
+
+const navItems =
+  document.querySelectorAll(".nav-item");
+
+const pages =
+  document.querySelectorAll(".page");
+
+
+function showPage(pageId) {
+
+  pages.forEach(page => {
     page.classList.remove("active");
   });
 
-  const page = document.getElementById(pageId);
+  const selected =
+    document.getElementById(pageId);
 
-  if (page) {
-    page.classList.add("active");
+  if (selected) {
+    selected.classList.add("active");
   }
+
+  navItems.forEach(item => {
+
+    item.classList.remove("active");
+
+    if (item.dataset.page === pageId) {
+      item.classList.add("active");
+    }
+  });
 
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
-
-  updateUI();
 }
 
-/* =========================
-   BALANCE
-========================= */
 
-function updateBalance() {
-  const balance = Number(data.balance || 0).toFixed(2);
+navItems.forEach(item => {
 
-  const top = document.getElementById("balance");
-  const home = document.getElementById("homeBalance");
-  const withdraw = document.getElementById("withdrawBalance");
+  item.addEventListener("click", () => {
 
-  if (top) top.textContent = balance;
-  if (home) home.textContent = balance;
-  if (withdraw) withdraw.textContent = balance;
-}
+    showPage(item.dataset.page);
 
-/* =========================
-   PRODUCTS
-========================= */
-
-function productHTML(product) {
-  const bought = data.purchased.includes(product.id);
-
-  return `
-    <div class="product">
-
-      <div class="product-head">
-        <div>
-          <h3>${product.name}</h3>
-          <p>Daily reward plan</p>
-        </div>
-
-        <div class="product-price">
-          ₹${product.price}
-        </div>
-      </div>
-
-      <ul>
-        <li>Daily reward: ₹${product.daily}</li>
-        <li>30 day plan</li>
-        <li>Simulation account</li>
-      </ul>
-
-      ${
-        bought
-        ? `
-          <button class="secondary-btn" disabled>
-            ✓ Purchased
-          </button>
-        `
-        : `
-          <button
-            class="primary-btn"
-            onclick="buyProduct(${product.id})"
-          >
-            Select Plan
-          </button>
-        `
-      }
-
-    </div>
-  `;
-}
-
-function loadProducts() {
-  const html = products.map(productHTML).join("");
-
-  const list = document.getElementById("productsList");
-  const home = document.getElementById("homeProducts");
-
-  if (list) list.innerHTML = html;
-  if (home) {
-    home.innerHTML = products
-      .slice(0, 2)
-      .map(productHTML)
-      .join("");
-  }
-}
-
-function buyProduct(productId) {
-  const product = products.find(
-    p => p.id === productId
-  );
-
-  if (!product) return;
-
-  if (data.purchased.includes(productId)) {
-    alert("This plan is already selected.");
-    return;
-  }
-
-  if (data.balance < product.price) {
-    alert("Insufficient demo balance.");
-    openPage("deposit");
-    return;
-  }
-
-  data.balance -= product.price;
-
-  data.purchased.push(productId);
-
-  data.transactions.unshift({
-    type: "Plan Purchase",
-    amount: product.price,
-    date: new Date().toLocaleString("en-IN"),
-    color: "red"
   });
 
-  saveData();
-  updateUI();
+});
 
-  alert(
-    product.name +
-    " selected successfully."
-  );
+
+/* =========================================
+   INDIA LIVE TIME
+========================================= */
+
+function updateIndiaTime() {
+
+  const now = new Date();
+
+  const indiaTime =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      }
+    ).format(now);
+
+  const timeElement =
+    document.getElementById("liveTime");
+
+  if (timeElement) {
+    timeElement.textContent = indiaTime;
+  }
+
+
+  const hour =
+    parseInt(
+      new Intl.DateTimeFormat(
+        "en-IN",
+        {
+          timeZone: "Asia/Kolkata",
+          hour: "numeric",
+          hour12: false
+        }
+      ).format(now),
+      10
+    );
+
+  let greeting = "Good morning everyone";
+
+  if (hour >= 12 && hour < 17) {
+    greeting = "Good afternoon everyone";
+  }
+
+  if (hour >= 17) {
+    greeting = "Good evening everyone";
+  }
+
+  const greetingElement =
+    document.getElementById("greeting");
+
+  if (greetingElement) {
+    greetingElement.textContent = greeting;
+  }
 }
 
-/* =========================
-   ATTENDANCE
-========================= */
+updateIndiaTime();
 
-function renderCalendar() {
-  const calendar =
-    document.getElementById("calendar");
+setInterval(
+  updateIndiaTime,
+  1000
+);
 
-  const title =
-    document.getElementById("monthTitle");
 
-  if (!calendar) return;
+/* =========================================
+   PROFILE IMAGE - GALLERY
+========================================= */
 
-  const year = calendarDate.getFullYear();
-  const month = calendarDate.getMonth();
+const galleryInput =
+  document.getElementById("galleryInput");
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  ];
+galleryInput.addEventListener(
+  "change",
+  function () {
 
-  if (title) {
-    title.textContent =
-      `${months[month]} ${year}`;
-  }
+    const file = this.files[0];
 
-  const firstDay =
-    new Date(year, month, 1).getDay();
-
-  const totalDays =
-    new Date(year, month + 1, 0).getDate();
-
-  calendar.innerHTML = "";
-
-  for (let i = 0; i < firstDay; i++) {
-    const empty =
-      document.createElement("div");
-
-    empty.className = "day empty";
-
-    calendar.appendChild(empty);
-  }
-
-  const today = new Date();
-
-  for (let day = 1; day <= totalDays; day++) {
-
-    const box =
-      document.createElement("div");
-
-    box.className = "day";
-    box.textContent = day;
-
-    const key =
-      `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-    if (data.attendance[key]) {
-      box.classList.add("attended");
+    if (!file) {
+      return;
     }
 
-    if (
-      day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
-    ) {
-      box.classList.add("today");
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image.");
+      return;
     }
 
-    box.onclick = () => {
-      toggleAttendance(key);
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+
+      setProfileImage(
+        event.target.result
+      );
+
     };
 
-    calendar.appendChild(box);
+    reader.readAsDataURL(file);
   }
+);
 
-  updateAttendanceTotal();
-}
 
-function toggleAttendance(key) {
+function setProfileImage(imageData) {
 
-  const today =
-    new Date();
+  const image =
+    document.getElementById("profileImage");
 
-  const todayKey =
-    `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const placeholder =
+    document.getElementById("avatarPlaceholder");
 
-  if (key !== todayKey) {
-    alert("You can mark attendance only for today.");
-    return;
-  }
+  image.src = imageData;
+  image.style.display = "block";
 
-  if (data.attendance[key]) {
-    alert("Today's attendance is already marked.");
-    return;
-  }
+  placeholder.style.display = "none";
 
-  data.attendance[key] = true;
+  try {
 
-  saveData();
-  renderCalendar();
-
-  alert("Attendance marked successfully.");
-}
-
-function changeMonth(amount) {
-  calendarDate.setMonth(
-    calendarDate.getMonth() + amount
-  );
-
-  renderCalendar();
-}
-
-function updateAttendanceTotal() {
-  const total =
-    Object.keys(data.attendance).length;
-
-  const element =
-    document.getElementById("attendanceTotal");
-
-  if (element) {
-    element.textContent = total;
-  }
-}
-
-/* =========================
-   REWARDS
-========================= */
-
-function renderRewards() {
-
-  const container =
-    document.getElementById("rewardsList");
-
-  if (!container) return;
-
-  if (data.purchased.length === 0) {
-
-    container.innerHTML = `
-      <div class="reward-item">
-        <b>No selected plans</b>
-        <p>Select a plan to see available rewards.</p>
-      </div>
-    `;
-
-    return;
-  }
-
-  container.innerHTML =
-    data.purchased.map(productId => {
-
-      const product =
-        products.find(
-          p => p.id === productId
-        );
-
-      if (!product) return "";
-
-      const today =
-        new Date().toISOString().slice(0, 10);
-
-      const claimed =
-        data.rewards.some(
-          reward =>
-            reward.productId === productId &&
-            reward.date === today
-        );
-
-      return `
-        <div class="reward-item">
-
-          <b>${product.name}</b>
-
-          <p>
-            Daily Reward:
-            ₹${product.daily}
-          </p>
-
-          <br>
-
-          ${
-            claimed
-            ? `
-              <button
-                class="secondary-btn"
-                disabled
-              >
-                ✓ Claimed Today
-              </button>
-            `
-            : `
-              <button
-                class="primary-btn"
-                onclick="claimReward(${product.id})"
-              >
-                Claim Reward
-              </button>
-            `
-          }
-
-        </div>
-      `;
-
-    }).join("");
-}
-
-function claimReward(productId) {
-
-  const product =
-    products.find(
-      p => p.id === productId
+    localStorage.setItem(
+      PROFILE_IMAGE_KEY,
+      imageData
     );
 
-  if (!product) return;
+  } catch (error) {
 
-  if (!data.purchased.includes(productId)) {
-    alert("Plan not selected.");
-    return;
-  }
-
-  const today =
-    new Date().toISOString().slice(0, 10);
-
-  const already =
-    data.rewards.some(
-      r =>
-        r.productId === productId &&
-        r.date === today
+    console.log(
+      "Image could not be saved locally."
     );
 
-  if (already) {
-    alert("Reward already claimed today.");
-    return;
   }
-
-  data.balance += product.daily;
-
-  data.rewards.push({
-    productId,
-    amount: product.daily,
-    date: today
-  });
-
-  data.transactions.unshift({
-    type: "Daily Reward",
-    amount: product.daily,
-    date: new Date().toLocaleString("en-IN"),
-    color: "green"
-  });
-
-  saveData();
-  updateUI();
-
-  alert(
-    `₹${product.daily} reward added.`
-  );
 }
 
-/* =========================
-   DEPOSIT
-========================= */
 
-function showDeposit() {
-  openPage("deposit");
-}
+/* =========================================
+   LOAD PROFILE IMAGE
+========================================= */
 
-function submitDeposit() {
+function loadProfileImage() {
 
-  const amountElement =
-    document.getElementById("depositAmount");
-
-  const utrElement =
-    document.getElementById("utr");
-
-  if (!amountElement || !utrElement) return;
-
-  const amount =
-    Number(amountElement.value);
-
-  const utr =
-    utrElement.value.trim();
-
-  if (!amount || amount < 500) {
-    alert("Minimum amount is ₹500.");
-    return;
-  }
-
-  if (amount > 20000) {
-    alert("Maximum amount is ₹20,000.");
-    return;
-  }
-
-  if (!utr) {
-    alert("Please enter UTR.");
-    return;
-  }
-
-  /*
-    Demo only:
-    This does not process real payments.
-  */
-
-  data.balance += amount;
-
-  data.deposits.unshift({
-    amount,
-    utr,
-    status: "Demo Approved",
-    date: new Date().toLocaleString("en-IN")
-  });
-
-  data.transactions.unshift({
-    type: "Deposit",
-    amount,
-    date: new Date().toLocaleString("en-IN"),
-    color: "green"
-  });
-
-  amountElement.value = "";
-  utrElement.value = "";
-
-  saveData();
-  updateUI();
-
-  alert(
-    `₹${amount} demo balance added successfully.`
-  );
-
-  openPage("depositHistory");
-}
-
-/* =========================
-   WITHDRAWAL
-========================= */
-
-function showWithdrawal() {
-  openPage("withdraw");
-}
-
-function submitWithdrawal() {
-
-  const amount =
-    Number(
-      document.getElementById("withdrawAmount").value
+  const saved =
+    localStorage.getItem(
+      PROFILE_IMAGE_KEY
     );
 
-  const name =
-    document.getElementById("bankName").value.trim();
-
-  const account =
-    document.getElementById("accountNumber").value.trim();
-
-  const confirmAccount =
-    document.getElementById("confirmAccount").value.trim();
-
-  const bank =
-    document.getElementById("bank").value.trim();
-
-  const ifsc =
-    document.getElementById("ifsc").value.trim();
-
-  if (!amount || amount < 300) {
-    alert("Minimum withdrawal is ₹300.");
-    return;
+  if (saved) {
+    setProfileImage(saved);
   }
-
-  if (amount > 10000) {
-    alert("Maximum withdrawal is ₹10,000.");
-    return;
-  }
-
-  if (amount > data.balance) {
-    alert("Insufficient balance.");
-    return;
-  }
-
-  if (
-    !name ||
-    !account ||
-    !confirmAccount ||
-    !bank ||
-    !ifsc
-  ) {
-    alert("Please fill all bank details.");
-    return;
-  }
-
-  if (account !== confirmAccount) {
-    alert("Account numbers do not match.");
-    return;
-  }
-
-  data.balance -= amount;
-
-  data.withdrawals.unshift({
-    amount,
-    name,
-    account,
-    bank,
-    ifsc,
-    status: "Demo Pending",
-    date: new Date().toLocaleString("en-IN")
-  });
-
-  data.transactions.unshift({
-    type: "Withdrawal",
-    amount,
-    date: new Date().toLocaleString("en-IN"),
-    color: "red"
-  });
-
-  document.getElementById("withdrawAmount").value = "";
-  document.getElementById("bankName").value = "";
-  document.getElementById("accountNumber").value = "";
-  document.getElementById("confirmAccount").value = "";
-  document.getElementById("bank").value = "";
-  document.getElementById("ifsc").value = "";
-
-  saveData();
-  updateUI();
-
-  alert(
-    "Withdrawal request created successfully."
-  );
-
-  openPage("withdrawHistory");
 }
 
-/* =========================
-   HISTORY
-========================= */
 
-function renderWithdrawHistory() {
+/* =========================================
+   CAMERA
+========================================= */
 
-  const box =
-    document.getElementById(
-      "withdrawHistoryList"
+let cameraStream = null;
+
+const cameraBtn =
+  document.getElementById("cameraBtn");
+
+const cameraPreview =
+  document.getElementById("cameraPreview");
+
+const takePhotoBtn =
+  document.getElementById("takePhotoBtn");
+
+const closeCameraBtn =
+  document.getElementById("closeCameraBtn");
+
+const photoCanvas =
+  document.getElementById("photoCanvas");
+
+
+cameraBtn.addEventListener(
+  "click",
+  async function () {
+
+    try {
+
+      cameraStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user"
+          },
+          audio: false
+        });
+
+      cameraPreview.srcObject =
+        cameraStream;
+
+      cameraPreview.style.display =
+        "block";
+
+      takePhotoBtn.style.display =
+        "block";
+
+      closeCameraBtn.style.display =
+        "block";
+
+    } catch (error) {
+
+      alert(
+        "Camera permission was not granted or camera is unavailable."
+      );
+
+      console.log(error);
+
+    }
+  }
+);
+
+
+takePhotoBtn.addEventListener(
+  "click",
+  function () {
+
+    if (!cameraStream) {
+      return;
+    }
+
+    photoCanvas.width =
+      cameraPreview.videoWidth;
+
+    photoCanvas.height =
+      cameraPreview.videoHeight;
+
+    const context =
+      photoCanvas.getContext("2d");
+
+    context.drawImage(
+      cameraPreview,
+      0,
+      0,
+      photoCanvas.width,
+      photoCanvas.height
     );
 
-  if (!box) return;
+    const imageData =
+      photoCanvas.toDataURL(
+        "image/jpeg",
+        0.85
+      );
 
-  if (!data.withdrawals.length) {
-    box.innerHTML = `
-      <div class="card">
-        No withdrawal history found.
-      </div>
-    `;
-    return;
+    setProfileImage(imageData);
+
+    stopCamera();
+  }
+);
+
+
+closeCameraBtn.addEventListener(
+  "click",
+  stopCamera
+);
+
+
+function stopCamera() {
+
+  if (cameraStream) {
+
+    cameraStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    cameraStream = null;
   }
 
-  box.innerHTML =
-    data.withdrawals.map(item => `
-      <div class="history-item">
+  cameraPreview.srcObject = null;
 
-        <div>
-          <b>Withdrawal</b>
-          <p>${item.date}</p>
-          <small>Status: ${item.status}</small>
-        </div>
+  cameraPreview.style.display =
+    "none";
 
-        <div class="amount-red">
-          -₹${item.amount}
-        </div>
+  takePhotoBtn.style.display =
+    "none";
 
-      </div>
-    `).join("");
+  closeCameraBtn.style.display =
+    "none";
 }
 
-function renderDepositHistory() {
 
-  const box =
-    document.getElementById(
-      "depositHistoryList"
-    );
+/* =========================================
+   PRODUCT MODAL
+========================================= */
 
-  if (!box) return;
+function openProductInfo(
+  productName,
+  price
+) {
 
-  if (!data.deposits.length) {
-    box.innerHTML = `
-      <div class="card">
-        No deposit history found.
-      </div>
-    `;
-    return;
-  }
+  document.getElementById(
+    "modalProductName"
+  ).textContent = productName;
 
-  box.innerHTML =
-    data.deposits.map(item => `
-      <div class="history-item">
+  document.getElementById(
+    "modalProductPrice"
+  ).textContent =
+    "₹" + Number(price).toLocaleString("en-IN");
 
-        <div>
-          <b>Deposit</b>
-          <p>${item.date}</p>
-          <small>
-            UTR: ${item.utr}
-          </small>
-          <small>
-            Status: ${item.status}
-          </small>
-        </div>
-
-        <div class="amount-green">
-          +₹${item.amount}
-        </div>
-
-      </div>
-    `).join("");
+  document
+    .getElementById("productModal")
+    .classList.add("show");
 }
 
-function renderTransactions() {
-
-  const box =
-    document.getElementById(
-      "transactionList"
-    );
-
-  if (!box) return;
-
-  if (!data.transactions.length) {
-    box.innerHTML = `
-      <div class="card">
-        No transactions found.
-      </div>
-    `;
-    return;
-  }
-
-  box.innerHTML =
-    data.transactions.map(item => {
-
-      const positive =
-        item.type === "Deposit" ||
-        item.type === "Bonus" ||
-        item.type === "Daily Reward";
-
-      return `
-        <div class="history-item">
-
-          <div>
-            <b>${item.type}</b>
-            <p>${item.date}</p>
-          </div>
-
-          <div class="${
-            positive
-              ? "amount-green"
-              : "amount-red"
-          }">
-            ${positive ? "+" : "-"}₹${item.amount}
-          </div>
-
-        </div>
-      `;
-
-    }).join("");
-}
-
-/* =========================
-   OTHER BUTTONS
-========================= */
-
-function customerService() {
-  window.open(
-    "https://t.me/Hammerff7gcz",
-    "_blank"
-  );
-}
-
-function inviteNow() {
-
-  const text =
-    "Join NSG Wellfare";
-
-  if (navigator.share) {
-
-    navigator.share({
-      title: "NSG Wellfare",
-      text
-    }).catch(() => {});
-
-  } else {
-
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        alert("Invite text copied.");
-      });
-
-  }
-}
-
-function downloadApp() {
-  alert(
-    "APK download link is not configured yet."
-  );
-}
-
-/* =========================
-   MODAL
-========================= */
-
-function showModal(title, content) {
-
-  const titleBox =
-    document.getElementById("modalTitle");
-
-  const contentBox =
-    document.getElementById("modalContent");
-
-  const modal =
-    document.getElementById("modal");
-
-  if (titleBox) {
-    titleBox.textContent = title;
-  }
-
-  if (contentBox) {
-    contentBox.innerHTML = content;
-  }
-
-  if (modal) {
-    modal.classList.add("show");
-  }
-}
 
 function closeModal() {
 
-  const modal =
-    document.getElementById("modal");
+  document
+    .getElementById("productModal")
+    .classList.remove("show");
+}
 
-  if (modal) {
-    modal.classList.remove("show");
+
+function goToDepositInfo() {
+
+  closeModal();
+
+  showPage("deposit");
+}
+
+
+/* =========================================
+   BANK DETAILS
+========================================= */
+
+function saveBankDetails() {
+
+  const name =
+    document.getElementById(
+      "bankNamePerson"
+    ).value.trim();
+
+  const ifsc =
+    document.getElementById(
+      "ifscCode"
+    ).value.trim();
+
+  const bank =
+    document.getElementById(
+      "bankName"
+    ).value.trim();
+
+  const account =
+    document.getElementById(
+      "accountNumber"
+    ).value.trim();
+
+  const repeat =
+    document.getElementById(
+      "repeatAccountNumber"
+    ).value.trim();
+
+  const status =
+    document.getElementById(
+      "bankStatus"
+    );
+
+
+  if (
+    !name ||
+    !ifsc ||
+    !bank ||
+    !account ||
+    !repeat
+  ) {
+
+    status.textContent =
+      "Please fill all fields.";
+
+    return;
+  }
+
+
+  if (account !== repeat) {
+
+    status.textContent =
+      "Account numbers do not match.";
+
+    return;
+  }
+
+
+  if (account.length < 6) {
+
+    status.textContent =
+      "Please enter a valid account number.";
+
+    return;
+  }
+
+
+  const details = {
+    name: name,
+    ifsc: ifsc.toUpperCase(),
+    bank: bank,
+    account: account,
+    savedAt: new Date().toISOString()
+  };
+
+
+  localStorage.setItem(
+    BANK_KEY,
+    JSON.stringify(details)
+  );
+
+
+  status.textContent =
+    "Bank details saved locally in this browser. They were not sent anywhere.";
+
+}
+
+
+/* =========================================
+   LOAD BANK DETAILS
+========================================= */
+
+function loadBankDetails() {
+
+  const saved =
+    localStorage.getItem(BANK_KEY);
+
+  if (!saved) {
+    return;
+  }
+
+  try {
+
+    const data =
+      JSON.parse(saved);
+
+    document.getElementById(
+      "bankNamePerson"
+    ).value = data.name || "";
+
+    document.getElementById(
+      "ifscCode"
+    ).value = data.ifsc || "";
+
+    document.getElementById(
+      "bankName"
+    ).value = data.bank || "";
+
+    document.getElementById(
+      "accountNumber"
+    ).value = data.account || "";
+
+    document.getElementById(
+      "repeatAccountNumber"
+    ).value = data.account || "";
+
+  } catch (error) {
+
+    console.log(
+      "Could not load bank details."
+    );
+
   }
 }
 
-/* =========================
-   UPDATE UI
-========================= */
 
-function updateUI() {
-  updateBalance();
-  loadProducts();
-  renderRewards();
-  renderCalendar();
-  renderWithdrawHistory();
-  renderDepositHistory();
-  renderTransactions();
+/* =========================================
+   BALANCE
+========================================= */
+
+function getBalance() {
+
+  const balance =
+    parseFloat(
+      localStorage.getItem(
+        BALANCE_KEY
+      ) || "0"
+    );
+
+  return isNaN(balance)
+    ? 0
+    : balance;
 }
 
-/* =========================
-   START
-========================= */
+
+function updateBalanceDisplay() {
+
+  const balance =
+    getBalance();
+
+  const formatted =
+    "₹" +
+    balance.toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    );
+
+  document.getElementById(
+    "balance"
+  ).textContent = formatted;
+
+  document.getElementById(
+    "ruleBalance"
+  ).textContent = formatted;
+}
+
+
+/* =========================================
+   WITHDRAWAL
+========================================= */
+
+function requestWithdrawal() {
+
+  const amount =
+    parseFloat(
+      document.getElementById(
+        "withdrawAmount"
+      ).value
+    );
+
+  const status =
+    document.getElementById(
+      "withdrawStatus"
+    );
+
+
+  if (isNaN(amount)) {
+
+    status.textContent =
+      "Please enter a withdrawal amount.";
+
+    return;
+  }
+
+
+  if (amount < 500) {
+
+    status.textContent =
+      "Minimum withdrawal amount is ₹500.";
+
+    return;
+  }
+
+
+  if (amount > 20000) {
+
+    status.textContent =
+      "Maximum withdrawal amount is ₹20,000.";
+
+    return;
+  }
+
+
+  const balance =
+    getBalance();
+
+
+  if (amount > balance) {
+
+    status.textContent =
+      "Insufficient available balance.";
+
+    return;
+  }
+
+
+  const indiaDate =
+    new Date().toLocaleString(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata"
+      }
+    );
+
+
+  const currentHour =
+    parseInt(
+      new Intl.DateTimeFormat(
+        "en-IN",
+        {
+          timeZone: "Asia/Kolkata",
+          hour: "numeric",
+          hour12: false
+        }
+      ).format(new Date()),
+      10
+    );
+
+  const currentMinute =
+    parseInt(
+      new Intl.DateTimeFormat(
+        "en-IN",
+        {
+          timeZone: "Asia/Kolkata",
+          minute: "numeric"
+        }
+      ).format(new Date()),
+      10
+    );
+
+
+  const totalMinutes =
+    currentHour * 60 +
+    currentMinute;
+
+
+  const start =
+    10 * 60 + 30;
+
+  const end =
+    17 * 60 + 30;
+
+
+  if (
+    totalMinutes < start ||
+    totalMinutes > end
+  ) {
+
+    status.textContent =
+      "Withdrawal is available from 10:30 AM to 5:30 PM India time.";
+
+    return;
+  }
+
+
+  let withdrawals =
+    JSON.parse(
+      localStorage.getItem(
+        WITHDRAW_KEY
+      ) || "[]"
+    );
+
+
+  const today =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone: "Asia/Kolkata"
+      }
+    ).format(new Date());
+
+
+  withdrawals =
+    withdrawals.filter(
+      item => item.date === today
+    );
+
+
+  if (withdrawals.length >= 3) {
+
+    status.textContent =
+      "Daily withdrawal limit of 3 has been reached.";
+
+    return;
+  }
+
+
+  status.textContent =
+    "Withdrawal request recorded locally. No payment is processed by this GitHub Pages demo.";
+
+  withdrawals.push({
+    amount: amount,
+    date: today,
+    time: indiaDate
+  });
+
+
+  localStorage.setItem(
+    WITHDRAW_KEY,
+    JSON.stringify(withdrawals)
+  );
+
+}
+
+
+/* =========================================
+   PAYMENT INFORMATION FORM
+========================================= */
+
+function submitPaymentInfo() {
+
+  const amount =
+    parseFloat(
+      document.getElementById(
+        "depositAmount"
+      ).value
+    );
+
+  const utr =
+    document.getElementById(
+      "utrNumber"
+    ).value.trim();
+
+  const screenshot =
+    document.getElementById(
+      "paymentScreenshot"
+    ).files[0];
+
+  const status =
+    document.getElementById(
+      "paymentStatus"
+    );
+
+
+  if (isNaN(amount)) {
+
+    status.textContent =
+      "Please enter an amount.";
+
+    return;
+  }
+
+
+  if (
+    amount < 200 ||
+    amount > 50000
+  ) {
+
+    status.textContent =
+      "Amount must be between ₹200 and ₹50,000.";
+
+    return;
+  }
+
+
+  if (!utr) {
+
+    status.textContent =
+      "Please enter the transaction reference.";
+
+    return;
+  }
+
+
+  if (!screenshot) {
+
+    status.textContent =
+      "Please select a payment screenshot.";
+
+    return;
+  }
+
+
+  status.textContent =
+    "Information recorded locally for this browser. No payment verification or Telegram forwarding is performed.";
+
+}
+
+
+/* =========================================
+   WHATSAPP SHARE
+========================================= */
+
+function shareWhatsApp() {
+
+  const message =
+    "Check out Bitcoin Minning: " +
+    APP_LINK;
+
+  const whatsappURL =
+    "https://wa.me/?text=" +
+    encodeURIComponent(message);
+
+  window.open(
+    whatsappURL,
+    "_blank",
+    "noopener,noreferrer"
+  );
+}
+
+
+/* =========================================
+   COPY APP LINK
+========================================= */
+
+async function copyAppLink() {
+
+  const status =
+    document.getElementById(
+      "copyStatus"
+    );
+
+  try {
+
+    await navigator.clipboard.writeText(
+      APP_LINK
+    );
+
+    status.textContent =
+      "App link copied.";
+
+  } catch (error) {
+
+    status.textContent =
+      "Copy failed. Please copy the link manually.";
+
+  }
+}
+
+
+/* =========================================
+   CLOSE MODAL WHEN CLICKING OUTSIDE
+========================================= */
+
+document
+  .getElementById("productModal")
+  .addEventListener(
+    "click",
+    function (event) {
+
+      if (event.target === this) {
+        closeModal();
+      }
+
+    }
+  );
+
+
+/* =========================================
+   INITIALIZE
+========================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
-  () => {
-    updateUI();
+  function () {
+
+    createUserId();
+
+    loadProfileImage();
+
+    loadBankDetails();
+
+    updateBalanceDisplay();
+
   }
 );
+```
