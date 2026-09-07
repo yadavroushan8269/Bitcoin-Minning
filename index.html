@@ -1,990 +1,1220 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#030b13">
-  <title>Bitcoin Minning</title>
-  <link rel="stylesheet" href="./style.css?v=5">
-</head>
-
-<body>
-
-<header class="header">
-  <div class="brand">
-    <div class="btc">₿</div>
-    <div>
-      <h1>Bitcoin Minning</h1>
-      <p>Crypto Information Platform</p>
-    </div>
-  </div>
-
-  <div class="live">
-    <span></span> LIVE
-  </div>
-</header>
-
-<main>
-
-<section class="page active" id="homePage">
-
-  <div class="hero">
-    <div class="hero-content">
-      <small>CRYPTO PLATFORM</small>
-      <h2>Your Future<br><b>With Crypto</b></h2>
-      <p>
-        Stay updated with cryptocurrency news,
-        blockchain information and market education.
-      </p>
-
-      <button class="hero-btn" id="learnBtn">
-        Learn More →
-      </button>
-    </div>
-
-    <div class="bitcoin-big">₿</div>
-  </div>
-
-  <div class="section-head">
-    <h2>Latest Crypto News</h2>
-    <span>View All →</span>
-  </div>
-
-  <div class="news-grid">
-
-    <article class="news">
-      <div class="coin orange">₿</div>
-      <label>Bitcoin</label>
-      <h3>Bitcoin market update</h3>
-      <p>
-        Bitcoin markets can move quickly.
-        Always check current market information.
-      </p>
-      <small>● Educational information</small>
-    </article>
-
-    <article class="news">
-      <div class="coin blue">◆</div>
-      <label>Ethereum</label>
-      <h3>Blockchain technology</h3>
-      <p>
-        Learn how blockchain networks,
-        smart contracts and digital assets work.
-      </p>
-      <small>● Educational information</small>
-    </article>
-
-    <article class="news">
-      <div class="coin purple">↗</div>
-      <label>Market</label>
-      <h3>Crypto market information</h3>
-      <p>
-        Understand market trends and the risks
-        associated with cryptocurrency.
-      </p>
-      <small>● Educational information</small>
-    </article>
-
-  </div>
-
-  <div class="section-head">
-    <h2>Products</h2>
-    <button class="text-btn" id="productViewBtn">View All →</button>
-  </div>
-
-  <div class="plans">
-
-    <div class="plan green-plan">
-      <span>PLAN 01</span>
-      <h3>Starter</h3>
-      <strong>₹500</strong>
-      <p>Informational product tier</p>
-      <button class="invest-btn" data-plan="Starter" data-price="500">
-        View Details →
-      </button>
-    </div>
-
-    <div class="plan blue-plan">
-      <span>PLAN 02</span>
-      <h3>Standard</h3>
-      <strong>₹1,500</strong>
-      <p>Informational product tier</p>
-      <button class="invest-btn" data-plan="Standard" data-price="1500">
-        View Details →
-      </button>
-    </div>
-
-    <div class="plan purple-plan">
-      <span>PLAN 03</span>
-      <h3>Premium</h3>
-      <strong>₹3,600</strong>
-      <p>Informational product tier</p>
-      <button class="invest-btn" data-plan="Premium" data-price="3600">
-        View Details →
-      </button>
-    </div>
-
-  </div>
-
-  <div class="quick-grid">
-
-    <button class="quick" id="depositBtn">
-      <i class="green-icon">↓</i>
-      <b>Deposit</b>
-      <small>Information</small>
-    </button>
-
-    <button class="quick" id="withdrawBtn">
-      <i class="purple-icon">↑</i>
-      <b>Withdraw</b>
-      <small>Request</small>
-    </button>
-
-    <button class="quick" id="myInfoBtn">
-      <i class="blue-icon">●</i>
-      <b>My Info</b>
-      <small>Profile</small>
-    </button>
-
-    <button class="quick" id="inviteBtn">
-      <i class="orange-icon">👥</i>
-      <b>Invite</b>
-      <small>Share</small>
-    </button>
-
-  </div>
-
-  <div class="account-mini" id="accountBtn">
-
-    <div class="avatar-mini">👤</div>
-
-    <div>
-      <small>My Info</small>
-      <b id="homeUserId">You-7519001</b>
-    </div>
-
-    <div class="mini-balance">
-      <small>Available Balance</small>
-      <b id="homeBalance">₹0.00</b>
-    </div>
-
-    <span>›</span>
-
-  </div>
-
-  <div class="ticker">
-    <b>📢</b>
-    <span id="tickerText">Good morning everyone!</span>
-    <em>● Live</em>
-  </div>
-
-</section>
-
-
-<section class="page" id="productPage">
-
-  <div class="page-title">
-    <button class="back-btn" data-back="homePage">‹</button>
-
-    <div>
-      <h2>Products</h2>
-      <p>Available informational tiers</p>
-    </div>
-  </div>
-
-  <div class="product-large">
-
-    <span>PLAN 01</span>
-    <h2>Starter</h2>
-    <strong>₹500</strong>
-
-    <p>
-      Basic informational product tier.
-    </p>
-
-    <button class="invest-btn"
-            data-plan="Starter"
-            data-price="500">
-      View Details
-    </button>
-
-  </div>
-
-
-  <div class="product-large">
-
-    <span>PLAN 02</span>
-    <h2>Standard</h2>
-    <strong>₹1,500</strong>
-
-    <p>
-      Standard informational product tier.
-    </p>
-
-    <button class="invest-btn"
-            data-plan="Standard"
-            data-price="1500">
-      View Details
-    </button>
-
-  </div>
-
-
-  <div class="product-large">
-
-    <span>PLAN 03</span>
-    <h2>Premium</h2>
-    <strong>₹3,600</strong>
-
-    <p>
-      Premium informational product tier.
-    </p>
-
-    <button class="invest-btn"
-            data-plan="Premium"
-            data-price="3600">
-      View Details
-    </button>
-
-  </div>
-
-
-  <div class="warning">
-
-    <b>Important</b>
-
-    <p>
-      Product prices shown here are informational only.
-      This website does not guarantee investment profits.
-    </p>
-
-  </div>
-
-</section>
-
-
-<section class="page" id="infoPage">
-
-  <div class="page-title">
-
-    <button class="back-btn"
-            data-back="homePage">
-      ‹
-    </button>
-
-    <div>
-      <h2>My Info</h2>
-      <p>Your account information</p>
-    </div>
-
-  </div>
-
-
-  <div class="profile">
-
-    <div class="profile-photo">
-
-      <img id="profileImage"
-           alt="Profile">
-
-      <span id="profilePlaceholder">
-        👤
-      </span>
-
-    </div>
-
-
-    <h2 id="profileUserId">
-      You-7519001
-    </h2>
-
-    <p>
-      Member Account
-    </p>
-
-
-    <div class="photo-buttons">
-
-      <label>
-        📷 Gallery
-
-        <input
-          type="file"
-          id="galleryInput"
-          accept="image/*">
-      </label>
-
-
-      <button id="cameraOpenBtn">
-        📸 Camera
-      </button>
-
-    </div>
-
-
-    <video
-      id="cameraVideo"
-      autoplay
-      playsinline>
-    </video>
-
-
-    <button
-      id="takePhotoBtn"
-      class="primary hidden">
-      Take Photo
-    </button>
-
-
-    <button
-      id="cameraCloseBtn"
-      class="secondary hidden">
-      Close Camera
-    </button>
-
-
-    <canvas id="photoCanvas"></canvas>
-
-  </div>
-
-
-  <div class="balance">
-
-    <small>
-      Available Balance
-    </small>
-
-    <strong id="balanceText">
-      ₹0.00
-    </strong>
-
-  </div>
-
-
-  <div class="history-menu">
-
-
-    <button
-      class="history-item"
-      id="transactionHistoryBtn">
-
-      <div class="history-icon green-history">
-        ↕
-      </div>
-
-      <div class="history-text">
-
-        <b>
-          Transaction History
-        </b>
-
-        <small>
-          All deposits & withdrawals
-        </small>
-
-      </div>
-
-      <span>›</span>
-
-    </button>
-
-
-    <button
-      class="history-item"
-      id="depositHistoryBtn">
-
-      <div class="history-icon blue-history">
-        ↓
-      </div>
-
-      <div class="history-text">
-
-        <b>
-          Deposit History
-        </b>
-
-        <small>
-          View all deposit records
-        </small>
-
-      </div>
-
-      <span>›</span>
-
-    </button>
-
-
-    <button
-      class="history-item"
-      id="withdrawalHistoryBtn">
-
-      <div class="history-icon purple-history">
-        ↑
-      </div>
-
-      <div class="history-text">
-
-        <b>
-          Withdrawal History
-        </b>
-
-        <small>
-          View all withdrawal records
-        </small>
-
-      </div>
-
-      <span>›</span>
-
-    </button>
-
-
-    <button
-      class="history-item"
-      id="customerServiceBtn">
-
-      <div class="history-icon orange-history">
-        💬
-      </div>
-
-      <div class="history-text">
-
-        <b>
-          Customer Service
-        </b>
-
-        <small>
-          Open Telegram support
-        </small>
-
-      </div>
-
-      <span>›</span>
-
-    </button>
-
-
-  </div>
-
-
-  <div class="form-card">
-
-    <h3>
-      Add Bank Details
-    </h3>
-
-    <label>
-      Name
-    </label>
-
-    <input
-      id="accountHolder"
-      placeholder="Account holder name">
-
-
-    <label>
-      IFSC Code
-    </label>
-
-    <input
-      id="ifsc"
-      placeholder="Enter IFSC code">
-
-
-    <label>
-      Bank Name
-    </label>
-
-    <input
-      id="bankName"
-      placeholder="Bank name">
-
-
-    <label>
-      Account Number
-    </label>
-
-    <input
-      id="accountNumber"
-      type="password"
-      placeholder="Account number">
-
-
-    <label>
-      Repeat Account Number
-    </label>
-
-    <input
-      id="repeatAccount"
-      type="password"
-      placeholder="Repeat account number">
-
-
-    <button
-      class="primary"
-      id="saveBankBtn">
-
-      Save Bank Details
-
-    </button>
-
-
-    <p
-      id="bankMessage"
-      class="message">
-    </p>
-
-  </div>
-
-
-  <div class="form-card">
-
-    <h3>
-      Withdraw
-    </h3>
-
-
-    <label>
-      Amount
-    </label>
-
-
-    <input
-      id="withdrawAmount"
-      type="number"
-      min="500"
-      max="20000"
-      placeholder="₹500 - ₹20,000">
-
-
-    <button
-      class="withdraw-button"
-      id="withdrawSubmit">
-
-      Withdraw
-
-    </button>
-
-
-    <div class="rules">
-
-      <p>
-        <b>1.</b>
-        Withdrawal Time: 10:30 AM to 17:30 PM
-      </p>
-
-      <p>
-        <b>2.</b>
-        Daily Withdrawal only 3 times
-      </p>
-
-      <p>
-        <b>3.</b>
-        Available Balance:
-        <span id="ruleBalance">
-          ₹0.00
-        </span>
-      </p>
-
-      <p>
-        <b>4.</b>
-        Customer Support:
-        @___Kittu____764_
-      </p>
-
-    </div>
-
-
-    <p
-      id="withdrawMessage"
-      class="message">
-    </p>
-
-  </div>
-
-</section>
-
-
-<section
-  class="page"
-  id="historyPage">
-
-  <div class="page-title">
-
-    <button
-      class="back-btn"
-      id="historyBackBtn">
-      ‹
-    </button>
-
-    <div>
-
-      <h2 id="historyPageTitle">
-        Transaction History
-      </h2>
-
-      <p id="historyPageSubtitle">
-        Deposits & withdrawals
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="historyList"
-    class="history-list">
-  </div>
-
-</section>
-
-
-<section
-  class="page"
-  id="depositPage">
-
-  <div class="page-title">
-
-    <button
-      class="back-btn"
-      data-back="homePage">
-      ‹
-    </button>
-
-    <div>
-
-      <h2>
-        Deposit Information
-      </h2>
-
-      <p>
-        Payment details & verification request
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="deposit-payment-card">
-
-    <div class="deposit-payment-head">
-
-      <div class="deposit-payment-icon">
-        ₹
-      </div>
-
-      <div>
-
-        <h3>
-          UPI Payment
-        </h3>
-
-        <p>
-          Use the details below to make your payment.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div class="qr-wrap">
-
-      <img
-        src="./qr.jpg"
-        alt="UPI QR Code"
-        class="deposit-qr">
-
-    </div>
-
-
-    <div class="upi-caption">
-      UPI ID
-    </div>
-
-
-    <div class="upi-copy-row">
-
-      <span id="upiId">
-        yadav-rishab@fam
-      </span>
-
-      <button
-        type="button"
-        id="copyUpiBtn">
-        Copy
-      </button>
-
-    </div>
-
-
-    <div class="payment-note">
-
-      <b>
-        Important:
-      </b>
-
-      Verify the payment details carefully before submitting.
-      This website does not automatically verify payments.
-
-    </div>
-
-  </div>
-
-
-  <div class="form-card">
-
-    <h3>
-      Submit Payment Details
-    </h3>
-
-
-    <label>
-      Amount
-    </label>
-
-    <input
-      id="depositAmount"
-      type="number"
-      min="1"
-      placeholder="Enter amount">
-
-
-    <label>
-      UTR / Transaction Reference
-    </label>
-
-    <input
-      id="utr"
-      type="text"
-      maxlength="80"
-      placeholder="Enter UTR / transaction reference">
-
-
-    <label>
-      Payment Screenshot
-    </label>
-
-    <input
-      id="paymentScreenshot"
-      type="file"
-      accept="image/*">
-
-
-    <div
-      id="paymentScreenshotPreview"
-      class="payment-screenshot-preview">
-    </div>
-
-
-    <button
-      class="primary"
-      id="paymentSubmit">
-
-      Submit for Verification
-
-    </button>
-
-
-    <p
-      id="paymentMessage"
-      class="message">
-    </p>
-
-  </div>
-
-
-  <div class="warning">
-
-    <b>
-      Verification status
-    </b>
-
-    <p>
-      Your submitted request is kept locally in this browser.
-      No automatic Telegram or Google Sheets transmission is performed.
-    </p>
-
-  </div>
-
-</section>
-
-
-<section
-  class="page"
-  id="invitePage">
-
-  <div class="page-title">
-
-    <button
-      class="back-btn"
-      data-back="homePage">
-      ‹
-    </button>
-
-    <div>
-
-      <h2>
-        Invite
-      </h2>
-
-      <p>
-        Share the application
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="invite-card">
-
-    <div class="invite-icon">
-      👥
-    </div>
-
-    <h2>
-      Invite Friends
-    </h2>
-
-    <p>
-      Share the Bitcoin Minning website
-      with your WhatsApp contacts.
-    </p>
-
-
-    <button
-      class="whatsapp"
-      id="whatsappBtn">
-
-      Share on WhatsApp
-
-    </button>
-
-
-    <button
-      class="secondary"
-      id="copyBtn">
-
-      Copy App Link
-
-    </button>
-
-
-    <p
-      id="inviteMessage"
-      class="message">
-    </p>
-
-  </div>
-
-</section>
-
-</main>
-
-
-<div
-  class="modal"
-  id="productModal">
-
-  <div class="modal-box">
-
-    <button
-      class="modal-close"
-      id="modalClose">
-      ×
-    </button>
-
-
-    <small id="modalPlan">
-      PLAN
-    </small>
-
-
-    <h2 id="modalTitle">
-      Starter
-    </h2>
-
-
-    <strong id="modalPrice">
-      ₹500
-    </strong>
-
-
-    <p>
-      This is an informational product page.
-      No guaranteed investment return is promised.
-    </p>
-
-
-    <button
-      class="primary"
-      id="modalDeposit">
-
-      Deposit Information
-
-    </button>
-
-  </div>
-
-</div>
-
-
-<nav class="bottom-nav">
-
-  <button
-    class="nav active"
-    data-page="homePage">
-
-    <span>⌂</span>
-    <small>Home</small>
-
-  </button>
-
-
-  <button
-    class="nav"
-    data-page="productPage">
-
-    <span>▦</span>
-    <small>Product</small>
-
-  </button>
-
-
-  <button
-    class="nav"
-    data-page="infoPage">
-
-    <span>●</span>
-    <small>My Info</small>
-
-  </button>
-
-
-  <button
-    class="nav"
-    data-page="invitePage">
-
-    <span>↗</span>
-    <small>Invite</small>
-
-  </button>
-
-</nav>
-
-
-<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-auth-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore-compat.js"></script>
-
-<script src="./firebase-config.js?v=1"></script>
-
-<script src="./script.js?v=5"></script>
-
-</body>
-</html>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #030b13;
+  --card: #071722;
+  --card2: #091e2b;
+  --text: #f4f8ff;
+  --muted: #8fa7b8;
+  --green: #00df8a;
+  --blue: #168cff;
+  --purple: #843cff;
+  --orange: #ff9d16;
+  --border: rgba(255,255,255,.10);
+}
+
+body {
+  background:
+    radial-gradient(circle at 90% 5%, #063524 0, transparent 28%),
+    var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  padding-bottom: 90px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.header {
+  height: 78px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(3,11,19,.95);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btc {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg,#ffb326,#f17c00);
+  color: white;
+  font-size: 29px;
+  font-weight: bold;
+}
+
+.brand h1 {
+  font-size: 19px;
+}
+
+.brand p {
+  font-size: 10px;
+  color: #8fa7b8;
+  margin-top: 4px;
+}
+
+.live {
+  color: var(--green);
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.live span {
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  background: var(--green);
+  border-radius: 50%;
+}
+
+main {
+  max-width: 760px;
+  margin: auto;
+  padding: 15px;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+  animation: show .2s ease;
+}
+
+@keyframes show {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* HERO */
+
+.hero {
+  min-height: 230px;
+  border: 1px solid #087a57;
+  border-radius: 22px;
+  overflow: hidden;
+  padding: 25px;
+  position: relative;
+  background:
+    linear-gradient(115deg,#06251c,#03121c 65%);
+  margin-bottom: 25px;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 70%;
+}
+
+.hero-content small {
+  color: var(--green);
+  font-weight: bold;
+}
+
+.hero h2 {
+  font-size: 31px;
+  margin: 10px 0;
+  line-height: 1.1;
+}
+
+.hero h2 b {
+  color: var(--green);
+}
+
+.hero p {
+  color: #a7bac8;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.hero-btn {
+  border: 0;
+  background: var(--green);
+  color: #00140d;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-weight: bold;
+  margin-top: 17px;
+}
+
+.bitcoin-big {
+  position: absolute;
+  right: 35px;
+  top: 45px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg,#ffbf27,#e77800);
+  font-size: 80px;
+  font-weight: bold;
+  box-shadow: 0 0 45px rgba(255,150,0,.25);
+}
+
+
+/* SECTIONS */
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 25px 4px 14px;
+}
+
+.section-head h2 {
+  font-size: 21px;
+}
+
+.section-head span,
+.text-btn {
+  color: var(--green);
+  font-size: 12px;
+  background: none;
+  border: 0;
+}
+
+
+/* NEWS */
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 12px;
+}
+
+.news {
+  background: var(--card);
+  border: 1px solid #173649;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.coin {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.orange {
+  background: #ff970d;
+}
+
+.blue {
+  background: #196fe5;
+}
+
+.purple {
+  background: #7738d8;
+}
+
+.news label {
+  color: #62e8aa;
+  background: #063626;
+  border-radius: 15px;
+  padding: 5px 8px;
+  font-size: 9px;
+}
+
+.news h3 {
+  font-size: 15px;
+  margin: 12px 0 8px;
+  line-height: 1.3;
+}
+
+.news p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.news small {
+  display: block;
+  margin-top: 12px;
+  color: #668091;
+}
+
+
+/* PLANS */
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 12px;
+}
+
+.plan,
+.product-large {
+  border-radius: 17px;
+  padding: 18px;
+  background: var(--card);
+}
+
+.plan span,
+.product-large span {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.green-plan {
+  border: 1px solid #00a76a;
+}
+
+.green-plan span {
+  background: #07583b;
+  color: #67e6a7;
+}
+
+.blue-plan {
+  border: 1px solid #1476d5;
+}
+
+.blue-plan span {
+  background: #083b78;
+  color: #74b8ff;
+}
+
+.purple-plan {
+  border: 1px solid #823ee1;
+}
+
+.purple-plan span {
+  background: #38206e;
+  color: #c6a5ff;
+}
+
+.plan h3 {
+  font-size: 20px;
+  margin: 12px 0 7px;
+}
+
+.plan strong,
+.product-large strong {
+  font-size: 25px;
+}
+
+.plan p,
+.product-large p {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 8px 0 15px;
+}
+
+.invest-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 20px;
+  padding: 10px;
+  background: var(--green);
+  color: #00130c;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+
+/* QUICK */
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.quick {
+  border: 1px solid #17384a;
+  background: var(--card);
+  color: white;
+  border-radius: 15px;
+  padding: 15px 7px;
+}
+
+.quick i {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: auto auto 9px;
+  font-style: normal;
+  font-size: 18px;
+}
+
+.green-icon {
+  background: #00b877;
+}
+
+.purple-icon {
+  background: #793be0;
+}
+
+.blue-icon {
+  background: #147fe4;
+}
+
+.orange-icon {
+  background: #e99613;
+}
+
+.quick b,
+.quick small {
+  display: block;
+}
+
+.quick b {
+  font-size: 12px;
+}
+
+.quick small {
+  color: #79909e;
+  margin-top: 4px;
+  font-size: 9px;
+}
+
+
+/* ACCOUNT */
+
+.account-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid #125d78;
+  border-radius: 18px;
+  margin-top: 16px;
+  padding: 14px;
+  cursor: pointer;
+}
+
+.avatar-mini {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #12354c;
+  font-size: 25px;
+}
+
+.account-mini small,
+.account-mini b {
+  display: block;
+}
+
+.account-mini small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.account-mini b {
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.mini-balance {
+  margin-left: auto;
+  border-left: 1px solid var(--border);
+  padding-left: 18px;
+}
+
+.mini-balance b {
+  color: var(--green);
+  font-size: 17px;
+}
+
+.account-mini > span {
+  font-size: 30px;
+  color: #6f8b9b;
+}
+
+
+/* TICKER */
+
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border-radius: 25px;
+  border: 1px solid #174a55;
+  color: var(--green);
+  font-size: 11px;
+}
+
+.ticker em {
+  margin-left: auto;
+  font-style: normal;
+}
+
+
+/* PAGE TITLE */
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 18px;
+}
+
+.page-title h2 {
+  font-size: 24px;
+}
+
+.page-title p {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: white;
+  border-radius: 12px;
+  font-size: 28px;
+}
+
+
+/* PRODUCT PAGE */
+
+.product-large {
+  border: 1px solid #164359;
+  margin-bottom: 14px;
+}
+
+.product-large h2 {
+  margin: 12px 0 5px;
+}
+
+.product-large span {
+  color: var(--green);
+  background: #063728;
+}
+
+.warning {
+  background: #17160d;
+  border: 1px solid #554914;
+  border-radius: 15px;
+  padding: 16px;
+  margin-top: 15px;
+}
+
+.warning b {
+  color: #ffd04a;
+}
+
+.warning p {
+  color: #aaa48a;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 5px;
+}
+
+
+/* PROFILE */
+
+.profile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 25px 18px;
+  text-align: center;
+}
+
+.profile-photo {
+  width: 105px;
+  height: 105px;
+  border-radius: 50%;
+  margin: auto;
+  background: #103246;
+  border: 3px solid var(--green);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.profile-photo span {
+  font-size: 45px;
+}
+
+.profile > p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.photo-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.photo-buttons label,
+.photo-buttons button {
+  border: 1px solid #28546a;
+  background: #0a2230;
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.photo-buttons input {
+  display: none;
+}
+
+#cameraVideo {
+  display: none;
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 12px;
+}
+
+#photoCanvas {
+  display: none;
+}
+
+
+/* FORMS */
+
+.balance,
+.form-card,
+.invite-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  margin-top: 14px;
+}
+
+.balance {
+  text-align: center;
+}
+
+.balance small {
+  color: var(--muted);
+  display: block;
+}
+
+.balance strong {
+  color: var(--green);
+  display: block;
+  font-size: 28px;
+  margin-top: 7px;
+}
+
+.form-card h3 {
+  margin-bottom: 15px;
+}
+
+.form-card label {
+  display: block;
+  color: #94aab8;
+  font-size: 11px;
+  margin: 13px 0 6px;
+}
+
+.form-card input {
+  width: 100%;
+  background: #031019;
+  border: 1px solid #1a3544;
+  border-radius: 10px;
+  padding: 13px;
+  color: white;
+  outline: none;
+}
+
+.form-card input:focus {
+  border-color: var(--green);
+}
+
+.primary,
+.secondary,
+.withdraw-button,
+.whatsapp {
+  width: 100%;
+  border: 0;
+  border-radius: 11px;
+  padding: 13px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+.primary {
+  background: var(--green);
+  color: #00130c;
+}
+
+.secondary {
+  background: #142b39;
+  color: white;
+}
+
+.withdraw-button {
+  background: #075c39;
+  color: white;
+}
+
+.whatsapp {
+  background: #13a95b;
+  color: white;
+}
+
+.rules {
+  background: #031019;
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 15px;
+}
+
+.rules p {
+  color: #91a7b5;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.message {
+  color: var(--green);
+  font-size: 11px;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+
+/* INVITE */
+
+.invite-card {
+  text-align: center;
+  padding: 35px 20px;
+}
+
+.invite-icon {
+  font-size: 55px;
+  margin-bottom: 15px;
+}
+
+.invite-card p {
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+
+/* MODAL */
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.78);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 420px;
+  background: #071b27;
+  border: 1px solid #1d586b;
+  border-radius: 20px;
+  padding: 25px;
+  position: relative;
+}
+
+.modal-box small {
+  color: var(--green);
+}
+
+.modal-box h2 {
+  margin: 10px 0;
+}
+
+.modal-box > strong {
+  color: var(--green);
+  font-size: 28px;
+}
+
+.modal-box p {
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 13px;
+  margin: 15px 0;
+}
+
+.modal-close {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  border: 0;
+  background: #12303e;
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  font-size: 22px;
+}
+
+
+/* BOTTOM NAV */
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 76px;
+  background: rgba(3,11,19,.98);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+}
+
+.nav {
+  background: none;
+  border: 0;
+  color: #6f8491;
+  min-width: 65px;
+  padding: 7px;
+}
+
+.nav span,
+.nav small {
+  display: block;
+}
+
+.nav span {
+  font-size: 24px;
+}
+
+.nav small {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.nav.active {
+  color: var(--green);
+}
+
+.hidden {
+  display: none !important;
+}
+
+
+/* MOBILE */
+
+@media(max-width:650px) {
+
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plans {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-grid {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .hero {
+    min-height: 245px;
+  }
+
+  .hero-content {
+    width: 100%;
+  }
+
+  .bitcoin-big {
+    opacity: .16;
+    right: 20px;
+  }
+
+  .mini-balance {
+    display: none;
+  }
+
+  .account-mini > span {
+    margin-left: auto;
+  }
+}
+
+
+/* ==============================
+   DEPOSIT PAYMENT
+============================== */
+
+.deposit-payment-card {
+  background: var(--card);
+  border: 1px solid #17566b;
+  border-radius: 20px;
+  padding: 18px;
+  margin-top: 14px;
+}
+
+.deposit-payment-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.deposit-payment-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #075c39;
+  color: #7ff0bd;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.deposit-payment-head h3 {
+  font-size: 17px;
+}
+
+.deposit-payment-head p {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.qr-wrap {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.deposit-qr {
+  width: 250px;
+  height: 250px;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 6px;
+}
+
+.upi-caption {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 15px;
+  margin-bottom: 6px;
+}
+
+.upi-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #031019;
+  border: 1px solid #1a3544;
+  border-radius: 11px;
+  padding: 6px 7px 6px 12px;
+}
+
+.upi-copy-row span {
+  color: #fff;
+  font-size: 13px;
+  font-weight: bold;
+  word-break: break-all;
+  flex: 1;
+}
+
+.upi-copy-row button {
+  border: 0;
+  border-radius: 9px;
+  padding: 9px 12px;
+  background: var(--green);
+  color: #00130c;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.payment-note {
+  margin-top: 13px;
+  padding: 12px;
+  border-radius: 11px;
+  background: #17160d;
+  border: 1px solid #554914;
+  color: #aaa48a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.payment-note b {
+  color: #ffd04a;
+}
+
+.payment-screenshot-preview {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.payment-screenshot-preview img {
+  display: inline-block;
+  max-width: 190px;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid #28546a;
+}
+
+
+/* ==============================
+   HISTORY MENU
+============================== */
+
+.history-menu {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  padding: 14px;
+  color: white;
+  transition: transform .12s ease;
+}
+
+.history-item:active {
+  transform: scale(.98);
+}
+
+.history-icon {
+  width: 45px;
+  height: 45px;
+  min-width: 45px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  font-weight: bold;
+}
+
+.green-history {
+  background: rgba(0,223,138,.14);
+  color: var(--green);
+}
+
+.blue-history {
+  background: rgba(22,140,255,.14);
+  color: var(--blue);
+}
+
+.purple-history {
+  background: rgba(132,60,255,.14);
+  color: #b68cff;
+}
+
+.orange-history {
+  background: rgba(255,157,22,.14);
+  color: var(--orange);
+}
+
+.history-text {
+  flex: 1;
+}
+
+.history-text b {
+  display: block;
+  font-size: 13px;
+}
+
+.history-text small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.history-item > span {
+  color: #78909e;
+  font-size: 27px;
+}
+
+
+/* ==============================
+   HISTORY PAGE
+============================== */
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 15px;
+}
+
+.history-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.history-type-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.deposit-type {
+  background: rgba(22,140,255,.14);
+  color: #54a9ff;
+}
+
+.withdraw-type {
+  background: rgba(132,60,255,.14);
+  color: #b68cff;
+}
+
+.history-main {
+  flex: 1;
+}
+
+.history-main b {
+  display: block;
+  font-size: 13px;
+}
+
+.history-main small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.history-amount {
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.deposit-amount {
+  color: var(--green);
+}
+
+.withdraw-amount {
+  color: #c19cff;
+}
+
+.history-details {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.history-details p {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.history-details strong {
+  color: white;
+}
+
+.history-empty {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  padding: 30px 18px;
+  text-align: center;
+}
+
+.history-empty-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.history-empty h3 {
+  font-size: 15px;
+}
+
+.history-empty p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 6px;
+}
