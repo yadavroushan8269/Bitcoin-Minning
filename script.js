@@ -1,862 +1,959 @@
 "use strict";
 
-/* ==============================
-   APP LINK
-============================== */
-
-const APP_LINK =
-  "https://yadavroushan8269.github.io/Bitcoin-Minning/";
-
-
-/* ==============================
-   PAGE NAVIGATION
-============================== */
+/* =========================
+   BASIC NAVIGATION
+========================= */
 
 const pages = document.querySelectorAll(".page");
 const navButtons = document.querySelectorAll(".nav");
 
+function showPage(pageId){
 
-function showPage(pageId) {
-
-  pages.forEach(function(page) {
+  pages.forEach(page => {
     page.classList.remove("active");
   });
 
-  const target = document.getElementById(pageId);
+  const page = document.getElementById(pageId);
 
-  if (!target) {
-    console.error("Page not found:", pageId);
-    return;
+  if(page){
+    page.classList.add("active");
   }
 
-  target.classList.add("active");
+  navButtons.forEach(btn => {
+    btn.classList.remove("active");
 
-  navButtons.forEach(function(button) {
-
-    button.classList.remove("active");
-
-    if (button.dataset.page === pageId) {
-      button.classList.add("active");
+    if(btn.dataset.page === pageId){
+      btn.classList.add("active");
     }
-
   });
 
   window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+    top:0,
+    behavior:"smooth"
   });
 }
 
 
 /* Bottom navigation */
 
-navButtons.forEach(function(button) {
+navButtons.forEach(btn => {
 
-  button.addEventListener("click", function() {
+  btn.addEventListener("click", () => {
 
-    showPage(button.dataset.page);
+    const page = btn.dataset.page;
+
+    if(page){
+      showPage(page);
+    }
 
   });
 
 });
 
 
-/* ==============================
-   QUICK BUTTONS
-============================== */
+/* All data-page buttons */
 
-document.getElementById("depositBtn")
-  .addEventListener("click", function() {
-    showPage("depositPage");
-  });
+document.querySelectorAll("[data-page]").forEach(btn => {
 
+  if(btn.classList.contains("nav")) return;
 
-document.getElementById("withdrawBtn")
-  .addEventListener("click", function() {
-    showPage("infoPage");
+  btn.addEventListener("click", () => {
 
-    setTimeout(function() {
-      document.getElementById("withdrawAmount").focus();
-    }, 250);
-  });
+    const page = btn.dataset.page;
 
-
-document.getElementById("myInfoBtn")
-  .addEventListener("click", function() {
-    showPage("infoPage");
-  });
-
-
-document.getElementById("inviteBtn")
-  .addEventListener("click", function() {
-    showPage("invitePage");
-  });
-
-
-document.getElementById("accountBtn")
-  .addEventListener("click", function() {
-    showPage("infoPage");
-  });
-
-
-document.getElementById("productViewBtn")
-  .addEventListener("click", function() {
-    showPage("productPage");
-  });
-
-
-document.getElementById("learnBtn")
-  .addEventListener("click", function() {
-    showPage("productPage");
-  });
-
-
-/* ==============================
-   BACK BUTTONS
-============================== */
-
-document.querySelectorAll(".back-btn")
-  .forEach(function(button) {
-
-    button.addEventListener("click", function() {
-      showPage(button.dataset.back);
-    });
-
-  });
-
-
-/* ==============================
-   USER ID
-============================== */
-
-function createUserId() {
-
-  let id = localStorage.getItem("bm_user_id");
-
-  if (!id) {
-
-    let counter =
-      parseInt(
-        localStorage.getItem("bm_user_counter") || "0",
-        10
-      );
-
-    counter++;
-
-    if (counter > 999) {
-      counter = 999;
+    if(page){
+      showPage(page);
     }
 
-    localStorage.setItem(
-      "bm_user_counter",
-      counter
+  });
+
+});
+
+
+/* Back buttons */
+
+document.querySelectorAll(".back-btn").forEach(btn => {
+
+  btn.addEventListener("click", () => {
+
+    showPage(
+      btn.dataset.back || "homePage"
     );
 
-    id =
-      "You-7519" +
-      String(counter).padStart(3, "0");
+  });
+
+});
+
+
+/* =========================
+   USER ID
+========================= */
+
+function createUserId(){
+
+  let userId =
+    localStorage.getItem("bm_user_id");
+
+  if(!userId){
+
+    const random =
+      Math.floor(
+        1000000 +
+        Math.random() * 8999999
+      );
+
+    userId =
+      "You-" + random;
 
     localStorage.setItem(
       "bm_user_id",
-      id
+      userId
     );
   }
 
-  document.getElementById("homeUserId")
-    .textContent = id;
+  const elements = [
+    "profileUserId",
+    "infoUserId"
+  ];
 
-  document.getElementById("profileUserId")
-    .textContent = id;
+  elements.forEach(id => {
+
+    const el =
+      document.getElementById(id);
+
+    if(el){
+      el.textContent = userId;
+    }
+
+  });
+
 }
 
 
-/* ==============================
-   INDIA LIVE TIME / GREETING
-============================== */
+/* =========================
+   BALANCE
+========================= */
 
-function updateTime() {
+function getBalance(){
 
-  const now = new Date();
-
-  const hour = parseInt(
-    new Intl.DateTimeFormat("en-IN", {
-      timeZone: "Asia/Kolkata",
-      hour: "numeric",
-      hour12: false
-    }).format(now),
-    10
+  return Number(
+    localStorage.getItem("bm_balance") || "0"
   );
 
-  let greeting = "Good morning everyone!";
-
-  if (hour >= 12 && hour < 17) {
-    greeting = "Good afternoon everyone!";
-  }
-
-  if (hour >= 17) {
-    greeting = "Good evening everyone!";
-  }
-
-  document.getElementById("tickerText")
-    .textContent = greeting;
 }
 
-updateTime();
+function updateBalance(){
 
-setInterval(updateTime, 1000);
-
-
-/* ==============================
-   BALANCE
-============================== */
-
-function getBalance() {
-
-  const value =
-    parseFloat(
-      localStorage.getItem("bm_balance") || "0"
-    );
-
-  return Number.isFinite(value) ? value : 0;
-}
-
-
-function updateBalance() {
+  const balance =
+    getBalance();
 
   const formatted =
     "₹" +
-    getBalance().toLocaleString(
-      "en-IN",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
-    );
-
-  document.getElementById("balanceText")
-    .textContent = formatted;
-
-  document.getElementById("homeBalance")
-    .textContent = formatted;
-
-  document.getElementById("ruleBalance")
-    .textContent = formatted;
-}
-
-
-/* ==============================
-   PRODUCT MODAL
-============================== */
-
-const modal =
-  document.getElementById("productModal");
-
-
-document.querySelectorAll(".invest-btn")
-  .forEach(function(button) {
-
-    button.addEventListener("click", function() {
-
-      const plan =
-        button.dataset.plan;
-
-      const price =
-        Number(button.dataset.price);
-
-      document.getElementById("modalPlan")
-        .textContent = plan.toUpperCase();
-
-      document.getElementById("modalTitle")
-        .textContent = plan;
-
-      document.getElementById("modalPrice")
-        .textContent =
-        "₹" +
-        price.toLocaleString("en-IN");
-
-      modal.classList.add("show");
-
+    balance.toLocaleString("en-IN", {
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
     });
 
-  });
+  const ids = [
+    "balanceDisplay",
+    "infoBalance",
+    "withdrawBalance"
+  ];
 
+  ids.forEach(id => {
 
-document.getElementById("modalClose")
-  .addEventListener("click", function() {
+    const el =
+      document.getElementById(id);
 
-    modal.classList.remove("show");
-
-  });
-
-
-modal.addEventListener("click", function(event) {
-
-  if (event.target === modal) {
-    modal.classList.remove("show");
-  }
-
-});
-
-
-document.getElementById("modalDeposit")
-  .addEventListener("click", function() {
-
-    modal.classList.remove("show");
-
-    showPage("depositPage");
-
-  });
-
-
-/* ==============================
-   PROFILE GALLERY
-============================== */
-
-const gallery =
-  document.getElementById("galleryInput");
-
-
-gallery.addEventListener("change", function() {
-
-  const file = gallery.files[0];
-
-  if (!file) {
-    return;
-  }
-
-  if (!file.type.startsWith("image/")) {
-    alert("Please select an image.");
-    return;
-  }
-
-  const reader = new FileReader();
-
-  reader.onload = function(event) {
-
-    setProfileImage(event.target.result);
-
-  };
-
-  reader.readAsDataURL(file);
-
-});
-
-
-function setProfileImage(data) {
-
-  const img =
-    document.getElementById("profileImage");
-
-  const placeholder =
-    document.getElementById("profilePlaceholder");
-
-  img.src = data;
-  img.style.display = "block";
-
-  placeholder.style.display = "none";
-
-  try {
-    localStorage.setItem(
-      "bm_profile_image",
-      data
-    );
-  } catch(error) {
-    console.log("Image storage unavailable.");
-  }
-}
-
-
-/* Load profile */
-
-const savedImage =
-  localStorage.getItem("bm_profile_image");
-
-if (savedImage) {
-  setProfileImage(savedImage);
-}
-
-
-/* ==============================
-   CAMERA
-============================== */
-
-let stream = null;
-
-const cameraVideo =
-  document.getElementById("cameraVideo");
-
-const takePhoto =
-  document.getElementById("takePhotoBtn");
-
-const closeCamera =
-  document.getElementById("cameraCloseBtn");
-
-const canvas =
-  document.getElementById("photoCanvas");
-
-
-document.getElementById("cameraOpenBtn")
-  .addEventListener("click", async function() {
-
-    try {
-
-      stream =
-        await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "user"
-          },
-          audio: false
-        });
-
-      cameraVideo.srcObject = stream;
-
-      cameraVideo.style.display = "block";
-
-      takePhoto.classList.remove("hidden");
-      closeCamera.classList.remove("hidden");
-
-    } catch(error) {
-
-      alert(
-        "Camera permission was denied or camera is unavailable."
-      );
-
-      console.error(error);
-
+    if(el){
+      el.textContent = formatted;
     }
 
   });
 
+}
 
-takePhoto.addEventListener("click", function() {
 
-  if (!stream) {
-    return;
-  }
+/* =========================
+   INDIA TIME / GREETING
+========================= */
 
-  canvas.width =
-    cameraVideo.videoWidth;
+function getIndiaDate(){
 
-  canvas.height =
-    cameraVideo.videoHeight;
-
-  const ctx =
-    canvas.getContext("2d");
-
-  ctx.drawImage(
-    cameraVideo,
-    0,
-    0,
-    canvas.width,
-    canvas.height
+  return new Date(
+    new Date().toLocaleString(
+      "en-US",
+      {timeZone:"Asia/Kolkata"}
+    )
   );
 
-  const image =
-    canvas.toDataURL(
-      "image/jpeg",
-      .85
+}
+
+
+/* =========================
+   PROFILE PHOTO
+========================= */
+
+const galleryInput =
+  document.getElementById("galleryInput");
+
+const profileImage =
+  document.getElementById("profileImage");
+
+function loadProfileImage(){
+
+  const saved =
+    localStorage.getItem(
+      "bm_profile_image"
     );
 
-  setProfileImage(image);
+  if(saved && profileImage){
 
-  stopCamera();
+    profileImage.src = saved;
+
+  }else if(profileImage){
+
+    profileImage.src =
+      "data:image/svg+xml;charset=UTF-8," +
+      encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="100"
+             height="100"
+             viewBox="0 0 100 100">
+          <rect width="100"
+                height="100"
+                rx="50"
+                fill="#102a39"/>
+          <circle cx="50"
+                  cy="38"
+                  r="17"
+                  fill="#8fa7b8"/>
+          <path d="M20 86
+                   C25 64 75 64 80 86"
+                fill="#8fa7b8"/>
+        </svg>
+      `);
+
+  }
+
+}
+
+if(galleryInput){
+
+  galleryInput.addEventListener(
+    "change",
+    event => {
+
+      const file =
+        event.target.files[0];
+
+      if(!file) return;
+
+      if(!file.type.startsWith("image/")){
+        return;
+      }
+
+      const reader =
+        new FileReader();
+
+      reader.onload = e => {
+
+        const image =
+          e.target.result;
+
+        localStorage.setItem(
+          "bm_profile_image",
+          image
+        );
+
+        if(profileImage){
+          profileImage.src = image;
+        }
+
+      };
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+}
+
+
+/* =========================
+   BANK DETAILS
+========================= */
+
+const bankFields = [
+  "bankNamePerson",
+  "bankIfsc",
+  "bankName",
+  "accountNumber",
+  "repeatAccountNumber"
+];
+
+function loadBankDetails(){
+
+  bankFields.forEach(id => {
+
+    const value =
+      localStorage.getItem(
+        "bm_" + id
+      );
+
+    const el =
+      document.getElementById(id);
+
+    if(el && value){
+      el.value = value;
+    }
+
+  });
+
+}
+
+const saveBankBtn =
+  document.getElementById("saveBankBtn");
+
+if(saveBankBtn){
+
+  saveBankBtn.addEventListener(
+    "click",
+    () => {
+
+      const person =
+        document.getElementById(
+          "bankNamePerson"
+        ).value.trim();
+
+      const ifsc =
+        document.getElementById(
+          "bankIfsc"
+        ).value.trim();
+
+      const bank =
+        document.getElementById(
+          "bankName"
+        ).value.trim();
+
+      const account =
+        document.getElementById(
+          "accountNumber"
+        ).value.trim();
+
+      const repeat =
+        document.getElementById(
+          "repeatAccountNumber"
+        ).value.trim();
+
+      const message =
+        document.getElementById(
+          "bankMessage"
+        );
+
+      if(
+        !person ||
+        !ifsc ||
+        !bank ||
+        !account ||
+        !repeat
+      ){
+
+        message.textContent =
+          "Please fill all bank details.";
+
+        return;
+      }
+
+      if(account !== repeat){
+
+        message.textContent =
+          "Account numbers do not match.";
+
+        return;
+      }
+
+      bankFields.forEach(id => {
+
+        const el =
+          document.getElementById(id);
+
+        localStorage.setItem(
+          "bm_" + id,
+          el.value.trim()
+        );
+
+      });
+
+      message.textContent =
+        "✓ Bank details saved locally.";
+
+    }
+  );
+
+}
+
+
+/* =========================
+   PRODUCT MODAL
+========================= */
+
+const productModal =
+  document.getElementById(
+    "productModal"
+  );
+
+const modalClose =
+  document.getElementById(
+    "modalClose"
+  );
+
+const modalTitle =
+  document.getElementById(
+    "modalTitle"
+  );
+
+const modalText =
+  document.getElementById(
+    "modalText"
+  );
+
+const modalDepositBtn =
+  document.getElementById(
+    "modalDepositBtn"
+  );
+
+
+document.querySelectorAll(
+  ".plan-btn"
+).forEach(btn => {
+
+  btn.addEventListener(
+    "click",
+    () => {
+
+      const amount =
+        btn.dataset.amount;
+
+      if(modalTitle){
+
+        modalTitle.textContent =
+          "₹" + amount + " Mining Plan";
+
+      }
+
+      if(modalText){
+
+        modalText.textContent =
+          "This plan is displayed for informational and UI purposes. No guaranteed investment return is represented.";
+
+      }
+
+      if(productModal){
+
+        productModal.classList.add(
+          "show"
+        );
+
+      }
+
+    }
+  );
 
 });
 
 
-closeCamera.addEventListener(
-  "click",
-  stopCamera
-);
+if(modalClose){
 
+  modalClose.addEventListener(
+    "click",
+    () => {
 
-function stopCamera() {
+      productModal.classList.remove(
+        "show"
+      );
 
-  if (stream) {
+    }
+  );
 
-    stream.getTracks()
-      .forEach(function(track) {
-        track.stop();
-      });
-
-    stream = null;
-  }
-
-  cameraVideo.srcObject = null;
-
-  cameraVideo.style.display = "none";
-
-  takePhoto.classList.add("hidden");
-  closeCamera.classList.add("hidden");
 }
 
 
-/* ==============================
-   BANK DETAILS
-============================== */
+if(productModal){
 
-document.getElementById("saveBankBtn")
-  .addEventListener("click", function() {
+  productModal.addEventListener(
+    "click",
+    event => {
 
-    const name =
-      document.getElementById("accountHolder")
-        .value.trim();
+      if(event.target === productModal){
 
-    const ifsc =
-      document.getElementById("ifsc")
-        .value.trim();
+        productModal.classList.remove(
+          "show"
+        );
 
-    const bank =
-      document.getElementById("bankName")
-        .value.trim();
+      }
 
-    const account =
-      document.getElementById("accountNumber")
-        .value.trim();
-
-    const repeat =
-      document.getElementById("repeatAccount")
-        .value.trim();
-
-    const message =
-      document.getElementById("bankMessage");
-
-
-    if (
-      !name ||
-      !ifsc ||
-      !bank ||
-      !account ||
-      !repeat
-    ) {
-
-      message.textContent =
-        "Please fill all fields.";
-
-      return;
     }
+  );
 
-
-    if (account !== repeat) {
-
-      message.textContent =
-        "Account numbers do not match.";
-
-      return;
-    }
-
-
-    const data = {
-      name: name,
-      ifsc: ifsc.toUpperCase(),
-      bank: bank,
-      account: account
-    };
-
-
-    localStorage.setItem(
-      "bm_bank",
-      JSON.stringify(data)
-    );
-
-
-    message.textContent =
-      "Bank details saved locally in this browser.";
-
-  });
-
-
-/* Load bank */
-
-const savedBank =
-  localStorage.getItem("bm_bank");
-
-if (savedBank) {
-
-  try {
-
-    const data =
-      JSON.parse(savedBank);
-
-    document.getElementById("accountHolder")
-      .value = data.name || "";
-
-    document.getElementById("ifsc")
-      .value = data.ifsc || "";
-
-    document.getElementById("bankName")
-      .value = data.bank || "";
-
-    document.getElementById("accountNumber")
-      .value = data.account || "";
-
-    document.getElementById("repeatAccount")
-      .value = data.account || "";
-
-  } catch(error) {
-    console.log("Bank data unavailable.");
-  }
 }
 
 
-/* ==============================
-   WITHDRAWAL VALIDATION
-============================== */
+if(modalDepositBtn){
 
-document.getElementById("withdrawSubmit")
-  .addEventListener("click", function() {
+  modalDepositBtn.addEventListener(
+    "click",
+    () => {
 
-    const amount =
-      Number(
-        document.getElementById("withdrawAmount").value
+      productModal.classList.remove(
+        "show"
       );
 
-    const message =
-      document.getElementById("withdrawMessage");
+      showPage("depositPage");
 
-
-    if (!amount) {
-
-      message.textContent =
-        "Please enter an amount.";
-
-      return;
     }
+  );
+
+}
 
 
-    if (amount < 500) {
+/* =========================
+   DEPOSIT
+   LOCAL ONLY
+========================= */
 
-      message.textContent =
-        "Minimum withdrawal amount is ₹500.";
+const paymentScreenshot =
+  document.getElementById(
+    "paymentScreenshot"
+  );
 
-      return;
+const paymentPreview =
+  document.getElementById(
+    "paymentScreenshotPreview"
+  );
+
+
+/* Screenshot preview */
+
+if(paymentScreenshot){
+
+  paymentScreenshot.addEventListener(
+    "change",
+    event => {
+
+      const file =
+        event.target.files[0];
+
+      if(!file) return;
+
+      if(!file.type.startsWith("image/")){
+
+        paymentPreview.innerHTML =
+          "";
+
+        return;
+
+      }
+
+      const reader =
+        new FileReader();
+
+      reader.onload = e => {
+
+        paymentPreview.innerHTML = `
+          <img
+            src="${e.target.result}"
+            alt="Payment Screenshot Preview">
+        `;
+
+      };
+
+      reader.readAsDataURL(file);
+
     }
+  );
+
+}
 
 
-    if (amount > 20000) {
+/* Copy UPI */
 
-      message.textContent =
-        "Maximum withdrawal amount is ₹20,000.";
+const copyUpiBtn =
+  document.getElementById(
+    "copyUpiBtn"
+  );
 
-      return;
+if(copyUpiBtn){
+
+  copyUpiBtn.addEventListener(
+    "click",
+    async () => {
+
+      const upi =
+        "yadav-rishab@fam";
+
+      try{
+
+        await navigator.clipboard.writeText(
+          upi
+        );
+
+        copyUpiBtn.textContent =
+          "Copied!";
+
+        setTimeout(() => {
+
+          copyUpiBtn.textContent =
+            "Copy";
+
+        },1500);
+
+      }catch(error){
+
+        alert(
+          "UPI ID: " + upi
+        );
+
+      }
+
     }
+  );
+
+}
 
 
-    if (amount > getBalance()) {
+/* Submit deposit request */
 
-      message.textContent =
-        "Insufficient available balance.";
+const paymentSubmit =
+  document.getElementById(
+    "paymentSubmit"
+  );
 
-      return;
-    }
+if(paymentSubmit){
 
+  paymentSubmit.addEventListener(
+    "click",
+    () => {
 
-    const current =
-      new Date();
+      const amount =
+        Number(
+          document.getElementById(
+            "depositAmount"
+          ).value
+        );
 
-    const india =
-      new Intl.DateTimeFormat("en-IN", {
-        timeZone: "Asia/Kolkata",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }).format(current);
+      const utr =
+        document.getElementById(
+          "utr"
+        ).value.trim();
 
-    const parts =
-      india.split(":");
+      const screenshot =
+        document.getElementById(
+          "paymentScreenshot"
+        ).files[0];
 
-    const hour =
-      Number(parts[0]);
-
-    const minute =
-      Number(parts[1]);
-
-    const total =
-      hour * 60 + minute;
-
-    const start =
-      10 * 60 + 30;
-
-    const end =
-      17 * 60 + 30;
+      const message =
+        document.getElementById(
+          "paymentMessage"
+        );
 
 
-    if (total < start || total > end) {
+      if(
+        !amount ||
+        amount < 200 ||
+        amount > 50000
+      ){
 
-      message.textContent =
-        "Withdrawal time is 10:30 AM - 5:30 PM India time.";
+        message.textContent =
+          "Enter an amount between ₹200 and ₹50,000.";
 
-      return;
-    }
+        return;
+
+      }
 
 
-    let records =
-      JSON.parse(
-        localStorage.getItem("bm_withdrawals") || "[]"
+      if(!utr){
+
+        message.textContent =
+          "Please enter UTR / transaction reference.";
+
+        return;
+
+      }
+
+
+      if(!screenshot){
+
+        message.textContent =
+          "Please attach the payment screenshot.";
+
+        return;
+
+      }
+
+
+      const request = {
+
+        id:
+          "DEP-" +
+          Date.now(),
+
+        amount:
+          amount,
+
+        utr:
+          utr,
+
+        submittedAt:
+          new Date().toISOString(),
+
+        status:
+          "Pending Verification"
+
+      };
+
+
+      localStorage.setItem(
+        "bm_last_deposit_request",
+        JSON.stringify(request)
       );
 
 
-    const today =
-      new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Kolkata"
-      }).format(current);
-
-
-    records =
-      records.filter(function(item) {
-        return item.date === today;
-      });
-
-
-    if (records.length >= 3) {
-
       message.textContent =
-        "Daily withdrawal limit of 3 has been reached.";
+        "✓ Request submitted locally. Status: Pending Verification.";
 
-      return;
+
+      document.getElementById(
+        "depositAmount"
+      ).value = "";
+
+      document.getElementById(
+        "utr"
+      ).value = "";
+
+      document.getElementById(
+        "paymentScreenshot"
+      ).value = "";
+
+      paymentPreview.innerHTML =
+        "";
+
     }
+  );
+
+}
 
 
-    records.push({
-      amount: amount,
-      date: today
-    });
+/* =========================
+   WITHDRAW
+========================= */
+
+const withdrawSubmit =
+  document.getElementById(
+    "withdrawSubmit"
+  );
+
+if(withdrawSubmit){
+
+  withdrawSubmit.addEventListener(
+    "click",
+    () => {
+
+      const amount =
+        Number(
+          document.getElementById(
+            "withdrawAmount"
+          ).value
+        );
+
+      const message =
+        document.getElementById(
+          "withdrawMessage"
+        );
+
+      const now =
+        getIndiaDate();
+
+      const hours =
+        now.getHours();
+
+      const minutes =
+        now.getMinutes();
+
+      const currentMinutes =
+        hours * 60 + minutes;
+
+      const start =
+        10 * 60 + 30;
+
+      const end =
+        17 * 60 + 30;
 
 
-    localStorage.setItem(
-      "bm_withdrawals",
-      JSON.stringify(records)
-    );
+      if(
+        !amount ||
+        amount < 500 ||
+        amount > 20000
+      ){
+
+        message.textContent =
+          "Withdrawal amount must be ₹500 - ₹20,000.";
+
+        return;
+
+      }
 
 
-    message.textContent =
-      "Withdrawal request recorded locally.";
+      if(
+        currentMinutes < start ||
+        currentMinutes > end
+      ){
 
-  });
+        message.textContent =
+          "Withdrawal requests are available from 10:30 AM to 5:30 PM IST.";
+
+        return;
+
+      }
 
 
-/* ==============================
-   DEPOSIT FORM
-============================== */
+      const balance =
+        getBalance();
 
-document.getElementById("paymentSubmit")
-  .addEventListener("click", function() {
 
-    const amount =
-      Number(
-        document.getElementById("depositAmount").value
+      if(amount > balance){
+
+        message.textContent =
+          "Insufficient available balance.";
+
+        return;
+
+      }
+
+
+      const today =
+        now.toISOString()
+          .slice(0,10);
+
+
+      const key =
+        "bm_withdrawals_" + today;
+
+
+      const count =
+        Number(
+          localStorage.getItem(key) || "0"
+        );
+
+
+      if(count >= 3){
+
+        message.textContent =
+          "Maximum 3 withdrawal requests allowed today.";
+
+        return;
+
+      }
+
+
+      localStorage.setItem(
+        key,
+        String(count + 1)
       );
 
-    const utr =
-      document.getElementById("utr")
-        .value.trim();
-
-    const screenshot =
-      document.getElementById("paymentScreenshot")
-        .files[0];
-
-    const message =
-      document.getElementById("paymentMessage");
-
-
-    if (!amount) {
 
       message.textContent =
-        "Please enter amount.";
+        "✓ Withdrawal request saved locally.";
 
-      return;
-    }
-
-
-    if (amount < 200 || amount > 50000) {
-
-      message.textContent =
-        "Amount must be between ₹200 and ₹50,000.";
-
-      return;
-    }
-
-
-    if (!utr) {
-
-      message.textContent =
-        "Please enter transaction reference.";
-
-      return;
-    }
-
-
-    if (!screenshot) {
-
-      message.textContent =
-        "Please select screenshot.";
-
-      return;
-    }
-
-
-    message.textContent =
-      "Payment information recorded locally. This page does not verify or process payments.";
-
-  });
-
-
-/* ==============================
-   WHATSAPP SHARE
-============================== */
-
-document.getElementById("whatsappBtn")
-  .addEventListener("click", function() {
-
-    const text =
-      "Check out Bitcoin Minning:\n" +
-      APP_LINK;
-
-    const url =
-      "https://wa.me/?text=" +
-      encodeURIComponent(text);
-
-    window.open(
-      url,
-      "_blank"
-    );
-
-  });
-
-
-/* ==============================
-   COPY LINK
-============================== */
-
-document.getElementById("copyBtn")
-  .addEventListener("click", async function() {
-
-    const message =
-      document.getElementById("inviteMessage");
-
-    try {
-
-      await navigator.clipboard.writeText(APP_LINK);
-
-      message.textContent =
-        "App link copied successfully.";
-
-    } catch(error) {
-
-      message.textContent =
-        APP_LINK;
+      document.getElementById(
+        "withdrawAmount"
+      ).value = "";
 
     }
+  );
 
-  });
+}
 
 
-/* ==============================
-   START
-============================== */
+/* =========================
+   INVITE
+========================= */
+
+const whatsappBtn =
+  document.getElementById(
+    "whatsappBtn"
+  );
+
+if(whatsappBtn){
+
+  whatsappBtn.addEventListener(
+    "click",
+    () => {
+
+      const text =
+        "Check out Bitcoin Minning: " +
+        window.location.href;
+
+      const url =
+        "https://wa.me/?text=" +
+        encodeURIComponent(text);
+
+      window.open(
+        url,
+        "_blank"
+      );
+
+    }
+  );
+
+}
+
+
+const copyLinkBtn =
+  document.getElementById(
+    "copyLinkBtn"
+  );
+
+if(copyLinkBtn){
+
+  copyLinkBtn.addEventListener(
+    "click",
+    async () => {
+
+      const message =
+        document.getElementById(
+          "inviteMessage"
+        );
+
+      try{
+
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+        message.textContent =
+          "✓ App link copied.";
+
+      }catch(error){
+
+        message.textContent =
+          "Copy failed. Please copy the browser link.";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================
+   START APP
+========================= */
 
 createUserId();
-
+loadProfileImage();
+loadBankDetails();
 updateBalance();
 
 showPage("homePage");
