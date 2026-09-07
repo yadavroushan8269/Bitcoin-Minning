@@ -1,9 +1,11 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NSG Wellfare</title>
+  <meta name="theme-color" content="#071b13">
+  <title>Bitcoin Minning</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,358 +13,334 @@
 
 <header class="topbar">
   <div>
-    <h2>NSG Wellfare</h2>
-    <small>Investment & Welfare</small>
+    <h1>Bitcoin Minning</h1>
+    <p>Crypto information & community</p>
   </div>
-  <button onclick="customerService()">☏</button>
+  <div class="live-dot">● LIVE</div>
 </header>
 
 <main>
 
   <!-- HOME -->
   <section id="home" class="page active">
-
-    <div class="balance-card">
-      <p>Total Balance</p>
-      <h1>₹<span id="homeBalance">0.00</span></h1>
-
-      <div class="balance-actions">
-        <button onclick="showDeposit()">Deposit</button>
-        <button onclick="showWithdrawal()">Withdraw</button>
+    <div class="welcome-card">
+      <p id="greeting">Good morning everyone</p>
+      <h2>Welcome to Bitcoin Minning</h2>
+      <p>Stay updated with cryptocurrency news, market information and educational content.</p>
+      <div class="time-box">
+        <span>India Time</span>
+        <strong id="liveTime">--:--:--</strong>
       </div>
     </div>
 
-    <div class="menu-grid">
-      <button onclick="openPage('attendance')">
-        📅
-        <span>Attendance</span>
-      </button>
+    <h2 class="section-title">Latest Crypto News</h2>
 
-      <button onclick="openPage('rewards')">
-        🎁
-        <span>Rewards</span>
-      </button>
-
-      <button onclick="openPage('transactions')">
-        📊
-        <span>Transactions</span>
-      </button>
-
-      <button onclick="openPage('info')">
-        👤
-        <span>My Info</span>
-      </button>
+    <div class="news-card">
+      <span class="tag">CRYPTO</span>
+      <h3>Bitcoin market update</h3>
+      <p>Bitcoin and the wider crypto market can change quickly. Always check current market data before making financial decisions.</p>
+      <small>Educational information</small>
     </div>
 
-    <div class="section-title">
-      <h3>Products</h3>
-      <button onclick="openPage('products')">View All</button>
+    <div class="news-card">
+      <span class="tag">BLOCKCHAIN</span>
+      <h3>Blockchain technology</h3>
+      <p>Blockchain is a distributed ledger technology used by many cryptocurrency networks and digital applications.</p>
+      <small>Educational information</small>
     </div>
 
-    <div id="homeProducts"></div>
-
+    <div class="news-card">
+      <span class="tag">SAFETY</span>
+      <h3>Protect your crypto account</h3>
+      <p>Never share your password, OTP, private key or seed phrase with anyone.</p>
+      <small>Security reminder</small>
+    </div>
   </section>
 
 
   <!-- PRODUCTS -->
   <section id="products" class="page">
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Products</h2>
+
+    <h2 class="page-title">Products</h2>
+    <p class="page-subtitle">
+      Informational plans. No guaranteed investment return is promised.
+    </p>
+
+    <div class="product-card">
+      <div class="product-top">
+        <div>
+          <span class="product-label">PLAN 01</span>
+          <h2>Starter</h2>
+        </div>
+        <div class="price">₹500</div>
+      </div>
+
+      <p>Entry-level informational plan.</p>
+
+      <button class="primary-btn" onclick="openProductInfo('Starter',500)">
+        View Details
+      </button>
     </div>
 
-    <div id="productsList"></div>
-  </section>
+    <div class="product-card">
+      <div class="product-top">
+        <div>
+          <span class="product-label">PLAN 02</span>
+          <h2>Standard</h2>
+        </div>
+        <div class="price">₹1,500</div>
+      </div>
 
+      <p>Standard informational plan.</p>
 
-  <!-- ATTENDANCE -->
-  <section id="attendance" class="page">
-
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Attendance</h2>
+      <button class="primary-btn" onclick="openProductInfo('Standard',1500)">
+        View Details
+      </button>
     </div>
 
-    <div class="attendance-head">
-      <button onclick="changeMonth(-1)">‹</button>
-      <h3 id="monthTitle"></h3>
-      <button onclick="changeMonth(1)">›</button>
+    <div class="product-card">
+      <div class="product-top">
+        <div>
+          <span class="product-label">PLAN 03</span>
+          <h2>Premium</h2>
+        </div>
+        <div class="price">₹3,600</div>
+      </div>
+
+      <p>Premium informational plan.</p>
+
+      <button class="primary-btn" onclick="openProductInfo('Premium',3600)">
+        View Details
+      </button>
     </div>
 
-    <div id="calendar" class="calendar"></div>
-
-    <div class="card">
-      <p>Total Attendance</p>
-      <h2><span id="attendanceTotal">0</span> Days</h2>
+    <div class="notice">
+      <strong>Important:</strong>
+      These displayed amounts are examples of product tiers only.
+      This website does not promise or calculate guaranteed investment profits.
     </div>
-
-  </section>
-
-
-  <!-- REWARDS -->
-  <section id="rewards" class="page">
-
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Rewards</h2>
-    </div>
-
-    <div id="rewardsList"></div>
 
   </section>
 
 
   <!-- MY INFO -->
-  <section id="info" class="page">
+  <section id="profile" class="page">
 
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>My Info</h2>
-    </div>
+    <h2 class="page-title">My Info</h2>
 
     <div class="profile-card">
-      <div class="avatar">👤</div>
 
-      <div>
-        <h3 id="profileName">User</h3>
-        <p id="profileMobile">Mobile</p>
+      <div class="avatar-wrapper">
+        <img id="profileImage" src="" alt="Profile">
+        <div id="avatarPlaceholder">👤</div>
       </div>
 
-      <button onclick="editProfile()">✎</button>
+      <h2 id="userId">You-7519001</h2>
+      <p>Member</p>
+
+      <div class="profile-buttons">
+        <label class="outline-btn">
+          📷 Add Picture
+          <input type="file" id="galleryInput" accept="image/*" hidden>
+        </label>
+
+        <button class="outline-btn" id="cameraBtn">
+          📸 Click Foto
+        </button>
+      </div>
+
+      <video id="cameraPreview" autoplay playsinline></video>
+
+      <button class="primary-btn camera-action" id="takePhotoBtn">
+        Take Photo
+      </button>
+
+      <button class="secondary-btn camera-action" id="closeCameraBtn">
+        Close Camera
+      </button>
+
+      <canvas id="photoCanvas" hidden></canvas>
+
     </div>
 
-    <div class="info-list">
-      <div>
-        <span>User ID</span>
-        <b id="profileUserId">---</b>
+
+    <div class="balance-card">
+      <span>Available Balance</span>
+      <strong id="balance">₹0.00</strong>
+    </div>
+
+
+    <!-- BANK DETAILS -->
+    <div class="form-card">
+      <h3>Add Bank Details</h3>
+
+      <label>Name</label>
+      <input id="bankNamePerson" type="text" placeholder="Account holder name">
+
+      <label>IFSC Code</label>
+      <input id="ifscCode" type="text" placeholder="Enter IFSC code">
+
+      <label>Bank Name</label>
+      <input id="bankName" type="text" placeholder="Bank name">
+
+      <label>Account Number</label>
+      <input id="accountNumber" type="password" placeholder="Account number">
+
+      <label>Repeat Account Number</label>
+      <input id="repeatAccountNumber" type="password" placeholder="Repeat account number">
+
+      <button class="primary-btn" onclick="saveBankDetails()">
+        Save
+      </button>
+
+      <p id="bankStatus" class="status"></p>
+
+      <small class="privacy-note">
+        Bank information is stored only in this browser. It is not sent to Telegram.
+      </small>
+    </div>
+
+
+    <!-- WITHDRAWAL -->
+    <div class="form-card">
+
+      <h3>Withdrawal</h3>
+
+      <label>Amount</label>
+      <input id="withdrawAmount" type="number" min="500" max="20000" placeholder="₹500 - ₹20,000">
+
+      <button class="withdraw-btn" onclick="requestWithdrawal()">
+        Withdraw
+      </button>
+
+      <div class="rules">
+        <p><b>1.</b> Withdrawal Time: 10:30 AM to 17:30 PM</p>
+        <p><b>2.</b> Daily Withdrawal only 3 times</p>
+        <p><b>3.</b> Available Balance: <span id="ruleBalance">₹0.00</span></p>
+        <p><b>4.</b> Customer Support Telegram: @___Kittu____764_</p>
       </div>
 
-      <div>
-        <span>Mobile</span>
-        <b id="profileMobileInfo">---</b>
-      </div>
+      <p id="withdrawStatus" class="status"></p>
 
-      <div>
-        <span>Account Status</span>
-        <b>Active</b>
-      </div>
     </div>
 
   </section>
 
 
-  <!-- DEPOSIT -->
+  <!-- DEPOSIT INFO -->
   <section id="deposit" class="page">
 
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Deposit</h2>
+    <h2 class="page-title">Deposit Information</h2>
+
+    <div class="notice">
+      <strong>Notice:</strong>
+      This GitHub Pages version does not process or verify real-money deposits.
     </div>
 
-    <div class="card">
-      <h3>Deposit Amount</h3>
+    <div class="form-card">
 
-      <input
-        type="number"
-        id="depositAmount"
-        placeholder="Enter amount"
-        min="1"
-      >
+      <label>Amount</label>
+      <input id="depositAmount" type="number" min="200" max="50000" placeholder="₹200 - ₹50,000">
 
-      <div class="payment-box">
-        <h4>Payment QR</h4>
+      <label>UTR / Transaction Reference</label>
+      <input id="utrNumber" type="text" placeholder="Enter transaction reference">
 
-        <div class="qr-placeholder">
-          <span>QR</span>
-        </div>
+      <label>Payment Screenshot</label>
+      <input id="paymentScreenshot" type="file" accept="image/*">
 
-        <p>Scan the QR to make payment.</p>
-      </div>
-
-      <input
-        type="text"
-        id="utr"
-        placeholder="Enter UTR / Transaction ID"
-      >
-
-      <label class="upload-box">
-        📷 Payment Screenshot
-        <input
-          type="file"
-          id="paymentScreenshot"
-          accept="image/*"
-        >
-      </label>
-
-      <button
-        id="depositSubmitBtn"
-        class="primary-btn"
-        onclick="submitDeposit()"
-      >
-        Submit Deposit
+      <button class="primary-btn" onclick="submitPaymentInfo()">
+        Submit Payment Details
       </button>
 
+      <p id="paymentStatus" class="status"></p>
+
     </div>
 
   </section>
 
 
-  <!-- WITHDRAW -->
-  <section id="withdraw" class="page">
+  <!-- INVITE -->
+  <section id="invite" class="page">
 
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Withdrawal</h2>
-    </div>
+    <h2 class="page-title">Invite Friends</h2>
 
-    <div class="balance-small">
-      Available Balance:
-      ₹<span id="withdrawBalance">0.00</span>
-    </div>
+    <div class="invite-card">
 
-    <div class="card">
+      <div class="invite-icon">👥</div>
 
-      <input
-        type="number"
-        id="withdrawAmount"
-        placeholder="Withdrawal amount"
-        min="1"
-      >
+      <h2>Invite your friends</h2>
 
-      <input
-        type="text"
-        id="bankName"
-        placeholder="Bank Name"
-      >
+      <p>
+        Share the Bitcoin Minning website with your WhatsApp contacts.
+      </p>
 
-      <input
-        type="text"
-        id="accountNumber"
-        placeholder="Account Number"
-      >
-
-      <input
-        type="text"
-        id="confirmAccount"
-        placeholder="Confirm Account Number"
-      >
-
-      <input
-        type="text"
-        id="bank"
-        placeholder="Account Holder Name"
-      >
-
-      <input
-        type="text"
-        id="ifsc"
-        placeholder="IFSC Code"
-      >
-
-      <button
-        id="withdrawSubmitBtn"
-        class="primary-btn"
-        onclick="submitWithdrawal()"
-      >
-        Submit Withdrawal
+      <button class="whatsapp-btn" onclick="shareWhatsApp()">
+        Share on WhatsApp
       </button>
 
+      <button class="secondary-btn" onclick="copyAppLink()">
+        Copy App Link
+      </button>
+
+      <p id="copyStatus" class="status"></p>
+
     </div>
-
-  </section>
-
-
-  <!-- WITHDRAW HISTORY -->
-  <section id="withdrawHistory" class="page">
-
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Withdrawal History</h2>
-    </div>
-
-    <div id="withdrawHistoryList"></div>
-
-  </section>
-
-
-  <!-- DEPOSIT HISTORY -->
-  <section id="depositHistory" class="page">
-
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Deposit History</h2>
-    </div>
-
-    <div id="depositHistoryList"></div>
-
-  </section>
-
-
-  <!-- TRANSACTIONS -->
-  <section id="transactions" class="page">
-
-    <div class="page-title">
-      <button onclick="openPage('home')">←</button>
-      <h2>Transactions</h2>
-    </div>
-
-    <div id="transactionsList"></div>
 
   </section>
 
 </main>
 
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-
-  <button onclick="openPage('home')">
-    <span>⌂</span>
-    Home
-  </button>
-
-  <button onclick="openPage('products')">
-    <span>▣</span>
-    Products
-  </button>
-
-  <button onclick="openPage('info')">
-    <span>♙</span>
-    My Info
-  </button>
-
-</nav>
-
-
-<!-- MODAL -->
-<div id="modal" class="modal">
-
+<!-- PRODUCT MODAL -->
+<div id="productModal" class="modal">
   <div class="modal-box">
 
-    <button
-      class="modal-close"
-      onclick="closeModal()"
-    >
-      ×
-    </button>
+    <button class="close-modal" onclick="closeModal()">×</button>
 
-    <h3 id="modalTitle">Message</h3>
+    <h2 id="modalProductName">Product</h2>
 
-    <p id="modalMessage"></p>
+    <div class="modal-price" id="modalProductPrice">₹0</div>
 
-    <button
-      class="primary-btn"
-      onclick="closeModal()"
-    >
-      OK
+    <p>
+      This page provides information about the selected product tier.
+      It does not represent a guaranteed investment return.
+    </p>
+
+    <button class="primary-btn" onclick="goToDepositInfo()">
+      Deposit Information
     </button>
 
   </div>
-
 </div>
 
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+
+  <button class="nav-item active" data-page="home">
+    <span>⌂</span>
+    <small>Home</small>
+  </button>
+
+  <button class="nav-item" data-page="products">
+    <span>▣</span>
+    <small>Product</small>
+  </button>
+
+  <button class="nav-item" data-page="profile">
+    <span>●</span>
+    <small>My Info</small>
+  </button>
+
+  <button class="nav-item" data-page="invite">
+    <span>↗</span>
+    <small>Invite</small>
+  </button>
+
+</nav>
 
 <script src="script.js"></script>
 
 </body>
 </html>
+```
