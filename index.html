@@ -3,960 +3,986 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="theme-color" content="#030b13">
   <title>Bitcoin Minning</title>
-
   <link rel="stylesheet" href="./style.css?v=5">
 </head>
 
 <body>
 
-<div class="app">
-
-  <!-- ==============================
-       HOME
-  =============================== -->
-
-  <section class="page" id="homePage">
-
-    <header class="topbar">
-
-      <div>
-        <h1>Bitcoin Minning</h1>
-        <p id="greeting">Good Afternoon</p>
-      </div>
-
-      <div class="profile-mini" id="topProfile">
-        <img id="topProfileImg" src="" alt="">
-        <span id="topProfileLetter">U</span>
-      </div>
-
-    </header>
-
-
-    <div class="hero-card">
-
-      <div class="hero-left">
-
-        <span class="hero-label">
-          AVAILABLE BALANCE
-        </span>
-
-        <h2 id="homeBalance">
-          ₹0
-        </h2>
-
-        <p>
-          Your current account balance
-        </p>
-
-      </div>
-
-      <div class="bitcoin-logo">
-        ₿
-      </div>
-
+<header class="header">
+  <div class="brand">
+    <div class="btc">₿</div>
+    <div>
+      <h1>Bitcoin Minning</h1>
+      <p>Crypto Information Platform</p>
     </div>
+  </div>
 
+  <div class="live">
+    <span></span> LIVE
+  </div>
+</header>
 
-    <div class="quick-grid">
+<main>
 
-      <button class="quick-btn" data-page="depositPage">
-        <span>↓</span>
-        <b>Deposit</b>
-      </button>
+<section class="page active" id="homePage">
 
-      <button class="quick-btn" data-page="withdrawPage">
-        <span>↑</span>
-        <b>Withdraw</b>
-      </button>
-
-      <button class="quick-btn" data-page="infoPage">
-        <span>👤</span>
-        <b>My Info</b>
-      </button>
-
-      <button class="quick-btn" data-page="invitePage">
-        <span>↗</span>
-        <b>Invite</b>
-      </button>
-
-    </div>
-
-
-    <div class="section-head">
-      <h3>Latest News</h3>
-      <span>Crypto</span>
-    </div>
-
-
-    <div class="news-card">
-
-      <div class="news-icon">
-        ₿
-      </div>
-
-      <div>
-        <b>Bitcoin Market Update</b>
-
-        <p>
-          Stay informed about the latest
-          cryptocurrency market developments.
-        </p>
-      </div>
-
-    </div>
-
-
-    <div class="section-head">
-      <h3>Mining Plans</h3>
-      <span>View All</span>
-    </div>
-
-
-    <div class="plans">
-
-      <div class="plan-card">
-
-        <div class="plan-top">
-          <span>Plan 1</span>
-          <b>₹500</b>
-        </div>
-
-        <p>
-          Informational mining plan
-        </p>
-
-        <button
-          class="primary"
-          data-product="₹500">
-          View Details
-        </button>
-
-      </div>
-
-
-      <div class="plan-card">
-
-        <div class="plan-top">
-          <span>Plan 2</span>
-          <b>₹1,500</b>
-        </div>
-
-        <p>
-          Informational mining plan
-        </p>
-
-        <button
-          class="primary"
-          data-product="₹1500">
-          View Details
-        </button>
-
-      </div>
-
-
-      <div class="plan-card">
-
-        <div class="plan-top">
-          <span>Plan 3</span>
-          <b>₹3,600</b>
-        </div>
-
-        <p>
-          Informational mining plan
-        </p>
-
-        <button
-          class="primary"
-          data-product="₹3600">
-          View Details
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==============================
-       PRODUCT
-  =============================== -->
-
-  <section class="page" id="productPage">
-
-    <div class="page-title">
-
-      <div>
-        <h2>Mining Products</h2>
-        <p>Choose an informational plan</p>
-      </div>
-
-    </div>
-
-
-    <div class="plans">
-
-      <div class="plan-card">
-
-        <div class="plan-top">
-          <span>Starter</span>
-          <b>₹500</b>
-        </div>
-
-        <p>
-          Mining information package
-        </p>
-
-        <button
-          class="primary"
-          data-product="₹500">
-          Details
-        </button>
-
-      </div>
-
-
-      <div class="plan-card">
-
-        <div class="plan-top">
-          <span>Standard</span>
-          <b>₹1,500</b>
-        </div>
-
-        <p>
-          Mining information package
-        </p>
-
-        <button
-          class="primary"
-          data-product="₹1500">
-          Details
-        </button>
-
-      </div>
-
-
-      <div class="plan-card">
-
-        <div class="plan-top">
-          <span>Premium</span>
-          <b>₹3,600</b>
-        </div>
-
-        <p>
-          Mining information package
-        </p>
-
-        <button
-          class="primary"
-          data-product="₹3600">
-          Details
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==============================
-       MY INFO
-  =============================== -->
-
-  <section class="page" id="infoPage">
-
-    <div class="page-title">
-
-      <div>
-        <h2>My Info</h2>
-        <p>Manage your account</p>
-      </div>
-
-    </div>
-
-
-    <div class="profile-card">
-
-      <div class="profile-photo">
-
-        <img
-          id="profileImage"
-          src=""
-          alt="Profile">
-
-        <span id="profileLetter">
-          U
-        </span>
-
-      </div>
-
-
-      <div class="profile-details">
-
-        <h3 id="profileUserId">
-          User ID
-        </h3>
-
-        <p>
-          Personal Account
-        </p>
-
-      </div>
-
-
-      <button
-        class="small-btn"
-        id="profileUploadBtn">
-        Change
-      </button>
-
-      <input
-        type="file"
-        id="profileGallery"
-        accept="image/*"
-        hidden>
-
-    </div>
-
-
-    <div class="balance-card">
-
-      <span>Available Balance</span>
-
-      <strong id="infoBalance">
-        ₹0
-      </strong>
-
-      <button
-        class="primary"
-        data-page="withdrawPage">
-        Withdraw
-      </button>
-
-    </div>
-
-
-    <!-- HISTORY & CUSTOMER SERVICE -->
-
-    <div class="history-menu">
-
-      <button
-        class="history-item"
-        id="transactionHistoryBtn">
-
-        <div class="history-icon green-history">
-          ↕
-        </div>
-
-        <div class="history-text">
-
-          <b>
-            Transaction History
-          </b>
-
-          <small>
-            All deposits & withdrawals
-          </small>
-
-        </div>
-
-        <span>›</span>
-
-      </button>
-
-
-      <button
-        class="history-item"
-        id="depositHistoryBtn">
-
-        <div class="history-icon blue-history">
-          ↓
-        </div>
-
-        <div class="history-text">
-
-          <b>
-            Deposit History
-          </b>
-
-          <small>
-            View all deposit records
-          </small>
-
-        </div>
-
-        <span>›</span>
-
-      </button>
-
-
-      <button
-        class="history-item"
-        id="withdrawalHistoryBtn">
-
-        <div class="history-icon purple-history">
-          ↑
-        </div>
-
-        <div class="history-text">
-
-          <b>
-            Withdrawal History
-          </b>
-
-          <small>
-            View all withdrawal records
-          </small>
-
-        </div>
-
-        <span>›</span>
-
-      </button>
-
-
-      <button
-        class="history-item"
-        id="customerServiceBtn">
-
-        <div class="history-icon orange-history">
-          💬
-        </div>
-
-        <div class="history-text">
-
-          <b>
-            Customer Service
-          </b>
-
-          <small>
-            Open Telegram support
-          </small>
-
-        </div>
-
-        <span>›</span>
-
-      </button>
-
-    </div>
-
-
-    <div class="form-card">
-
-      <h3>
-        Add Bank Details
-      </h3>
-
-      <label>
-        Account Holder Name
-      </label>
-
-      <input
-        id="bankName"
-        placeholder="Your name">
-
-
-      <label>
-        IFSC Code
-      </label>
-
-      <input
-        id="bankIfsc"
-        placeholder="IFSC Code">
-
-
-      <label>
-        Bank Name
-      </label>
-
-      <input
-        id="bankBankName"
-        placeholder="Bank name">
-
-
-      <label>
-        Account Number
-      </label>
-
-      <input
-        id="bankAccount"
-        type="password"
-        placeholder="Account number">
-
-
-      <label>
-        Repeat Account Number
-      </label>
-
-      <input
-        id="bankAccountRepeat"
-        type="password"
-        placeholder="Repeat account number">
-
-
-      <button
-        class="primary"
-        id="saveBankBtn">
-
-        Save Bank Details
-
-      </button>
-
-      <p
-        id="bankMessage"
-        class="message">
-      </p>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==============================
-       HISTORY PAGE
-  =============================== -->
-
-  <section
-    class="page"
-    id="historyPage">
-
-    <div class="page-title">
-
-      <button
-        class="back-btn"
-        id="historyBackBtn">
-        ‹
-      </button>
-
-      <div>
-
-        <h2 id="historyPageTitle">
-          Transaction History
-        </h2>
-
-        <p id="historyPageSubtitle">
-          Deposits & withdrawals
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div
-      id="historyList"
-      class="history-list">
-    </div>
-
-  </section>
-
-
-  <!-- ==============================
-       DEPOSIT
-  =============================== -->
-
-  <section
-    class="page"
-    id="depositPage">
-
-    <div class="page-title">
-
-      <button
-        class="back-btn"
-        data-back="homePage">
-        ‹
-      </button>
-
-      <div>
-
-        <h2>
-          Deposit Information
-        </h2>
-
-        <p>
-          Payment information form
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div class="warning">
-
-      <b>
-        Payment notice
-      </b>
-
+  <div class="hero">
+    <div class="hero-content">
+      <small>CRYPTO PLATFORM</small>
+      <h2>Your Future<br><b>With Crypto</b></h2>
       <p>
-        This GitHub Pages version does not
-        process or verify real-money payments.
-        Submitted information stays in this
-        browser only.
+        Stay updated with cryptocurrency news,
+        blockchain information and market education.
       </p>
 
-    </div>
-
-
-    <div class="form-card deposit-payment-card">
-
-      <div class="deposit-payment-head">
-
-        <div class="deposit-payment-icon">
-          ₹
-        </div>
-
-        <div>
-
-          <h3>
-            UPI Payment
-          </h3>
-
-          <p>
-            Scan QR or use UPI ID
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="qr-wrap">
-
-        <img
-          src="./qr.jpg"
-          alt="UPI QR Code"
-          class="deposit-qr">
-
-      </div>
-
-
-      <p class="upi-caption">
-        UPI ID
-      </p>
-
-
-      <div class="upi-copy-row">
-
-        <span>
-          yadav-rishab@fam
-        </span>
-
-        <button
-          type="button"
-          id="copyUpiBtn">
-          Copy
-        </button>
-
-      </div>
-
-
-      <p class="payment-note">
-        After payment, enter the transaction
-        reference below for your local
-        verification record.
-      </p>
-
-
-      <label>
-        Amount
-      </label>
-
-      <input
-        id="depositAmount"
-        type="number"
-        min="200"
-        max="50000"
-        placeholder="₹200 - ₹50,000">
-
-
-      <label>
-        UTR / Transaction Reference
-      </label>
-
-      <input
-        id="utr"
-        placeholder="Transaction reference">
-
-
-      <label>
-        Payment Screenshot
-      </label>
-
-      <input
-        id="paymentScreenshot"
-        type="file"
-        accept="image/*">
-
-
-      <div
-        id="paymentScreenshotPreview"
-        class="payment-screenshot-preview">
-      </div>
-
-
-      <button
-        class="primary"
-        id="paymentSubmit">
-
-        Submit Payment Details
-
+      <button class="hero-btn" id="learnBtn">
+        Learn More →
       </button>
+    </div>
 
+    <div class="bitcoin-big">₿</div>
+  </div>
 
-      <p
-        id="paymentMessage"
-        class="message">
+  <div class="section-head">
+    <h2>Latest Crypto News</h2>
+    <span>View All →</span>
+  </div>
+
+  <div class="news-grid">
+
+    <article class="news">
+      <div class="coin orange">₿</div>
+      <label>Bitcoin</label>
+      <h3>Bitcoin market update</h3>
+      <p>
+        Bitcoin markets can move quickly.
+        Always check current market information.
       </p>
+      <small>● Educational information</small>
+    </article>
 
-    </div>
+    <article class="news">
+      <div class="coin blue">◆</div>
+      <label>Ethereum</label>
+      <h3>Blockchain technology</h3>
+      <p>
+        Learn how blockchain networks,
+        smart contracts and digital assets work.
+      </p>
+      <small>● Educational information</small>
+    </article>
 
-  </section>
+    <article class="news">
+      <div class="coin purple">↗</div>
+      <label>Market</label>
+      <h3>Crypto market information</h3>
+      <p>
+        Understand market trends and the risks
+        associated with cryptocurrency.
+      </p>
+      <small>● Educational information</small>
+    </article>
 
+  </div>
 
-  <!-- ==============================
-       WITHDRAW
-  =============================== -->
+  <div class="section-head">
+    <h2>Products</h2>
+    <button class="text-btn" id="productViewBtn">View All →</button>
+  </div>
 
-  <section
-    class="page"
-    id="withdrawPage">
+  <div class="plans">
 
-    <div class="page-title">
-
-      <button
-        class="back-btn"
-        data-back="homePage">
-        ‹
+    <div class="plan green-plan">
+      <span>PLAN 01</span>
+      <h3>Starter</h3>
+      <strong>₹500</strong>
+      <p>Informational product tier</p>
+      <button class="invest-btn" data-plan="Starter" data-price="500">
+        View Details →
       </button>
-
-      <div>
-
-        <h2>
-          Withdrawal
-        </h2>
-
-        <p>
-          Request a withdrawal
-        </p>
-
-      </div>
-
     </div>
 
+    <div class="plan blue-plan">
+      <span>PLAN 02</span>
+      <h3>Standard</h3>
+      <strong>₹1,500</strong>
+      <p>Informational product tier</p>
+      <button class="invest-btn" data-plan="Standard" data-price="1500">
+        View Details →
+      </button>
+    </div>
 
-    <div class="balance-card">
+    <div class="plan purple-plan">
+      <span>PLAN 03</span>
+      <h3>Premium</h3>
+      <strong>₹3,600</strong>
+      <p>Informational product tier</p>
+      <button class="invest-btn" data-plan="Premium" data-price="3600">
+        View Details →
+      </button>
+    </div>
 
-      <span>
-        Available Balance
+  </div>
+
+  <div class="quick-grid">
+
+    <button class="quick" id="depositBtn">
+      <i class="green-icon">↓</i>
+      <b>Deposit</b>
+      <small>Information</small>
+    </button>
+
+    <button class="quick" id="withdrawBtn">
+      <i class="purple-icon">↑</i>
+      <b>Withdraw</b>
+      <small>Request</small>
+    </button>
+
+    <button class="quick" id="myInfoBtn">
+      <i class="blue-icon">●</i>
+      <b>My Info</b>
+      <small>Profile</small>
+    </button>
+
+    <button class="quick" id="inviteBtn">
+      <i class="orange-icon">👥</i>
+      <b>Invite</b>
+      <small>Share</small>
+    </button>
+
+  </div>
+
+  <div class="account-mini" id="accountBtn">
+
+    <div class="avatar-mini">👤</div>
+
+    <div>
+      <small>My Info</small>
+      <b id="homeUserId">You-7519001</b>
+    </div>
+
+    <div class="mini-balance">
+      <small>Available Balance</small>
+      <b id="homeBalance">₹0.00</b>
+    </div>
+
+    <span>›</span>
+
+  </div>
+
+  <div class="ticker">
+    <b>📢</b>
+    <span id="tickerText">Good morning everyone!</span>
+    <em>● Live</em>
+  </div>
+
+</section>
+
+
+<section class="page" id="productPage">
+
+  <div class="page-title">
+    <button class="back-btn" data-back="homePage">‹</button>
+
+    <div>
+      <h2>Products</h2>
+      <p>Available informational tiers</p>
+    </div>
+  </div>
+
+  <div class="product-large">
+
+    <span>PLAN 01</span>
+    <h2>Starter</h2>
+    <strong>₹500</strong>
+
+    <p>
+      Basic informational product tier.
+    </p>
+
+    <button class="invest-btn"
+            data-plan="Starter"
+            data-price="500">
+      View Details
+    </button>
+
+  </div>
+
+
+  <div class="product-large">
+
+    <span>PLAN 02</span>
+    <h2>Standard</h2>
+    <strong>₹1,500</strong>
+
+    <p>
+      Standard informational product tier.
+    </p>
+
+    <button class="invest-btn"
+            data-plan="Standard"
+            data-price="1500">
+      View Details
+    </button>
+
+  </div>
+
+
+  <div class="product-large">
+
+    <span>PLAN 03</span>
+    <h2>Premium</h2>
+    <strong>₹3,600</strong>
+
+    <p>
+      Premium informational product tier.
+    </p>
+
+    <button class="invest-btn"
+            data-plan="Premium"
+            data-price="3600">
+      View Details
+    </button>
+
+  </div>
+
+
+  <div class="warning">
+
+    <b>Important</b>
+
+    <p>
+      Product prices shown here are informational only.
+      This website does not guarantee investment profits.
+    </p>
+
+  </div>
+
+</section>
+
+
+<section class="page" id="infoPage">
+
+  <div class="page-title">
+
+    <button class="back-btn"
+            data-back="homePage">
+      ‹
+    </button>
+
+    <div>
+      <h2>My Info</h2>
+      <p>Your account information</p>
+    </div>
+
+  </div>
+
+
+  <div class="profile">
+
+    <div class="profile-photo">
+
+      <img id="profileImage"
+           alt="Profile">
+
+      <span id="profilePlaceholder">
+        👤
       </span>
 
-      <strong id="withdrawBalance">
-        ₹0
-      </strong>
-
     </div>
 
 
-    <div class="warning">
+    <h2 id="profileUserId">
+      You-7519001
+    </h2>
 
-      <b>
-        Withdrawal information
-      </b>
-
-      <p>
-        Amount: ₹500 - ₹20,000.
-        Maximum 3 requests per day.
-        Available time: 10:30 AM - 5:30 PM IST.
-      </p>
-
-    </div>
+    <p>
+      Member Account
+    </p>
 
 
-    <div class="form-card">
+    <div class="photo-buttons">
 
       <label>
-        Withdrawal Amount
+        📷 Gallery
+
+        <input
+          type="file"
+          id="galleryInput"
+          accept="image/*">
       </label>
 
-      <input
-        id="withdrawAmount"
-        type="number"
-        min="500"
-        max="20000"
-        placeholder="₹500 - ₹20,000">
 
-
-      <button
-        class="primary"
-        id="withdrawSubmit">
-
-        Submit Withdrawal
-
+      <button id="cameraOpenBtn">
+        📸 Camera
       </button>
 
-
-      <p
-        id="withdrawMessage"
-        class="message">
-      </p>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==============================
-       INVITE
-  =============================== -->
-
-  <section
-    class="page"
-    id="invitePage">
-
-    <div class="page-title">
-
-      <div>
-
-        <h2>
-          Invite Friends
-        </h2>
-
-        <p>
-          Share this app
-        </p>
-
-      </div>
-
     </div>
 
 
-    <div class="invite-card">
+    <video
+      id="cameraVideo"
+      autoplay
+      playsinline>
+    </video>
 
-      <div class="invite-icon">
-        ↗
+
+    <button
+      id="takePhotoBtn"
+      class="primary hidden">
+      Take Photo
+    </button>
+
+
+    <button
+      id="cameraCloseBtn"
+      class="secondary hidden">
+      Close Camera
+    </button>
+
+
+    <canvas id="photoCanvas"></canvas>
+
+  </div>
+
+
+  <div class="balance">
+
+    <small>
+      Available Balance
+    </small>
+
+    <strong id="balanceText">
+      ₹0.00
+    </strong>
+
+  </div>
+
+
+  <div class="history-menu">
+
+
+    <button
+      class="history-item"
+      id="transactionHistoryBtn">
+
+      <div class="history-icon green-history">
+        ↕
       </div>
 
-      <h3>
-        Invite Your Friends
-      </h3>
+      <div class="history-text">
+
+        <b>
+          Transaction History
+        </b>
+
+        <small>
+          All deposits & withdrawals
+        </small>
+
+      </div>
+
+      <span>›</span>
+
+    </button>
+
+
+    <button
+      class="history-item"
+      id="depositHistoryBtn">
+
+      <div class="history-icon blue-history">
+        ↓
+      </div>
+
+      <div class="history-text">
+
+        <b>
+          Deposit History
+        </b>
+
+        <small>
+          View all deposit records
+        </small>
+
+      </div>
+
+      <span>›</span>
+
+    </button>
+
+
+    <button
+      class="history-item"
+      id="withdrawalHistoryBtn">
+
+      <div class="history-icon purple-history">
+        ↑
+      </div>
+
+      <div class="history-text">
+
+        <b>
+          Withdrawal History
+        </b>
+
+        <small>
+          View all withdrawal records
+        </small>
+
+      </div>
+
+      <span>›</span>
+
+    </button>
+
+
+    <button
+      class="history-item"
+      id="customerServiceBtn">
+
+      <div class="history-icon orange-history">
+        💬
+      </div>
+
+      <div class="history-text">
+
+        <b>
+          Customer Service
+        </b>
+
+        <small>
+          Open Telegram support
+        </small>
+
+      </div>
+
+      <span>›</span>
+
+    </button>
+
+
+  </div>
+
+
+  <div class="form-card">
+
+    <h3>
+      Add Bank Details
+    </h3>
+
+    <label>
+      Name
+    </label>
+
+    <input
+      id="accountHolder"
+      placeholder="Account holder name">
+
+
+    <label>
+      IFSC Code
+    </label>
+
+    <input
+      id="ifsc"
+      placeholder="Enter IFSC code">
+
+
+    <label>
+      Bank Name
+    </label>
+
+    <input
+      id="bankName"
+      placeholder="Bank name">
+
+
+    <label>
+      Account Number
+    </label>
+
+    <input
+      id="accountNumber"
+      type="password"
+      placeholder="Account number">
+
+
+    <label>
+      Repeat Account Number
+    </label>
+
+    <input
+      id="repeatAccount"
+      type="password"
+      placeholder="Repeat account number">
+
+
+    <button
+      class="primary"
+      id="saveBankBtn">
+
+      Save Bank Details
+
+    </button>
+
+
+    <p
+      id="bankMessage"
+      class="message">
+    </p>
+
+  </div>
+
+
+  <div class="form-card">
+
+    <h3>
+      Withdraw
+    </h3>
+
+
+    <label>
+      Amount
+    </label>
+
+
+    <input
+      id="withdrawAmount"
+      type="number"
+      min="500"
+      max="20000"
+      placeholder="₹500 - ₹20,000">
+
+
+    <button
+      class="withdraw-button"
+      id="withdrawSubmit">
+
+      Withdraw
+
+    </button>
+
+
+    <div class="rules">
 
       <p>
-        Share the website with your friends.
+        <b>1.</b>
+        Withdrawal Time: 10:30 AM to 17:30 PM
       </p>
 
-      <button
-        class="primary"
-        id="whatsappBtn">
+      <p>
+        <b>2.</b>
+        Daily Withdrawal only 3 times
+      </p>
 
-        Share on WhatsApp
+      <p>
+        <b>3.</b>
+        Available Balance:
+        <span id="ruleBalance">
+          ₹0.00
+        </span>
+      </p>
 
-      </button>
-
-      <button
-        class="secondary"
-        id="copyLinkBtn">
-
-        Copy App Link
-
-      </button>
+      <p>
+        <b>4.</b>
+        Customer Support:
+        @___Kittu____764_
+      </p>
 
     </div>
 
-  </section>
+
+    <p
+      id="withdrawMessage"
+      class="message">
+    </p>
+
+  </div>
+
+</section>
 
 
-  <!-- ==============================
-       PRODUCT MODAL
-  =============================== -->
+<section
+  class="page"
+  id="historyPage">
 
-  <div
-    class="modal"
-    id="productModal">
+  <div class="page-title">
 
-    <div class="modal-box">
+    <button
+      class="back-btn"
+      id="historyBackBtn">
+      ‹
+    </button>
 
-      <button
-        class="modal-close"
-        id="modalClose">
-        ×
-      </button>
+    <div>
 
-      <h2 id="modalTitle">
-        Mining Plan
+      <h2 id="historyPageTitle">
+        Transaction History
       </h2>
 
-      <p id="modalText">
-        Informational plan details.
+      <p id="historyPageSubtitle">
+        Deposits & withdrawals
       </p>
-
-      <button
-        class="primary"
-        data-page="depositPage"
-        id="modalDepositBtn">
-
-        Deposit Information
-
-      </button>
 
     </div>
 
   </div>
 
 
-  <!-- ==============================
-       BOTTOM NAV
-  =============================== -->
+  <div
+    id="historyList"
+    class="history-list">
+  </div>
 
-  <nav class="bottom-nav">
+</section>
+
+
+<section
+  class="page"
+  id="depositPage">
+
+  <div class="page-title">
 
     <button
-      class="nav active"
-      data-page="homePage">
+      class="back-btn"
+      data-back="homePage">
+      ‹
+    </button>
 
-      <span>⌂</span>
-      <small>Home</small>
+    <div>
+
+      <h2>
+        Deposit Information
+      </h2>
+
+      <p>
+        Payment details & verification request
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="deposit-payment-card">
+
+    <div class="deposit-payment-head">
+
+      <div class="deposit-payment-icon">
+        ₹
+      </div>
+
+      <div>
+
+        <h3>
+          UPI Payment
+        </h3>
+
+        <p>
+          Use the details below to make your payment.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="qr-wrap">
+
+      <img
+        src="./qr.jpg"
+        alt="UPI QR Code"
+        class="deposit-qr">
+
+    </div>
+
+
+    <div class="upi-caption">
+      UPI ID
+    </div>
+
+
+    <div class="upi-copy-row">
+
+      <span id="upiId">
+        yadav-rishab@fam
+      </span>
+
+      <button
+        type="button"
+        id="copyUpiBtn">
+        Copy
+      </button>
+
+    </div>
+
+
+    <div class="payment-note">
+
+      <b>
+        Important:
+      </b>
+
+      Verify the payment details carefully before submitting.
+      This website does not automatically verify payments.
+
+    </div>
+
+  </div>
+
+
+  <div class="form-card">
+
+    <h3>
+      Submit Payment Details
+    </h3>
+
+
+    <label>
+      Amount
+    </label>
+
+    <input
+      id="depositAmount"
+      type="number"
+      min="1"
+      placeholder="Enter amount">
+
+
+    <label>
+      UTR / Transaction Reference
+    </label>
+
+    <input
+      id="utr"
+      type="text"
+      maxlength="80"
+      placeholder="Enter UTR / transaction reference">
+
+
+    <label>
+      Payment Screenshot
+    </label>
+
+    <input
+      id="paymentScreenshot"
+      type="file"
+      accept="image/*">
+
+
+    <div
+      id="paymentScreenshotPreview"
+      class="payment-screenshot-preview">
+    </div>
+
+
+    <button
+      class="primary"
+      id="paymentSubmit">
+
+      Submit for Verification
+
+    </button>
+
+
+    <p
+      id="paymentMessage"
+      class="message">
+    </p>
+
+  </div>
+
+
+  <div class="warning">
+
+    <b>
+      Verification status
+    </b>
+
+    <p>
+      Your submitted request is kept locally in this browser.
+      No automatic Telegram or Google Sheets transmission is performed.
+    </p>
+
+  </div>
+
+</section>
+
+
+<section
+  class="page"
+  id="invitePage">
+
+  <div class="page-title">
+
+    <button
+      class="back-btn"
+      data-back="homePage">
+      ‹
+    </button>
+
+    <div>
+
+      <h2>
+        Invite
+      </h2>
+
+      <p>
+        Share the application
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="invite-card">
+
+    <div class="invite-icon">
+      👥
+    </div>
+
+    <h2>
+      Invite Friends
+    </h2>
+
+    <p>
+      Share the Bitcoin Minning website
+      with your WhatsApp contacts.
+    </p>
+
+
+    <button
+      class="whatsapp"
+      id="whatsappBtn">
+
+      Share on WhatsApp
 
     </button>
 
 
     <button
-      class="nav"
-      data-page="productPage">
+      class="secondary"
+      id="copyBtn">
 
-      <span>₿</span>
-      <small>Product</small>
+      Copy App Link
 
     </button>
+
+
+    <p
+      id="inviteMessage"
+      class="message">
+    </p>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<div
+  class="modal"
+  id="productModal">
+
+  <div class="modal-box">
+
+    <button
+      class="modal-close"
+      id="modalClose">
+      ×
+    </button>
+
+
+    <small id="modalPlan">
+      PLAN
+    </small>
+
+
+    <h2 id="modalTitle">
+      Starter
+    </h2>
+
+
+    <strong id="modalPrice">
+      ₹500
+    </strong>
+
+
+    <p>
+      This is an informational product page.
+      No guaranteed investment return is promised.
+    </p>
 
 
     <button
-      class="nav"
-      data-page="infoPage">
+      class="primary"
+      id="modalDeposit">
 
-      <span>👤</span>
-      <small>My Info</small>
-
-    </button>
-
-
-    <button
-      class="nav"
-      data-page="invitePage">
-
-      <span>↗</span>
-      <small>Invite</small>
+      Deposit Information
 
     </button>
 
-  </nav>
+  </div>
 
 </div>
 
+
+<nav class="bottom-nav">
+
+  <button
+    class="nav active"
+    data-page="homePage">
+
+    <span>⌂</span>
+    <small>Home</small>
+
+  </button>
+
+
+  <button
+    class="nav"
+    data-page="productPage">
+
+    <span>▦</span>
+    <small>Product</small>
+
+  </button>
+
+
+  <button
+    class="nav"
+    data-page="infoPage">
+
+    <span>●</span>
+    <small>My Info</small>
+
+  </button>
+
+
+  <button
+    class="nav"
+    data-page="invitePage">
+
+    <span>↗</span>
+    <small>Invite</small>
+
+  </button>
+
+</nav>
+
+
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore-compat.js"></script>
+
+<script src="./firebase-config.js?v=1"></script>
 
 <script src="./script.js?v=5"></script>
 
