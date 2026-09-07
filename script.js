@@ -1,49 +1,53 @@
-"use strict";
+/* =========================================
+   BITCOIN MINNING - SCRIPT
+========================================= */
 
-/* =========================
-   BASIC NAVIGATION
-========================= */
+
+/* =========================================
+   PAGE NAVIGATION
+========================================= */
 
 const pages = document.querySelectorAll(".page");
 const navButtons = document.querySelectorAll(".nav");
 
-function showPage(pageId){
 
-  pages.forEach(page => {
+function showPage(pageId) {
+
+  pages.forEach(function(page) {
     page.classList.remove("active");
   });
 
   const page = document.getElementById(pageId);
 
-  if(page){
+  if (page) {
     page.classList.add("active");
   }
 
-  navButtons.forEach(btn => {
-    btn.classList.remove("active");
+  navButtons.forEach(function(button) {
+    button.classList.remove("active");
 
-    if(btn.dataset.page === pageId){
-      btn.classList.add("active");
+    if (button.dataset.page === pageId) {
+      button.classList.add("active");
     }
   });
 
   window.scrollTo({
-    top:0,
-    behavior:"smooth"
+    top: 0,
+    behavior: "smooth"
   });
 }
 
 
 /* Bottom navigation */
 
-navButtons.forEach(btn => {
+navButtons.forEach(function(button) {
 
-  btn.addEventListener("click", () => {
+  button.addEventListener("click", function() {
 
-    const page = btn.dataset.page;
+    const pageId = button.dataset.page;
 
-    if(page){
-      showPage(page);
+    if (pageId) {
+      showPage(pageId);
     }
 
   });
@@ -51,18 +55,16 @@ navButtons.forEach(btn => {
 });
 
 
-/* All data-page buttons */
+/* Buttons having data-page */
 
-document.querySelectorAll("[data-page]").forEach(btn => {
+document.querySelectorAll("[data-page]").forEach(function(button) {
 
-  if(btn.classList.contains("nav")) return;
+  button.addEventListener("click", function() {
 
-  btn.addEventListener("click", () => {
+    const pageId = button.dataset.page;
 
-    const page = btn.dataset.page;
-
-    if(page){
-      showPage(page);
+    if (pageId) {
+      showPage(pageId);
     }
 
   });
@@ -72,38 +74,40 @@ document.querySelectorAll("[data-page]").forEach(btn => {
 
 /* Back buttons */
 
-document.querySelectorAll(".back-btn").forEach(btn => {
+document.querySelectorAll("[data-back]").forEach(function(button) {
 
-  btn.addEventListener("click", () => {
+  button.addEventListener("click", function() {
 
-    showPage(
-      btn.dataset.back || "homePage"
-    );
+    const pageId = button.dataset.back;
+
+    if (pageId) {
+      showPage(pageId);
+    }
 
   });
 
 });
 
 
-/* =========================
+/* =========================================
    USER ID
-========================= */
+========================================= */
 
-function createUserId(){
+function createUserId() {
 
   let userId =
     localStorage.getItem("bm_user_id");
 
-  if(!userId){
+  if (!userId) {
 
-    const random =
+    const number =
       Math.floor(
         1000000 +
-        Math.random() * 8999999
+        Math.random() * 9000000
       );
 
     userId =
-      "You-" + random;
+      "You-" + number;
 
     localStorage.setItem(
       "bm_user_id",
@@ -112,349 +116,170 @@ function createUserId(){
   }
 
   const elements = [
-    "profileUserId",
-    "infoUserId"
+    document.getElementById("profileUserId")
   ];
 
-  elements.forEach(id => {
+  elements.forEach(function(element) {
 
-    const el =
-      document.getElementById(id);
-
-    if(el){
-      el.textContent = userId;
+    if (element) {
+      element.textContent = userId;
     }
 
   });
-
 }
 
 
-/* =========================
+/* =========================================
    BALANCE
-========================= */
+========================================= */
 
-function getBalance(){
+function getBalance() {
 
-  return Number(
-    localStorage.getItem("bm_balance") || "0"
-  );
+  const saved =
+    localStorage.getItem("bm_balance");
 
+  if (saved === null) {
+    localStorage.setItem(
+      "bm_balance",
+      "0"
+    );
+
+    return 0;
+  }
+
+  return Number(saved) || 0;
 }
 
-function updateBalance(){
 
-  const balance =
-    getBalance();
+function updateBalance() {
+
+  const balance = getBalance();
 
   const formatted =
     "₹" +
-    balance.toLocaleString("en-IN", {
-      minimumFractionDigits:2,
-      maximumFractionDigits:2
-    });
+    balance.toLocaleString("en-IN");
+
 
   const ids = [
-    "balanceDisplay",
+    "homeBalance",
     "infoBalance",
     "withdrawBalance"
   ];
 
-  ids.forEach(id => {
 
-    const el =
+  ids.forEach(function(id) {
+
+    const element =
       document.getElementById(id);
 
-    if(el){
-      el.textContent = formatted;
+    if (element) {
+      element.textContent =
+        formatted;
     }
 
   });
-
 }
 
 
-/* =========================
+/* =========================================
    INDIA TIME / GREETING
-========================= */
+========================================= */
 
-function getIndiaDate(){
+function updateGreeting() {
 
-  return new Date(
-    new Date().toLocaleString(
-      "en-US",
-      {timeZone:"Asia/Kolkata"}
-    )
-  );
+  const greeting =
+    document.getElementById("greeting");
 
-}
+  if (!greeting) return;
 
 
-/* =========================
-   PROFILE PHOTO
-========================= */
+  const now =
+    new Date();
 
-const galleryInput =
-  document.getElementById("galleryInput");
-
-const profileImage =
-  document.getElementById("profileImage");
-
-function loadProfileImage(){
-
-  const saved =
-    localStorage.getItem(
-      "bm_profile_image"
+  const hour =
+    Number(
+      new Intl.DateTimeFormat(
+        "en-IN",
+        {
+          timeZone: "Asia/Kolkata",
+          hour: "2-digit",
+          hour12: false
+        }
+      ).format(now)
     );
 
-  if(saved && profileImage){
 
-    profileImage.src = saved;
+  if (hour >= 5 && hour < 12) {
 
-  }else if(profileImage){
+    greeting.textContent =
+      "Good Morning";
 
-    profileImage.src =
-      "data:image/svg+xml;charset=UTF-8," +
-      encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg"
-             width="100"
-             height="100"
-             viewBox="0 0 100 100">
-          <rect width="100"
-                height="100"
-                rx="50"
-                fill="#102a39"/>
-          <circle cx="50"
-                  cy="38"
-                  r="17"
-                  fill="#8fa7b8"/>
-          <path d="M20 86
-                   C25 64 75 64 80 86"
-                fill="#8fa7b8"/>
-        </svg>
-      `);
+  } else if (hour >= 12 && hour < 17) {
+
+    greeting.textContent =
+      "Good Afternoon";
+
+  } else if (hour >= 17 && hour < 21) {
+
+    greeting.textContent =
+      "Good Evening";
+
+  } else {
+
+    greeting.textContent =
+      "Good Night";
 
   }
 
 }
 
-if(galleryInput){
 
-  galleryInput.addEventListener(
-    "change",
-    event => {
-
-      const file =
-        event.target.files[0];
-
-      if(!file) return;
-
-      if(!file.type.startsWith("image/")){
-        return;
-      }
-
-      const reader =
-        new FileReader();
-
-      reader.onload = e => {
-
-        const image =
-          e.target.result;
-
-        localStorage.setItem(
-          "bm_profile_image",
-          image
-        );
-
-        if(profileImage){
-          profileImage.src = image;
-        }
-
-      };
-
-      reader.readAsDataURL(file);
-
-    }
-  );
-
-}
-
-
-/* =========================
-   BANK DETAILS
-========================= */
-
-const bankFields = [
-  "bankNamePerson",
-  "bankIfsc",
-  "bankName",
-  "accountNumber",
-  "repeatAccountNumber"
-];
-
-function loadBankDetails(){
-
-  bankFields.forEach(id => {
-
-    const value =
-      localStorage.getItem(
-        "bm_" + id
-      );
-
-    const el =
-      document.getElementById(id);
-
-    if(el && value){
-      el.value = value;
-    }
-
-  });
-
-}
-
-const saveBankBtn =
-  document.getElementById("saveBankBtn");
-
-if(saveBankBtn){
-
-  saveBankBtn.addEventListener(
-    "click",
-    () => {
-
-      const person =
-        document.getElementById(
-          "bankNamePerson"
-        ).value.trim();
-
-      const ifsc =
-        document.getElementById(
-          "bankIfsc"
-        ).value.trim();
-
-      const bank =
-        document.getElementById(
-          "bankName"
-        ).value.trim();
-
-      const account =
-        document.getElementById(
-          "accountNumber"
-        ).value.trim();
-
-      const repeat =
-        document.getElementById(
-          "repeatAccountNumber"
-        ).value.trim();
-
-      const message =
-        document.getElementById(
-          "bankMessage"
-        );
-
-      if(
-        !person ||
-        !ifsc ||
-        !bank ||
-        !account ||
-        !repeat
-      ){
-
-        message.textContent =
-          "Please fill all bank details.";
-
-        return;
-      }
-
-      if(account !== repeat){
-
-        message.textContent =
-          "Account numbers do not match.";
-
-        return;
-      }
-
-      bankFields.forEach(id => {
-
-        const el =
-          document.getElementById(id);
-
-        localStorage.setItem(
-          "bm_" + id,
-          el.value.trim()
-        );
-
-      });
-
-      message.textContent =
-        "✓ Bank details saved locally.";
-
-    }
-  );
-
-}
-
-
-/* =========================
+/* =========================================
    PRODUCT MODAL
-========================= */
+========================================= */
 
 const productModal =
-  document.getElementById(
-    "productModal"
-  );
+  document.getElementById("productModal");
 
 const modalClose =
-  document.getElementById(
-    "modalClose"
-  );
+  document.getElementById("modalClose");
 
 const modalTitle =
-  document.getElementById(
-    "modalTitle"
-  );
+  document.getElementById("modalTitle");
 
 const modalText =
-  document.getElementById(
-    "modalText"
-  );
-
-const modalDepositBtn =
-  document.getElementById(
-    "modalDepositBtn"
-  );
+  document.getElementById("modalText");
 
 
 document.querySelectorAll(
-  ".plan-btn"
-).forEach(btn => {
+  "[data-product]"
+).forEach(function(button) {
 
-  btn.addEventListener(
+  button.addEventListener(
     "click",
-    () => {
+    function() {
 
-      const amount =
-        btn.dataset.amount;
+      const product =
+        button.dataset.product;
 
-      if(modalTitle){
-
+      if (modalTitle) {
         modalTitle.textContent =
-          "₹" + amount + " Mining Plan";
-
+          product + " Mining Plan";
       }
 
-      if(modalText){
+      if (modalText) {
 
         modalText.textContent =
-          "This plan is displayed for informational and UI purposes. No guaranteed investment return is represented.";
+          "This is informational content " +
+          "about the selected mining plan. " +
+          "This GitHub Pages version does " +
+          "not guarantee investment returns " +
+          "or process real-money investments.";
 
       }
 
-      if(productModal){
-
-        productModal.classList.add(
-          "show"
-        );
-
+      if (productModal) {
+        productModal.classList.add("show");
       }
 
     }
@@ -463,15 +288,13 @@ document.querySelectorAll(
 });
 
 
-if(modalClose){
+if (modalClose) {
 
   modalClose.addEventListener(
     "click",
-    () => {
+    function() {
 
-      productModal.classList.remove(
-        "show"
-      );
+      productModal.classList.remove("show");
 
     }
   );
@@ -479,13 +302,13 @@ if(modalClose){
 }
 
 
-if(productModal){
+if (productModal) {
 
   productModal.addEventListener(
     "click",
-    event => {
+    function(event) {
 
-      if(event.target === productModal){
+      if (event.target === productModal) {
 
         productModal.classList.remove(
           "show"
@@ -499,74 +322,134 @@ if(productModal){
 }
 
 
-if(modalDepositBtn){
+/* =========================================
+   PROFILE IMAGE
+========================================= */
 
-  modalDepositBtn.addEventListener(
-    "click",
-    () => {
-
-      productModal.classList.remove(
-        "show"
-      );
-
-      showPage("depositPage");
-
-    }
+const profileUploadBtn =
+  document.getElementById(
+    "profileUploadBtn"
   );
+
+const profileGallery =
+  document.getElementById(
+    "profileGallery"
+  );
+
+const profileImage =
+  document.getElementById(
+    "profileImage"
+  );
+
+const profileLetter =
+  document.getElementById(
+    "profileLetter"
+  );
+
+const topProfileImg =
+  document.getElementById(
+    "topProfileImg"
+  );
+
+const topProfileLetter =
+  document.getElementById(
+    "topProfileLetter"
+  );
+
+
+function loadProfileImage() {
+
+  const savedImage =
+    localStorage.getItem(
+      "bm_profile_image"
+    );
+
+  if (!savedImage) return;
+
+
+  if (profileImage) {
+
+    profileImage.src =
+      savedImage;
+
+    profileImage.classList.add(
+      "show"
+    );
+
+  }
+
+
+  if (profileLetter) {
+    profileLetter.style.display =
+      "none";
+  }
+
+
+  if (topProfileImg) {
+
+    topProfileImg.src =
+      savedImage;
+
+    topProfileImg.classList.add(
+      "show"
+    );
+
+  }
+
+
+  if (topProfileLetter) {
+    topProfileLetter.style.display =
+      "none";
+  }
 
 }
 
 
-/* =========================
-   DEPOSIT
-   LOCAL ONLY
-========================= */
+if (profileUploadBtn && profileGallery) {
 
-const paymentScreenshot =
-  document.getElementById(
-    "paymentScreenshot"
-  );
+  profileUploadBtn.addEventListener(
+    "click",
+    function() {
 
-const paymentPreview =
-  document.getElementById(
-    "paymentScreenshotPreview"
+      profileGallery.click();
+
+    }
   );
 
 
-/* Screenshot preview */
-
-if(paymentScreenshot){
-
-  paymentScreenshot.addEventListener(
+  profileGallery.addEventListener(
     "change",
-    event => {
+    function() {
 
       const file =
-        event.target.files[0];
+        profileGallery.files[0];
 
-      if(!file) return;
+      if (!file) return;
 
-      if(!file.type.startsWith("image/")){
-
-        paymentPreview.innerHTML =
-          "";
-
+      if (!file.type.startsWith("image/")) {
         return;
-
       }
+
 
       const reader =
         new FileReader();
 
-      reader.onload = e => {
 
-        paymentPreview.innerHTML = `
-          <img
-            src="${e.target.result}"
-            alt="Payment Screenshot Preview">
-        `;
+      reader.onload =
+        function(event) {
 
-      };
+          const imageData =
+            event.target.result;
+
+          localStorage.setItem(
+            "bm_profile_image",
+            imageData
+          );
+
+          loadProfileImage();
+
+        };
+
 
       reader.readAsDataURL(file);
 
@@ -576,39 +459,525 @@ if(paymentScreenshot){
 }
 
 
-/* Copy UPI */
+/* =========================================
+   BANK DETAILS
+========================================= */
+
+const bankName =
+  document.getElementById(
+    "bankName"
+  );
+
+const bankIfsc =
+  document.getElementById(
+    "bankIfsc"
+  );
+
+const bankBankName =
+  document.getElementById(
+    "bankBankName"
+  );
+
+const bankAccount =
+  document.getElementById(
+    "bankAccount"
+  );
+
+const bankAccountRepeat =
+  document.getElementById(
+    "bankAccountRepeat"
+  );
+
+const saveBankBtn =
+  document.getElementById(
+    "saveBankBtn"
+  );
+
+const bankMessage =
+  document.getElementById(
+    "bankMessage"
+  );
+
+
+function loadBankDetails() {
+
+  let data;
+
+  try {
+
+    data =
+      JSON.parse(
+        localStorage.getItem(
+          "bm_bank_details"
+        ) || "null"
+      );
+
+  } catch (error) {
+
+    data = null;
+
+  }
+
+
+  if (!data) return;
+
+
+  if (bankName)
+    bankName.value =
+      data.name || "";
+
+  if (bankIfsc)
+    bankIfsc.value =
+      data.ifsc || "";
+
+  if (bankBankName)
+    bankBankName.value =
+      data.bankName || "";
+
+  if (bankAccount)
+    bankAccount.value =
+      data.account || "";
+
+  if (bankAccountRepeat)
+    bankAccountRepeat.value =
+      data.account || "";
+
+}
+
+
+if (saveBankBtn) {
+
+  saveBankBtn.addEventListener(
+    "click",
+    function() {
+
+      const name =
+        bankName.value.trim();
+
+      const ifsc =
+        bankIfsc.value.trim();
+
+      const bank =
+        bankBankName.value.trim();
+
+      const account =
+        bankAccount.value.trim();
+
+      const repeat =
+        bankAccountRepeat.value.trim();
+
+
+      if (
+        !name ||
+        !ifsc ||
+        !bank ||
+        !account ||
+        !repeat
+      ) {
+
+        bankMessage.textContent =
+          "Please fill all bank details.";
+
+        return;
+
+      }
+
+
+      if (account !== repeat) {
+
+        bankMessage.textContent =
+          "Account numbers do not match.";
+
+        return;
+
+      }
+
+
+      const data = {
+
+        name: name,
+        ifsc: ifsc,
+        bankName: bank,
+        account: account
+
+      };
+
+
+      localStorage.setItem(
+        "bm_bank_details",
+        JSON.stringify(data)
+      );
+
+
+      bankMessage.textContent =
+        "✓ Bank details saved locally.";
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   WITHDRAWAL
+========================================= */
+
+const withdrawAmount =
+  document.getElementById(
+    "withdrawAmount"
+  );
+
+const withdrawSubmit =
+  document.getElementById(
+    "withdrawSubmit"
+  );
+
+const withdrawMessage =
+  document.getElementById(
+    "withdrawMessage"
+  );
+
+
+function getISTDate() {
+
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "Asia/Kolkata"
+    }
+  ).format(
+    new Date()
+  );
+
+}
+
+
+function getISTHourMinute() {
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }
+    ).formatToParts(
+      new Date()
+    );
+
+
+  let hour = 0;
+  let minute = 0;
+
+
+  parts.forEach(function(part) {
+
+    if (part.type === "hour") {
+      hour = Number(part.value);
+    }
+
+    if (part.type === "minute") {
+      minute = Number(part.value);
+    }
+
+  });
+
+
+  return {
+    hour: hour,
+    minute: minute
+  };
+
+}
+
+
+if (withdrawSubmit) {
+
+  withdrawSubmit.addEventListener(
+    "click",
+    function() {
+
+      const amount =
+        Number(
+          withdrawAmount.value
+        );
+
+
+      if (
+        !amount ||
+        amount < 500 ||
+        amount > 20000
+      ) {
+
+        withdrawMessage.textContent =
+          "Withdrawal amount must be ₹500 - ₹20,000.";
+
+        return;
+
+      }
+
+
+      const time =
+        getISTHourMinute();
+
+      const totalMinutes =
+        time.hour * 60 +
+        time.minute;
+
+
+      const start =
+        10 * 60 + 30;
+
+      const end =
+        17 * 60 + 30;
+
+
+      if (
+        totalMinutes < start ||
+        totalMinutes > end
+      ) {
+
+        withdrawMessage.textContent =
+          "Withdrawal time is 10:30 AM - 5:30 PM IST.";
+
+        return;
+
+      }
+
+
+      const today =
+        getISTDate();
+
+
+      let records =
+        JSON.parse(
+          localStorage.getItem(
+            "bm_withdrawals"
+          ) || "[]"
+        );
+
+
+      records =
+        records.filter(function(item) {
+
+          return item.date === today;
+
+        });
+
+
+      if (records.length >= 3) {
+
+        withdrawMessage.textContent =
+          "Maximum 3 withdrawal requests per day.";
+
+        return;
+
+      }
+
+
+      const balance =
+        getBalance();
+
+
+      if (amount > balance) {
+
+        withdrawMessage.textContent =
+          "Insufficient available balance.";
+
+        return;
+
+      }
+
+
+      const current =
+        new Date();
+
+
+      const withdrawalRecord = {
+
+        amount: amount,
+
+        date: today,
+
+        dateTime:
+          current.toISOString(),
+
+        status:
+          "Request Recorded"
+
+      };
+
+
+      records.push({
+
+        amount: amount,
+
+        date: today
+
+      });
+
+
+      localStorage.setItem(
+        "bm_withdrawals",
+        JSON.stringify(records)
+      );
+
+
+      let withdrawalHistory =
+        JSON.parse(
+          localStorage.getItem(
+            "bm_withdrawal_history"
+          ) || "[]"
+        );
+
+
+      withdrawalHistory.push(
+        withdrawalRecord
+      );
+
+
+      localStorage.setItem(
+        "bm_withdrawal_history",
+        JSON.stringify(
+          withdrawalHistory
+        )
+      );
+
+
+      withdrawMessage.textContent =
+        "✓ Withdrawal request recorded locally.";
+
+
+      withdrawAmount.value = "";
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   DEPOSIT
+========================================= */
+
+const paymentScreenshot =
+  document.getElementById(
+    "paymentScreenshot"
+  );
+
+const paymentScreenshotPreview =
+  document.getElementById(
+    "paymentScreenshotPreview"
+  );
+
+
+if (
+  paymentScreenshot &&
+  paymentScreenshotPreview
+) {
+
+  paymentScreenshot.addEventListener(
+    "change",
+    function() {
+
+      const file =
+        paymentScreenshot.files[0];
+
+      paymentScreenshotPreview.innerHTML =
+        "";
+
+      paymentScreenshotPreview.classList.remove(
+        "show"
+      );
+
+
+      if (!file) return;
+
+
+      if (!file.type.startsWith("image/")) {
+        return;
+      }
+
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload =
+        function(event) {
+
+          const img =
+            document.createElement(
+              "img"
+            );
+
+
+          img.src =
+            event.target.result;
+
+
+          paymentScreenshotPreview.appendChild(
+            img
+          );
+
+
+          paymentScreenshotPreview.classList.add(
+            "show"
+          );
+
+        };
+
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   COPY UPI
+========================================= */
 
 const copyUpiBtn =
   document.getElementById(
     "copyUpiBtn"
   );
 
-if(copyUpiBtn){
+
+if (copyUpiBtn) {
 
   copyUpiBtn.addEventListener(
     "click",
-    async () => {
+    async function() {
 
       const upi =
         "yadav-rishab@fam";
 
-      try{
+
+      try {
 
         await navigator.clipboard.writeText(
           upi
         );
 
         copyUpiBtn.textContent =
-          "Copied!";
+          "Copied";
 
-        setTimeout(() => {
+        setTimeout(
+          function() {
 
-          copyUpiBtn.textContent =
-            "Copy";
+            copyUpiBtn.textContent =
+              "Copy";
 
-        },1500);
+          },
+          1500
+        );
 
-      }catch(error){
+      } catch (error) {
 
         alert(
           "UPI ID: " + upi
@@ -622,18 +991,26 @@ if(copyUpiBtn){
 }
 
 
-/* Submit deposit request */
+/* =========================================
+   DEPOSIT SUBMIT
+========================================= */
 
 const paymentSubmit =
   document.getElementById(
     "paymentSubmit"
   );
 
-if(paymentSubmit){
+const paymentMessage =
+  document.getElementById(
+    "paymentMessage"
+  );
+
+
+if (paymentSubmit) {
 
   paymentSubmit.addEventListener(
     "click",
-    () => {
+    function() {
 
       const amount =
         Number(
@@ -642,39 +1019,36 @@ if(paymentSubmit){
           ).value
         );
 
+
       const utr =
         document.getElementById(
           "utr"
         ).value.trim();
+
 
       const screenshot =
         document.getElementById(
           "paymentScreenshot"
         ).files[0];
 
-      const message =
-        document.getElementById(
-          "paymentMessage"
-        );
 
-
-      if(
+      if (
         !amount ||
         amount < 200 ||
         amount > 50000
-      ){
+      ) {
 
-        message.textContent =
-          "Enter an amount between ₹200 and ₹50,000.";
+        paymentMessage.textContent =
+          "Amount must be ₹200 - ₹50,000.";
 
         return;
 
       }
 
 
-      if(!utr){
+      if (!utr) {
 
-        message.textContent =
+        paymentMessage.textContent =
           "Please enter UTR / transaction reference.";
 
         return;
@@ -682,9 +1056,9 @@ if(paymentSubmit){
       }
 
 
-      if(!screenshot){
+      if (!screenshot) {
 
-        message.textContent =
+        paymentMessage.textContent =
           "Please attach the payment screenshot.";
 
         return;
@@ -695,8 +1069,7 @@ if(paymentSubmit){
       const request = {
 
         id:
-          "DEP-" +
-          Date.now(),
+          "DEP-" + Date.now(),
 
         amount:
           amount,
@@ -719,7 +1092,40 @@ if(paymentSubmit){
       );
 
 
-      message.textContent =
+      let depositHistory =
+        JSON.parse(
+          localStorage.getItem(
+            "bm_deposit_history"
+          ) || "[]"
+        );
+
+
+      depositHistory.push({
+
+        amount:
+          amount,
+
+        utr:
+          utr,
+
+        date:
+          new Date().toISOString(),
+
+        status:
+          "Pending Verification"
+
+      });
+
+
+      localStorage.setItem(
+        "bm_deposit_history",
+        JSON.stringify(
+          depositHistory
+        )
+      );
+
+
+      paymentMessage.textContent =
         "✓ Request submitted locally. Status: Pending Verification.";
 
 
@@ -727,16 +1133,27 @@ if(paymentSubmit){
         "depositAmount"
       ).value = "";
 
+
       document.getElementById(
         "utr"
       ).value = "";
+
 
       document.getElementById(
         "paymentScreenshot"
       ).value = "";
 
-      paymentPreview.innerHTML =
-        "";
+
+      if (paymentScreenshotPreview) {
+
+        paymentScreenshotPreview.innerHTML =
+          "";
+
+        paymentScreenshotPreview.classList.remove(
+          "show"
+        );
+
+      }
 
     }
   );
@@ -744,130 +1161,479 @@ if(paymentSubmit){
 }
 
 
-/* =========================
-   WITHDRAW
-========================= */
+/* =========================================
+   HISTORY FUNCTIONS
+========================================= */
 
-const withdrawSubmit =
-  document.getElementById(
-    "withdrawSubmit"
-  );
+function readHistory(key) {
 
-if(withdrawSubmit){
+  try {
 
-  withdrawSubmit.addEventListener(
-    "click",
-    () => {
-
-      const amount =
-        Number(
-          document.getElementById(
-            "withdrawAmount"
-          ).value
-        );
-
-      const message =
-        document.getElementById(
-          "withdrawMessage"
-        );
-
-      const now =
-        getIndiaDate();
-
-      const hours =
-        now.getHours();
-
-      const minutes =
-        now.getMinutes();
-
-      const currentMinutes =
-        hours * 60 + minutes;
-
-      const start =
-        10 * 60 + 30;
-
-      const end =
-        17 * 60 + 30;
-
-
-      if(
-        !amount ||
-        amount < 500 ||
-        amount > 20000
-      ){
-
-        message.textContent =
-          "Withdrawal amount must be ₹500 - ₹20,000.";
-
-        return;
-
-      }
-
-
-      if(
-        currentMinutes < start ||
-        currentMinutes > end
-      ){
-
-        message.textContent =
-          "Withdrawal requests are available from 10:30 AM to 5:30 PM IST.";
-
-        return;
-
-      }
-
-
-      const balance =
-        getBalance();
-
-
-      if(amount > balance){
-
-        message.textContent =
-          "Insufficient available balance.";
-
-        return;
-
-      }
-
-
-      const today =
-        now.toISOString()
-          .slice(0,10);
-
-
-      const key =
-        "bm_withdrawals_" + today;
-
-
-      const count =
-        Number(
-          localStorage.getItem(key) || "0"
-        );
-
-
-      if(count >= 3){
-
-        message.textContent =
-          "Maximum 3 withdrawal requests allowed today.";
-
-        return;
-
-      }
-
-
-      localStorage.setItem(
-        key,
-        String(count + 1)
+    const data =
+      JSON.parse(
+        localStorage.getItem(key) || "[]"
       );
 
+    return Array.isArray(data)
+      ? data
+      : [];
 
-      message.textContent =
-        "✓ Withdrawal request saved locally.";
+  } catch (error) {
 
-      document.getElementById(
-        "withdrawAmount"
-      ).value = "";
+    return [];
+
+  }
+
+}
+
+
+function formatHistoryDate(value) {
+
+  if (!value) {
+    return "-";
+  }
+
+
+  const date =
+    new Date(value);
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return value;
+
+  }
+
+
+  return new Intl.DateTimeFormat(
+    "en-IN",
+    {
+      timeZone: "Asia/Kolkata",
+
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+
+      hour12: true
+
+    }
+  ).format(date);
+
+}
+
+
+function escapeHistoryText(value) {
+
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+
+}
+
+
+/* =========================================
+   DEPOSIT HISTORY
+========================================= */
+
+function normalizeDepositHistory() {
+
+  return readHistory(
+    "bm_deposit_history"
+  )
+  .map(function(item) {
+
+    return {
+
+      type:
+        "deposit",
+
+      amount:
+        Number(
+          item.amount || 0
+        ),
+
+      utr:
+        item.utr || "",
+
+      date:
+        item.date ||
+        item.submittedAt ||
+        "",
+
+      status:
+        item.status ||
+        "Pending Verification"
+
+    };
+
+  });
+
+}
+
+
+/* =========================================
+   WITHDRAWAL HISTORY
+========================================= */
+
+function normalizeWithdrawalHistory() {
+
+  return readHistory(
+    "bm_withdrawal_history"
+  )
+  .map(function(item) {
+
+    return {
+
+      type:
+        "withdrawal",
+
+      amount:
+        Number(
+          item.amount || 0
+        ),
+
+      date:
+        item.dateTime ||
+        item.date ||
+        "",
+
+      status:
+        item.status ||
+        "Request Recorded"
+
+    };
+
+  });
+
+}
+
+
+/* =========================================
+   SHOW HISTORY
+========================================= */
+
+function showHistory(type) {
+
+  const list =
+    document.getElementById(
+      "historyList"
+    );
+
+  const title =
+    document.getElementById(
+      "historyPageTitle"
+    );
+
+  const subtitle =
+    document.getElementById(
+      "historyPageSubtitle"
+    );
+
+
+  if (
+    !list ||
+    !title ||
+    !subtitle
+  ) {
+    return;
+  }
+
+
+  let records = [];
+
+
+  if (type === "deposit") {
+
+    title.textContent =
+      "Deposit History";
+
+    subtitle.textContent =
+      "All deposit records";
+
+    records =
+      normalizeDepositHistory();
+
+  }
+
+  else if (
+    type === "withdrawal"
+  ) {
+
+    title.textContent =
+      "Withdrawal History";
+
+    subtitle.textContent =
+      "All withdrawal records";
+
+    records =
+      normalizeWithdrawalHistory();
+
+  }
+
+  else {
+
+    title.textContent =
+      "Transaction History";
+
+    subtitle.textContent =
+      "Deposits & withdrawals";
+
+    records =
+      normalizeDepositHistory()
+      .concat(
+        normalizeWithdrawalHistory()
+      );
+
+  }
+
+
+  records.sort(
+    function(a, b) {
+
+      return (
+        new Date(
+          b.date || 0
+        ) -
+        new Date(
+          a.date || 0
+        )
+      );
+
+    }
+  );
+
+
+  if (!records.length) {
+
+    list.innerHTML = `
+
+      <div class="history-empty">
+
+        <div class="history-empty-icon">
+          📋
+        </div>
+
+        <h3>
+          No History Yet
+        </h3>
+
+        <p>
+          Your recorded transactions
+          will appear here.
+        </p>
+
+      </div>
+
+    `;
+
+  }
+
+  else {
+
+    list.innerHTML =
+      records.map(
+        function(item) {
+
+          const isDeposit =
+            item.type === "deposit";
+
+
+          const titleText =
+            isDeposit
+              ? "Deposit"
+              : "Withdrawal";
+
+
+          const icon =
+            isDeposit
+              ? "↓"
+              : "↑";
+
+
+          const amountClass =
+            isDeposit
+              ? "deposit-amount"
+              : "withdraw-amount";
+
+
+          const utrRow =
+            isDeposit &&
+            item.utr
+
+            ? `
+
+              <p>
+
+                UTR:
+
+                <strong>
+                  ${escapeHistoryText(
+                    item.utr
+                  )}
+                </strong>
+
+              </p>
+
+            `
+
+            : "";
+
+
+          return `
+
+            <div class="history-card">
+
+              <div class="history-card-top">
+
+                <div class="
+                  history-type-icon
+                  ${
+                    isDeposit
+                      ? "deposit-type"
+                      : "withdraw-type"
+                  }
+                ">
+
+                  ${icon}
+
+                </div>
+
+
+                <div class="history-main">
+
+                  <b>
+                    ${titleText}
+                  </b>
+
+                  <small>
+
+                    ${escapeHistoryText(
+                      formatHistoryDate(
+                        item.date
+                      )
+                    )}
+
+                  </small>
+
+                </div>
+
+
+                <div class="
+                  history-amount
+                  ${amountClass}
+                ">
+
+                  ₹${Number(
+                    item.amount || 0
+                  ).toLocaleString(
+                    "en-IN"
+                  )}
+
+                </div>
+
+              </div>
+
+
+              <div class="history-details">
+
+                <p>
+
+                  Date & Time:
+
+                  <strong>
+
+                    ${escapeHistoryText(
+                      formatHistoryDate(
+                        item.date
+                      )
+                    )}
+
+                  </strong>
+
+                </p>
+
+
+                <p>
+
+                  Status:
+
+                  <strong>
+
+                    ${escapeHistoryText(
+                      item.status
+                    )}
+
+                  </strong>
+
+                </p>
+
+
+                ${utrRow}
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+      ).join("");
+
+  }
+
+
+  showPage(
+    "historyPage"
+  );
+
+}
+
+
+/* =========================================
+   HISTORY BUTTONS
+========================================= */
+
+const transactionHistoryBtn =
+  document.getElementById(
+    "transactionHistoryBtn"
+  );
+
+
+if (transactionHistoryBtn) {
+
+  transactionHistoryBtn.addEventListener(
+    "click",
+    function() {
+
+      showHistory("all");
 
     }
   );
@@ -875,31 +1641,92 @@ if(withdrawSubmit){
 }
 
 
-/* =========================
-   INVITE
-========================= */
-
-const whatsappBtn =
+const depositHistoryBtn =
   document.getElementById(
-    "whatsappBtn"
+    "depositHistoryBtn"
   );
 
-if(whatsappBtn){
 
-  whatsappBtn.addEventListener(
+if (depositHistoryBtn) {
+
+  depositHistoryBtn.addEventListener(
     "click",
-    () => {
+    function() {
 
-      const text =
-        "Check out Bitcoin Minning: " +
-        window.location.href;
+      showHistory("deposit");
 
-      const url =
-        "https://wa.me/?text=" +
-        encodeURIComponent(text);
+    }
+  );
+
+}
+
+
+const withdrawalHistoryBtn =
+  document.getElementById(
+    "withdrawalHistoryBtn"
+  );
+
+
+if (withdrawalHistoryBtn) {
+
+  withdrawalHistoryBtn.addEventListener(
+    "click",
+    function() {
+
+      showHistory(
+        "withdrawal"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   HISTORY BACK
+========================================= */
+
+const historyBackBtn =
+  document.getElementById(
+    "historyBackBtn"
+  );
+
+
+if (historyBackBtn) {
+
+  historyBackBtn.addEventListener(
+    "click",
+    function() {
+
+      showPage(
+        "infoPage"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   CUSTOMER SERVICE
+========================================= */
+
+const customerServiceBtn =
+  document.getElementById(
+    "customerServiceBtn"
+  );
+
+
+if (customerServiceBtn) {
+
+  customerServiceBtn.addEventListener(
+    "click",
+    function() {
 
       window.open(
-        url,
+        "https://t.me/Hammerff7gcz",
         "_blank"
       );
 
@@ -909,35 +1736,89 @@ if(whatsappBtn){
 }
 
 
+/* =========================================
+   WHATSAPP INVITE
+========================================= */
+
+const whatsappBtn =
+  document.getElementById(
+    "whatsappBtn"
+  );
+
+
+if (whatsappBtn) {
+
+  whatsappBtn.addEventListener(
+    "click",
+    function() {
+
+      const text =
+        "Check out Bitcoin Minning";
+
+      const url =
+        window.location.href;
+
+
+      const shareUrl =
+        "https://wa.me/?text=" +
+        encodeURIComponent(
+          text + "\n" + url
+        );
+
+
+      window.open(
+        shareUrl,
+        "_blank"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   COPY APP LINK
+========================================= */
+
 const copyLinkBtn =
   document.getElementById(
     "copyLinkBtn"
   );
 
-if(copyLinkBtn){
+
+if (copyLinkBtn) {
 
   copyLinkBtn.addEventListener(
     "click",
-    async () => {
+    async function() {
 
-      const message =
-        document.getElementById(
-          "inviteMessage"
-        );
+      const link =
+        window.location.href;
 
-      try{
+
+      try {
 
         await navigator.clipboard.writeText(
-          window.location.href
+          link
         );
 
-        message.textContent =
-          "✓ App link copied.";
+        copyLinkBtn.textContent =
+          "Copied";
 
-      }catch(error){
+        setTimeout(
+          function() {
 
-        message.textContent =
-          "Copy failed. Please copy the browser link.";
+            copyLinkBtn.textContent =
+              "Copy App Link";
+
+          },
+          1500
+        );
+
+      } catch (error) {
+
+        alert(link);
 
       }
 
@@ -947,13 +1828,20 @@ if(copyLinkBtn){
 }
 
 
-/* =========================
+/* =========================================
    START APP
-========================= */
+========================================= */
 
 createUserId();
-loadProfileImage();
-loadBankDetails();
+
 updateBalance();
 
-showPage("homePage");
+updateGreeting();
+
+loadProfileImage();
+
+loadBankDetails();
+
+showPage(
+  "homePage"
+);
