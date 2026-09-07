@@ -1831,6 +1831,290 @@ if (copyLinkBtn) {
 /* =========================================
    START APP
 ========================================= */
+/* ==============================
+   FIREBASE TEST BALANCE
+   ============================== */
+
+let bmFirebaseReady = false;
+let bmFirebaseUser = null;
+let bmFirebaseDb = null;
+let bmBalanceUnsubscribe = null;
+
+
+async function initFirebaseTestBalance() {
+
+  try {
+
+    if (
+      !window.BM_FIREBASE_CONFIG ||
+      !window.BM_FIREBASE_CONFIG.apiKey
+    ) {
+
+      console.warn(
+        "Firebase config is missing."
+      );
+
+      return;
+    }
+
+
+    if (!window.firebase) {
+
+      console.error(
+        "Firebase SDK not loaded."
+      );
+
+      return;
+    }
+
+
+    if (!firebase.apps.length) {
+
+      firebase.initializeApp(
+        window.BM_FIREBASE_CONFIG
+      );
+
+    }
+
+
+    const auth =
+      firebase.auth();
+
+    bmFirebaseDb =
+      firebase.firestore();
+
+
+    bmFirebaseUser =
+      await new Promise(
+        function(resolve, reject) {
+
+          const unsubscribe =
+            auth.onAuthStateChanged(
+              function(user) {
+
+                unsubscribe();
+
+                resolve(user);
+
+              },
+              reject
+            );
+
+        }
+      );
+
+
+    /*
+      Anonymous login
+    */
+
+    if (!bmFirebaseUser) {
+
+      const result =
+        await auth.signInAnonymously();
+
+      bmFirebaseUser =
+        result.user;
+
+    }
+
+
+    const userId =
+      localStorage.getItem(
+        "bm_user_id"
+      );
+
+
+    if (!userId) {
+
+      console.warn(
+        "Website user ID not available."
+      );
+
+      return;
+    }
+
+
+    const ref =
+      bmFirebaseDb
+        .collection("testBalances")
+        .doc(userId);
+
+
+    const snap =
+      await ref.get();
+
+
+    /*
+      First visit:
+      Create test balance with ₹0
+    */
+
+    if (!snap.exists) {
+
+      await ref.set({
+
+        uid:
+          bmFirebaseUser.uid,
+
+        userId:
+          userId,
+
+        balance:
+          0,
+
+        updatedAt:
+          firebase.firestore.FieldValue
+            .serverTimestamp()
+
+      });
+
+
+      localStorage.setItem(
+        "bm_balance",
+        "0"
+      );
+
+
+      updateBalance();
+
+    }
+
+
+    /*
+      Existing balance:
+      Load from Firebase
+    */
+
+    else {
+
+      const data =
+        snap.data();
+
+
+      if (
+        data.uid ===
+        bmFirebaseUser.uid
+      ) {
+
+        const cloudBalance =
+          Number(
+            data.balance || 0
+          );
+
+
+        localStorage.setItem(
+          "bm_balance",
+          String(cloudBalance)
+        );
+
+
+        updateBalance();
+
+      }
+
+    }
+
+
+    /*
+      Live balance listener.
+      If admin changes the test balance,
+      website updates automatically.
+    */
+
+    if (bmBalanceUnsubscribe) {
+
+      bmBalanceUnsubscribe();
+
+    }
+
+
+    bmBalanceUnsubscribe =
+      ref.onSnapshot(
+        function(snapshot) {
+
+          if (!snapshot.exists) {
+            return;
+          }
+
+
+          const data =
+            snapshot.data();
+
+
+          if (
+            !bmFirebaseUser ||
+            data.uid !==
+              bmFirebaseUser.uid
+          ) {
+
+            return;
+
+          }
+
+
+          const balance =
+            Number(
+              data.balance || 0
+            );
+
+
+          localStorage.setItem(
+            "bm_balance",
+            String(balance)
+          );
+
+
+          updateBalance();
+
+        },
+        function(error) {
+
+          console.error(
+            "Firebase balance listener error:",
+            error
+          );
+
+        }
+      );
+
+
+    bmFirebaseReady = true;
+
+
+    console.log(
+      "Firebase test balance connected."
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Firebase initialization failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ==============================
+   START APPLICATION
+============================== */
+
+createUserId();
+
+updateBalance();
+
+/*
+  Firebase initialization
+  runs after user ID is created.
+*/
+
+initFirebaseTestBalance();
+
+showPage("homePage");
 
 createUserId();
 
