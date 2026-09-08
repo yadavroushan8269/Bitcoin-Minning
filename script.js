@@ -9,8 +9,8 @@ const products=[
  {id:3,name:"Product 3",price:3600,daily:72}
 ];
 
-let data=JSON.parse(localStorage.getItem("nsgDemoData")||"null")||{
- balance:0,
+let data=JSON.parse(localStorage.getItem(NSG.Data")||"null")||{
+ balance:500000.00,
  attendance:{},
  purchased:[],
  rewards:[],
@@ -20,7 +20,7 @@ let data=JSON.parse(localStorage.getItem("nsgDemoData")||"null")||{
 };
 
 function save(){
- localStorage.setItem("nsgDemoData",JSON.stringify(data));
+ localStorage.setItem(NSG.Data",JSON.stringify(data));
 }
 
 function money(n){
@@ -126,7 +126,7 @@ function buyProduct(id){
 
  save();
  updateUI();
- alert("Demo product purchased.");
+ alert("product purchased.");
 }
 
 let calDate=new Date();
@@ -218,7 +218,7 @@ function renderRewards(){
   return `
    <div class="history-item">
     <b>🎁 ${p.name}</b>
-    <small>Demo daily reward: ₹${p.daily}</small>
+    <small> daily reward: ₹${p.daily}</small>
    </div>`;
  }).join("");
 }
@@ -464,7 +464,7 @@ function submitWithdrawal(){
  document.getElementById("withdrawAmount").value="";
 
  msg.textContent=
-  "Demo withdrawal request recorded locally. No bank transfer was made.";
+  "withdrawal request recorded local storage.";
 
  updateUI();
 }
