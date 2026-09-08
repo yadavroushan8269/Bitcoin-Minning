@@ -1,827 +1,351 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Bitcoin Minning</title>
-
-  <link rel="stylesheet" href="./style.css?v=10">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NSG Wellfare</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="app">
-
-<section class="page active" id="homePage">
-
 <header class="topbar">
   <div>
-    <h1>Bitcoin Minning</h1>
-    <p id="greeting">Good Afternoon</p>
+    <h2>🌿 NSG Wellfare</h2>
+    <small>Secure Digital Platform</small>
   </div>
-
-  <div class="profile-mini" id="topProfile">
-    <img id="topProfileImg" src="" alt="">
-    <span id="topProfileLetter">U</span>
-  </div>
+  <div class="balance">₹<span id="balance">0.00</span></div>
 </header>
 
-<div class="hero-card">
+<main>
 
-  <div class="hero-left">
-
-    <span class="hero-label">
-      AVAILABLE BALANCE
-    </span>
-
-    <h2 id="homeBalance">₹0</h2>
-
-    <p>
-      Your current account balance
-    </p>
-
+<section id="home" class="page active">
+  <div class="welcome card">
+    <h2>Welcome 👋</h2>
+    <p>Welcome to NSG Wellfare</p>
+    <p>+91 <span id="loggedMobile">Demo User</span></p>
+    <div class="balance-big">₹<span id="homeBalance">0.00</span></div>
   </div>
 
-  <div class="bitcoin-logo">
-    ₿
-  </div>
-
-</div>
-
-
-<div class="quick-grid">
-
-  <button class="quick-btn" data-page="depositPage">
-    <span>↓</span>
-    <b>Deposit</b>
-  </button>
-
-  <button class="quick-btn" data-page="withdrawPage">
-    <span>↑</span>
-    <b>Withdraw</b>
-  </button>
-
-  <button class="quick-btn" data-page="infoPage">
-    <span>👤</span>
-    <b>My Info</b>
-  </button>
-
-  <button class="quick-btn" data-page="invitePage">
-    <span>↗</span>
-    <b>Invite</b>
-  </button>
-
-</div>
-
-
-<div class="section-head">
-  <h3>Latest News</h3>
-  <span>Crypto</span>
-</div>
-
-<div class="news-card">
-
-  <div class="news-icon">
-    ₿
-  </div>
-
-  <div>
-    <b>Bitcoin Market Update</b>
-
-    <p>
-      Stay informed about the latest
-      cryptocurrency market developments.
-    </p>
-  </div>
-
-</div>
-
-
-<div class="section-head">
-  <h3>Mining Plans</h3>
-  <span>View All</span>
-</div>
-
-
-<div class="plans">
-
-  <div class="plan-card">
-
-    <div class="plan-top">
-      <span>Plan 1</span>
-      <b>₹500</b>
-    </div>
-
-    <p>
-      Informational mining plan
-    </p>
-
-    <button
-      class="primary"
-      data-product="₹500">
-      View Details
+  <div class="grid">
+    <button class="menu-card" onclick="openPage('attendance')">
+      <span>📅</span><b>Daily Attendance</b><small>Attendance Calendar</small>
     </button>
-
-  </div>
-
-
-  <div class="plan-card">
-
-    <div class="plan-top">
-      <span>Plan 2</span>
-      <b>₹1,500</b>
-    </div>
-
-    <p>
-      Informational mining plan
-    </p>
-
-    <button
-      class="primary"
-      data-product="₹1500">
-      View Details
+    <button class="menu-card" onclick="openPage('rewards')">
+      <span>🎁</span><b>Rewards</b><small>Claim available rewards</small>
     </button>
-
-  </div>
-
-
-  <div class="plan-card">
-
-    <div class="plan-top">
-      <span>Plan 3</span>
-      <b>₹3,600</b>
-    </div>
-
-    <p>
-      Informational mining plan
-    </p>
-
-    <button
-      class="primary"
-      data-product="₹3600">
-      View Details
+    <button class="menu-card" onclick="customerService()">
+      <span>💬</span><b>Customer Service</b><small>Contact Support</small>
     </button>
-
+    <button class="menu-card" onclick="openPage('products')">
+      <span>📦</span><b>Products</b><small>View products</small>
+    </button>
   </div>
 
-</div>
-
+  <h3 class="section-title">Investment Products</h3>
+  <div id="homeProducts"></div>
 </section>
 
 
-<section class="page" id="productPage">
-
-  <div class="page-title">
-
-    <div>
-      <h2>Mining Products</h2>
-      <p>Choose an informational plan</p>
-    </div>
-
-  </div>
-
-
-  <div class="plans">
-
-    <div class="plan-card">
-
-      <div class="plan-top">
-        <span>Starter</span>
-        <b>₹500</b>
-      </div>
-
-      <p>Mining information package</p>
-
-      <button
-        class="primary"
-        data-product="₹500">
-        Details
-      </button>
-
-    </div>
-
-
-    <div class="plan-card">
-
-      <div class="plan-top">
-        <span>Standard</span>
-        <b>₹1,500</b>
-      </div>
-
-      <p>Mining information package</p>
-
-      <button
-        class="primary"
-        data-product="₹1500">
-        Details
-      </button>
-
-    </div>
-
-
-    <div class="plan-card">
-
-      <div class="plan-top">
-        <span>Premium</span>
-        <b>₹3,600</b>
-      </div>
-
-      <p>Mining information package</p>
-
-      <button
-        class="primary"
-        data-product="₹3600">
-        Details
-      </button>
-
-    </div>
-
-  </div>
-
+<section id="products" class="page">
+  <h2 class="page-title">📦 Products</h2>
+  <div id="productsList"></div>
 </section>
 
 
-<section class="page" id="infoPage">
-
-  <div class="page-title">
-
-    <div>
-      <h2>My Info</h2>
-      <p>Manage your account</p>
-    </div>
-
+<section id="attendance" class="page">
+  <div class="page-head">
+    <button onclick="openPage('home')">←</button>
+    <h2>Daily Attendance</h2>
   </div>
 
-
-  <div class="profile-card">
-
-    <div class="profile-photo">
-
-      <img
-        id="profileImage"
-        src=""
-        alt="Profile">
-
-      <span id="profileLetter">
-        U
-      </span>
-
+  <div class="card">
+    <div class="calendar-head">
+      <button onclick="changeMonth(-1)">‹</button>
+      <h3 id="monthTitle"></h3>
+      <button onclick="changeMonth(1)">›</button>
     </div>
 
+    <div class="weekdays">
+      <span>Sun</span><span>Mon</span><span>Tue</span>
+      <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+    </div>
 
-    <div class="profile-details">
+    <div id="calendar" class="calendar"></div>
+    <div class="attendance-info">
+      Total Attendance: <b id="attendanceTotal">0</b>
+    </div>
+  </div>
+</section>
 
-      <h3 id="profileUserId">
-        User ID
-      </h3>
 
-      <p>
-        Personal Account
+<section id="rewards" class="page">
+  <div class="page-head">
+    <button onclick="openPage('home')">←</button>
+    <h2>Rewards</h2>
+  </div>
+  <div class="card">
+    <p class="notice">Available demo rewards are shown below.</p>
+    <div id="rewardsList"></div>
+  </div>
+</section>
+
+
+<section id="info" class="page">
+  <h2 class="page-title">👤 My Info</h2>
+
+  <div class="profile-card card">
+    <div class="profile-icon">👤</div>
+    <div>
+      <b>User ID</b>
+      <p id="profileUserId">You-7519001</p>
+    </div>
+  </div>
+
+  <div class="info-menu">
+
+    <button onclick="showDeposit()">
+      <span>💰</span>
+      <div><b>Deposit</b><small>Demo payment request</small></div>
+    </button>
+
+    <button onclick="showWithdrawal()">
+      <span>🏦</span>
+      <div><b>Withdrawal</b><small>Demo withdrawal request</small></div>
+    </button>
+
+    <button onclick="openPage('withdrawHistory')">
+      <span>📋</span>
+      <div><b>Withdrawal History</b><small>View requests</small></div>
+    </button>
+
+    <button onclick="openPage('depositHistory')">
+      <span>📥</span>
+      <div><b>Deposit History</b><small>View deposits</small></div>
+    </button>
+
+    <button onclick="openPage('transactions')">
+      <span>📊</span>
+      <div><b>Transaction History</b><small>View transactions</small></div>
+    </button>
+
+    <button onclick="inviteNow()">
+      <span>🎁</span>
+      <div><b>Invite Now</b><small>Share with friends</small></div>
+    </button>
+
+  </div>
+</section>
+
+
+<!-- DEPOSIT -->
+<section id="deposit" class="page">
+
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Deposit</h2>
+  </div>
+
+  <div class="card">
+
+    <label>Deposit Amount</label>
+    <input
+      type="number"
+      id="depositAmount"
+      placeholder="Minimum ₹500"
+      min="500"
+      max="20000"
+    >
+
+    <div class="payment-box">
+
+      <p><b>Pay using UPI</b></p>
+
+      <div class="qr-wrap">
+        <img
+          src="assets/upi-qr.jpg"
+          alt="UPI QR Code"
+          class="upi-qr"
+          onerror="this.style.display='none';document.getElementById('qrError').style.display='block';"
+        >
+        <div id="qrError" class="qr-error hidden">
+          QR image load nahi hui.
+          <br>
+          File path check karein:
+          <b>assets/upi-qr.jpg</b>
+        </div>
+      </div>
+
+      <p>UPI ID:
+        <b id="upiId">yadav-rishab@fam</b>
       </p>
-
-    </div>
-
-
-    <button
-      class="small-btn"
-      id="profileUploadBtn">
-      Change
-    </button>
-
-    <input
-      type="file"
-      id="profileGallery"
-      accept="image/*"
-      hidden>
-
-  </div>
-
-
-  <div class="balance-card">
-
-    <span>Available Balance</span>
-
-    <strong id="infoBalance">
-      ₹0
-    </strong>
-
-    <button
-      class="primary"
-      data-page="withdrawPage">
-      Withdraw
-    </button>
-
-  </div>
-
-
-  <div class="history-menu">
-
-    <button
-      class="history-item"
-      id="transactionHistoryBtn">
-
-      <div class="history-icon green-history">
-        ↕
-      </div>
-
-      <div class="history-text">
-
-        <b>
-          Transaction History
-        </b>
-
-        <small>
-          All deposits & withdrawals
-        </small>
-
-      </div>
-
-    </button>
-
-
-    <button
-      class="history-item"
-      id="customerServiceBtn">
-
-      <div class="history-icon blue-history">
-        ?
-      </div>
-
-      <div class="history-text">
-
-        <b>
-          Customer Service
-        </b>
-
-        <small>
-          Contact support
-        </small>
-
-      </div>
-
-    </button>
-
-  </div>
-
-
-  <div class="form-card">
-
-    <h3>
-      Add Bank Details
-    </h3>
-
-    <label>Name</label>
-
-    <input
-      id="bankName"
-      placeholder="Account holder name">
-
-
-    <label>IFSC Code</label>
-
-    <input
-      id="bankIfsc"
-      placeholder="Enter IFSC code">
-
-
-    <label>Bank Name</label>
-
-    <input
-      id="bankBankName"
-      placeholder="Bank name">
-
-
-    <label>Account Number</label>
-
-    <input
-      id="bankAccount"
-      type="password"
-      placeholder="Account number">
-
-
-    <label>Repeat Account Number</label>
-
-    <input
-      id="bankAccountRepeat"
-      type="password"
-      placeholder="Repeat account number">
-
-
-    <button
-      class="primary"
-      id="saveBankBtn">
-      Save Bank Details
-    </button>
-
-    <p
-      id="bankMessage"
-      class="message">
-    </p>
-
-  </div>
-
-</section>
-
-
-<section class="page" id="depositPage">
-
-  <div class="page-title">
-
-    <div>
-      <h2>Deposit</h2>
-      <p>Payment information</p>
-    </div>
-
-  </div>
-
-
-  <div class="warning">
-
-    <b>
-      Payment notice
-    </b>
-
-    <p>
-      This GitHub Pages version does not
-      process or verify real-money payments.
-      Submitted information stays in this
-      browser only.
-    </p>
-
-  </div>
-
-
-  <div class="form-card deposit-payment-card">
-
-    <div class="deposit-payment-head">
-
-      <div class="deposit-payment-icon">
-        ₹
-      </div>
-
-      <div>
-
-        <h3>
-          UPI Payment
-        </h3>
-
-        <p>
-          Scan QR or use UPI ID
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div class="qr-wrap">
-
-      <img
-        src="./qr.jpg"
-        alt="UPI QR Code"
-        class="deposit-qr">
-
-    </div>
-
-
-    <p class="upi-caption">
-      UPI ID
-    </p>
-
-
-    <div class="upi-copy-row">
-
-      <span>
-        yadav-rishab@fam
-      </span>
 
       <button
         type="button"
-        id="copyUpiBtn">
-        Copy
+        class="secondary-btn"
+        onclick="copyUPI()">
+        Copy UPI ID
       </button>
 
+      <small>
+        Demo/informational payment screen. Real payment processing
+        is not performed by this page.
+      </small>
+
     </div>
 
-
-    <p class="payment-note">
-      After payment, enter the transaction
-      reference below for your local
-      verification record.
-    </p>
-
-
-    <label>
-      Amount
-    </label>
-
+    <label>UTR / Transaction ID</label>
     <input
-      id="depositAmount"
-      type="number"
-      min="200"
-      max="50000"
-      placeholder="₹200 - ₹50,000">
-
-
-    <label>
-      UTR / Transaction Reference
-    </label>
-
-    <input
+      type="text"
       id="utr"
-      placeholder="Transaction reference">
+      placeholder="Enter UTR / Transaction ID"
+      maxlength="50"
+    >
 
-
-    <label>
-      Payment Screenshot
-    </label>
-
+    <label>Payment Screenshot</label>
     <input
-      id="paymentScreenshot"
       type="file"
-      accept="image/*">
+      id="paymentScreenshot"
+      accept="image/png,image/jpeg,image/webp"
+    >
 
-
-    <div
-      id="paymentScreenshotPreview"
-      class="payment-screenshot-preview">
-    </div>
-
+    <div id="paymentPreview"></div>
 
     <button
-      class="primary"
-      id="paymentSubmit">
-
-      Submit Payment Details
-
+      class="primary-btn"
+      id="depositSubmitBtn"
+      onclick="submitDeposit()">
+      Submit Deposit Request
     </button>
 
-
-    <p
-      id="paymentMessage"
-      class="message">
-    </p>
+    <p id="depositStatus" class="message"></p>
 
   </div>
-
 </section>
 
 
-<section class="page" id="withdrawPage">
+<!-- WITHDRAW -->
+<section id="withdraw" class="page">
 
-  <div class="page-title">
-
-    <button
-      class="back-btn"
-      data-back="homePage">
-      ‹
-    </button>
-
-    <div>
-
-      <h2>
-        Withdrawal
-      </h2>
-
-      <p>
-        Request a withdrawal
-      </p>
-
-    </div>
-
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Demo Withdrawal</h2>
   </div>
 
-
-  <div class="balance-card">
-
-    <span>
-      Available Balance
-    </span>
-
-    <strong id="withdrawBalance">
-      ₹0
-    </strong>
-
-  </div>
-
-
-  <div class="warning">
-
-    <b>
-      Withdrawal information
-    </b>
+  <div class="card">
 
     <p>
-      Amount: ₹500 - ₹20,000.
-      Maximum 3 requests per day.
-      Available time: 10:30 AM - 5:30 PM IST.
+      Available Balance:
+      <b>₹<span id="withdrawBalance">0.00</span></b>
     </p>
 
-  </div>
-
-
-  <div class="form-card">
-
-    <label>
-      Withdrawal Amount
-    </label>
-
+    <label>Withdrawal Amount</label>
     <input
-      id="withdrawAmount"
       type="number"
-      min="500"
-      max="20000"
-      placeholder="₹500 - ₹20,000">
+      id="withdrawAmount"
+      placeholder="Minimum ₹300"
+      min="300"
+      max="10000"
+    >
 
+    <h3>Bank Details</h3>
+
+    <input id="bankName" placeholder="Account Holder Name">
+    <input id="accountNumber" placeholder="Account Number">
+    <input id="confirmAccount" placeholder="Confirm Account Number">
+    <input id="bank" placeholder="Bank Name">
+    <input id="ifsc" placeholder="IFSC Code">
 
     <button
-      class="primary"
-      id="withdrawSubmit">
-
-      Submit Withdrawal
-
+      class="primary-btn"
+      id="withdrawSubmitBtn"
+      onclick="submitWithdrawal()">
+      Submit Withdrawal Request
     </button>
 
+    <small class="warning">
+      Demo mode: no real bank transaction will occur.
+    </small>
 
-    <p
-      id="withdrawMessage"
-      class="message">
-    </p>
+    <p id="withdrawMessage" class="message"></p>
 
   </div>
-
 </section>
 
 
-<section class="page" id="historyPage">
-
-  <div class="page-title">
-
-    <button
-      class="back-btn"
-      id="historyBackBtn"
-      data-back="infoPage">
-      ‹
-    </button>
-
-    <div>
-
-      <h2>
-        Transaction History
-      </h2>
-
-      <p>
-        Your deposits & withdrawals
-      </p>
-
-    </div>
-
+<section id="withdrawHistory" class="page">
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Withdrawal History</h2>
   </div>
-
-
-  <div id="historyList">
-  </div>
-
+  <div id="withdrawHistoryList"></div>
 </section>
 
 
-<section class="page" id="invitePage">
+<section id="depositHistory" class="page">
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Deposit History</h2>
+  </div>
+  <div id="depositHistoryList"></div>
+</section>
 
-  <div class="page-title">
 
-    <div>
+<section id="transactions" class="page">
+  <div class="page-head">
+    <button onclick="openPage('info')">←</button>
+    <h2>Transaction History</h2>
+  </div>
+  <div id="transactionList"></div>
+</section>
 
-      <h2>
-        Invite Friends
-      </h2>
 
-      <p>
-        Share this app
-      </p>
-
-    </div>
-
+<section id="invite" class="page">
+  <div class="page-head">
+    <button onclick="openPage('home')">←</button>
+    <h2>Invite</h2>
   </div>
 
+  <div class="card invite-card">
+    <h3>🎁 Invite Friends</h3>
+    <p>Share your referral link with friends.</p>
 
-  <div class="invite-card">
+    <input id="inviteLink" readonly>
 
-    <div class="invite-icon">
-      ↗
-    </div>
-
-    <h3>
-      Invite Your Friends
-    </h3>
-
-    <p>
-      Share the website with your friends.
-    </p>
-
-
-    <button
-      class="primary"
-      id="whatsappBtn">
-
+    <button class="primary-btn" onclick="inviteNow()">
       Share on WhatsApp
-
     </button>
 
-
-    <button
-      class="secondary"
-      id="copyLinkBtn">
-
-      Copy App Link
-
+    <button class="secondary-btn" onclick="copyInvite()">
+      Copy Link
     </button>
 
+    <p id="inviteMessage" class="message"></p>
   </div>
-
 </section>
 
-
-<div
-  class="modal"
-  id="productModal">
-
-  <div class="modal-box">
-
-    <button
-      class="modal-close"
-      id="modalClose">
-      ×
-    </button>
-
-    <h2 id="modalTitle">
-      Mining Plan
-    </h2>
-
-    <p id="modalText">
-      Informational plan details.
-    </p>
-
-    <button
-      class="primary"
-      data-page="depositPage"
-      id="modalDepositBtn">
-
-      Deposit Information
-
-    </button>
-
-  </div>
-
-</div>
+</main>
 
 
 <nav class="bottom-nav">
-
-  <button
-    class="nav active"
-    data-page="homePage">
-
-    <span>⌂</span>
-    <small>Home</small>
-
+  <button onclick="openPage('home')">
+    <span>🏠</span>Home
   </button>
 
-
-  <button
-    class="nav"
-    data-page="productPage">
-
-    <span>₿</span>
-    <small>Product</small>
-
+  <button onclick="openPage('products')">
+    <span>📦</span>Product
   </button>
 
-
-  <button
-    class="nav"
-    data-page="infoPage">
-
-    <span>👤</span>
-    <small>My Info</small>
-
+  <button onclick="openPage('info')">
+    <span>👤</span>My Info
   </button>
 
-
-  <button
-    class="nav"
-    data-page="invitePage">
-
-    <span>↗</span>
-    <small>Invite</small>
-
+  <button onclick="openPage('invite')">
+    <span>🎁</span>Invite
   </button>
-
 </nav>
 
-</div>
 
-<script src="./script.js?v=10"></script>
-
+<script src="script.js"></script>
 </body>
 </html>
