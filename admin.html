@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Admin Panel - Bitcoin Minning</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top right, #123f2b, transparent 35%),
+        #06100b;
+      color: #f4fff9;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      width: min(100%, 650px);
+      margin: auto;
+    }
+
+    .header {
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 20px;
+      background: #102119;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .header h1 {
+      font-size: 22px;
+    }
+
+    .header p {
+      color: #8fa79b;
+      font-size: 11px;
+      margin-top: 5px;
+    }
+
+    .card {
+      padding: 20px;
+      margin-bottom: 14px;
+      border-radius: 18px;
+      background: #102119;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .card h2 {
+      font-size: 16px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      color: #b9cec3;
+      font-size: 11px;
+      font-weight: bold;
+      margin: 13px 0 6px;
+    }
+
+    input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      color: white;
+      background: #08150f;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #20c77a;
+    }
+
+    button {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 13px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg,#20c77a,#087344);
+      font-weight: 800;
+    }
+
+    button:active {
+      transform: scale(.98);
+    }
+
+    .danger {
+      background: #9e3038;
+    }
+
+    .secondary {
+      background: rgba(32,199,122,.12);
+      color: #20c77a;
+    }
+
+    .message {
+      min-height: 18px;
+      margin-top: 9px;
+      font-size: 11px;
+    }
+
+    .success {
+      color: #20c77a;
+    }
+
+    .error {
+      color: #ff646c;
+    }
+
+    .balance-box {
+      padding: 18px;
+      margin-top: 12px;
+      border-radius: 14px;
+      background: rgba(32,199,122,.08);
+      border: 1px solid rgba(32,199,122,.16);
+    }
+
+    .balance-box span {
+      color: #91a99d;
+      font-size: 11px;
+    }
+
+    .balance-box strong {
+      display: block;
+      margin-top: 4px;
+      color: #20c77a;
+      font-size: 27px;
+    }
+
+    .user-info {
+      display: none;
+      padding: 13px;
+      margin-top: 12px;
+      border-radius: 11px;
+      background: #091710;
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .user-info.show {
+      display: block;
+    }
+
+    .user-info div {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      font-size: 11px;
+    }
+
+    .user-info div:last-child {
+      border-bottom: 0;
+    }
+
+    .user-info span:first-child {
+      color: #7f968a;
+    }
+
+    .user-info span:last-child {
+      text-align: right;
+      word-break: break-all;
+    }
+
+    .login-only {
+      display: block;
+    }
+
+    .admin-only {
+      display: none;
+    }
+
+    body.logged-in .login-only {
+      display: none;
+    }
+
+    body.logged-in .admin-only {
+      display: block;
+    }
+
+    .logout {
+      background: #202d27;
+      color: #d2e2da;
+    }
+
+    .warning {
+      padding: 13px;
+      margin-bottom: 14px;
+      border-radius: 12px;
+      background: rgba(245,184,61,.08);
+      border: 1px solid rgba(245,184,61,.18);
+      color: #d9c18a;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+  </style>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>₿ Admin Panel</h1>
+    <p>Bitcoin Minning — Test Balance Management</p>
+  </div>
+
+
+  <!-- ================= LOGIN ================= -->
+
+  <div class="card login-only">
+
+    <h2>Admin Login</h2>
+
+    <label>Email</label>
+
+    <input
+      type="email"
+      id="loginEmail"
+      placeholder="Admin email"
+      autocomplete="email"
+    >
+
+    <label>Password</label>
+
+    <input
+      type="password"
+      id="loginPassword"
+      placeholder="Password"
+      autocomplete="current-password"
+    >
+
+    <button id="loginBtn">
+      Login
+    </button>
+
+    <p id="loginMessage" class="message"></p>
+
+  </div>
+
+
+  <!-- ================= ADMIN ================= -->
+
+  <div class="admin-only">
+
+    <div class="warning">
+      This panel manages the website's test/demo balance only.
+      It does not process real-money payments or bank transfers.
+    </div>
+
+
+    <!-- USER SEARCH -->
+
+    <div class="card">
+
+      <h2>Find User</h2>
+
+      <label>User ID</label>
+
+      <input
+        type="text"
+        id="userIdInput"
+        placeholder="Example: You-7519001"
+      >
+
+      <button id="findUserBtn">
+        Find User
+      </button>
+
+      <p id="userMessage" class="message"></p>
+
+      <div class="user-info" id="userInfo">
+
+        <div>
+          <span>User ID</span>
+          <span id="foundUserId">-</span>
+        </div>
+
+        <div>
+          <span>Firebase UID</span>
+          <span id="foundUid">-</span>
+        </div>
+
+        <div>
+          <span>Balance</span>
+          <span id="foundBalance">₹0.00</span>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- BALANCE -->
+
+    <div class="card">
+
+      <h2>Manage Test Balance</h2>
+
+      <div class="balance-box">
+
+        <span>Current Balance</span>
+
+        <strong>
+          ₹<span id="currentBalance">0.00</span>
+        </strong>
+
+      </div>
+
+
+      <label>New Balance</label>
+
+      <input
+        type="number"
+        id="newBalance"
+        min="0"
+        step="0.01"
+        placeholder="Enter new balance"
+      >
+
+      <button id="setBalanceBtn">
+        Set Balance
+      </button>
+
+      <button
+        id="addBalanceBtn"
+        class="secondary"
+      >
+        Add Test Balance
+      </button>
+
+      <button
+        id="removeBalanceBtn"
+        class="danger"
+      >
+        Remove Test Balance
+      </button>
+
+      <p id="balanceMessage" class="message"></p>
+
+    </div>
+
+
+    <!-- LOGOUT -->
+
+    <div class="card">
+
+      <button
+        id="logoutBtn"
+        class="logout"
+      >
+        Logout
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+
+/* =========================================================
+   FIREBASE CONFIG
+   ========================================================= */
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyAN5jFZ0hBOb-Zmbrv8W1E2aGqnmd8_iOM",
+
+  authDomain:
+    "bitcoin-minning-web.firebaseapp.com",
+
+  projectId:
+    "bitcoin-minning-web",
+
+  storageBucket:
+    "bitcoin-minning-web.firebasestorage.app",
+
+  messagingSenderId:
+    "691683594489",
+
+  appId:
+    "1:691683594489:web:96252fee18748e54ad9228"
+
+};
+
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+
+/* =========================================================
+   ADMIN EMAIL
+   ========================================================= */
+
+const ADMIN_EMAIL =
+  "yadavroushan8269@gmail.com";
+
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+let selectedUser = null;
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+
+function showMessage(element, text, type) {
+
+  if (!element) return;
+
+  element.textContent = text;
+
+  element.className = "message";
+
+  if (type) {
+    element.classList.add(type);
+  }
+
+}
+
+
+function money(value) {
+
+  return Number(value || 0)
+    .toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+}
+
+
+/* =========================================================
+   AUTH STATE
+   ========================================================= */
+
+auth.onAuthStateChanged(function(user) {
+
+  if (!user) {
+
+    document.body.classList.remove(
+      "logged-in"
+    );
+
+    selectedUser = null;
+
+    return;
+  }
+
+
+  if (
+    user.email &&
+    user.email.toLowerCase() ===
+    ADMIN_EMAIL.toLowerCase()
+  ) {
+
+    document.body.classList.add(
+      "logged-in"
+    );
+
+    return;
+  }
+
+
+  showMessage(
+    $("loginMessage"),
+    "This account is not authorized as admin.",
+    "error"
+  );
+
+  auth.signOut();
+
+});
+
+
+/* =========================================================
+   LOGIN
+   ========================================================= */
+
+$("loginBtn").addEventListener(
+  "click",
+  async function() {
+
+    const email =
+      $("loginEmail").value.trim();
+
+    const password =
+      $("loginPassword").value;
+
+
+    showMessage(
+      $("loginMessage"),
+      "",
+      ""
+    );
+
+
+    if (!email || !password) {
+
+      showMessage(
+        $("loginMessage"),
+        "Enter email and password.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    try {
+
+      await auth.signInWithEmailAndPassword(
+        email,
+        password
+      );
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      showMessage(
+        $("loginMessage"),
+        error.message ||
+        "Login failed.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   FIND USER
+   ========================================================= */
+
+$("findUserBtn").addEventListener(
+  "click",
+  async function() {
+
+    const userId =
+      $("userIdInput")
+        .value
+        .trim();
+
+
+    showMessage(
+      $("userMessage"),
+      "",
+      ""
+    );
+
+
+    $("userInfo")
+      .classList.remove("show");
+
+
+    selectedUser = null;
+
+
+    if (!userId) {
+
+      showMessage(
+        $("userMessage"),
+        "Enter a User ID.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    try {
+
+      const snapshot =
+        await db
+          .collection("testBalances")
+          .where(
+            "userId",
+            "==",
+            userId
+          )
+          .limit(1)
+          .get();
+
+
+      if (snapshot.empty) {
+
+        showMessage(
+          $("userMessage"),
+          "User not found.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const doc =
+        snapshot.docs[0];
+
+      const data =
+        doc.data();
+
+
+      selectedUser = {
+
+        docId:
+          doc.id,
+
+        userId:
+          data.userId || userId,
+
+        uid:
+          data.uid || "",
+
+        balance:
+          Number(data.balance) || 0
+
+      };
+
+
+      $("foundUserId").textContent =
+        selectedUser.userId;
+
+      $("foundUid").textContent =
+        selectedUser.uid || "-";
+
+      $("foundBalance").textContent =
+        "₹" +
+        money(selectedUser.balance);
+
+      $("currentBalance").textContent =
+        money(selectedUser.balance);
+
+      $("newBalance").value =
+        selectedUser.balance;
+
+
+      $("userInfo")
+        .classList.add("show");
+
+
+      showMessage(
+        $("userMessage"),
+        "User found.",
+        "success"
+      );
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      showMessage(
+        $("userMessage"),
+        "Could not find user.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   UPDATE BALANCE
+   ========================================================= */
+
+async function updateBalance(
+  newBalance
+) {
+
+  if (!selectedUser) {
+
+    showMessage(
+      $("balanceMessage"),
+      "Find a user first.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  newBalance =
+    Number(newBalance);
+
+
+  if (
+    !Number.isFinite(newBalance) ||
+    newBalance < 0
+  ) {
+
+    showMessage(
+      $("balanceMessage"),
+      "Enter a valid balance.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  try {
+
+    await db
+      .collection("testBalances")
+      .doc(selectedUser.docId)
+      .update({
+
+        balance:
+          newBalance,
+
+        updatedAt:
+          firebase.firestore.FieldValue
+            .serverTimestamp()
+
+      });
+
+
+    selectedUser.balance =
+      newBalance;
+
+
+    $("currentBalance").textContent =
+      money(newBalance);
+
+    $("foundBalance").textContent =
+      "₹" +
+      money(newBalance);
+
+    $("newBalance").value =
+      newBalance;
+
+
+    showMessage(
+      $("balanceMessage"),
+      "Test balance updated successfully.",
+      "success"
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    showMessage(
+      $("balanceMessage"),
+      "Could not update balance. Check Firestore rules.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SET BALANCE
+   ========================================================= */
+
+$("setBalanceBtn").addEventListener(
+  "click",
+  function() {
+
+    const value =
+      $("newBalance").value;
+
+    updateBalance(value);
+
+  }
+);
+
+
+/* =========================================================
+   ADD BALANCE
+   ========================================================= */
+
+$("addBalanceBtn").addEventListener(
+  "click",
+  function() {
+
+    if (!selectedUser) {
+
+      showMessage(
+        $("balanceMessage"),
+        "Find a user first.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const amount =
+      Number(
+        prompt(
+          "Enter test balance to add:"
+        )
+      );
+
+
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+
+      showMessage(
+        $("balanceMessage"),
+        "Invalid amount.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    updateBalance(
+      selectedUser.balance +
+      amount
+    );
+
+  }
+);
+
+
+/* =========================================================
+   REMOVE BALANCE
+   ========================================================= */
+
+$("removeBalanceBtn").addEventListener(
+  "click",
+  function() {
+
+    if (!selectedUser) {
+
+      showMessage(
+        $("balanceMessage"),
+        "Find a user first.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const amount =
+      Number(
+        prompt(
+          "Enter test balance to remove:"
+        )
+      );
+
+
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+
+      showMessage(
+        $("balanceMessage"),
+        "Invalid amount.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const newBalance =
+      Math.max(
+        0,
+        selectedUser.balance -
+        amount
+      );
+
+
+    updateBalance(
+      newBalance
+    );
+
+  }
+);
+
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+$("logoutBtn").addEventListener(
+  "click",
+  async function() {
+
+    try {
+
+      await auth.signOut();
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
