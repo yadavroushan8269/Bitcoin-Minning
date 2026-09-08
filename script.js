@@ -1,1089 +1,1801 @@
-const UPI="yadav-rishab@fam";
-const SUPPORT="https://t.me/Hammerff7gcz";
+/* =========================================================
+   BITCOIN MINNING
+   Main JavaScript
+   Firebase + Local Demo Data
+   ========================================================= */
+
+"use strict";
 
 
-const plans=[
-{
-id:1,
-name:"Plan ₹500",
-price:500,
-reward:10
-},
-{
-id:2,
-name:"Plan ₹1,500",
-price:1500,
-reward:30
-},
-{
-id:3,
-name:"Plan ₹3,600",
-price:3600,
-reward:72
+/* =========================================================
+   CONFIG
+   ========================================================= */
+
+const UPI_ID = "yadav-rishab@fam";
+const CUSTOMER_SERVICE = "https://t.me/Hammerff7gcz";
+
+const STORAGE = {
+  user: "bm_user",
+  balance: "bm_balance",
+  profile: "bm_profile",
+  bank: "bm_bank",
+  deposits: "bm_deposit_history",
+  withdrawals: "bm_withdrawal_history",
+  transactions: "bm_transactions",
+  referral: "bm_referral"
+};
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function $(id) {
+  return document.getElementById(id);
 }
+
+function safeJSONParse(value, fallback) {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function getStorage(key, fallback) {
+  return safeJSONParse(localStorage.getItem(key), fallback);
+}
+
+function setStorage(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function money(value) {
+  const number = Number(value) || 0;
+
+  return number.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function nowString() {
+  return new Date().toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+}
+
+function generateUserId() {
+  return "You-" + Math.floor(1000000 + Math.random() * 9000000);
+}
+
+function getUser() {
+  let user = getStorage(STORAGE.user, null);
+
+  if (!user) {
+    user = {
+      id: generateUserId(),
+      createdAt: new Date().toISOString()
+    };
+
+    setStorage(STORAGE.user, user);
+  }
+
+  return user;
+}
+
+function getBalance() {
+  return Number(localStorage.getItem(STORAGE.balance)) || 0;
+}
+
+function setBalance(value) {
+  const balance = Math.max(0, Number(value) || 0);
+
+  localStorage.setItem(STORAGE.balance, String(balance));
+
+  updateBalanceUI();
+}
+
+function showMessage(element, text, type) {
+  if (!element) return;
+
+  element.textContent = text;
+  element.className = "message";
+
+  if (type) {
+    element.classList.add(type);
+  }
+}
+
+function clearMessage(element) {
+  if (!element) return;
+
+  element.textContent = "";
+  element.className = "message";
+}
+
+
+/* =========================================================
+   FIREBASE
+   ========================================================= */
+
+let firebaseUser = null;
+
+async function initializeFirebase() {
+
+  if (
+    typeof firebase === "undefined" ||
+    typeof auth === "undefined"
+  ) {
+    console.warn("Firebase is not available.");
+    return;
+  }
+
+  try {
+
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
+    }
+
+    firebaseUser = auth.currentUser;
+
+    console.log("Firebase connected:", firebaseUser.uid);
+
+    await loadFirebaseTestBalance();
+
+  } catch (error) {
+
+    console.warn(
+      "Firebase initialization failed:",
+      error
+    );
+
+  }
+}
+
+
+async function loadFirebaseTestBalance() {
+
+  if (
+    !firebaseUser ||
+    typeof db === "undefined"
+  ) {
+    return;
+  }
+
+  try {
+
+    const ref = db
+      .collection("testBalances")
+      .doc(firebaseUser.uid);
+
+    const snapshot = await ref.get();
+
+    if (!snapshot.exists) {
+
+      await ref.set({
+        uid: firebaseUser.uid,
+        userId: getUser().id,
+        balance: 0,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      setBalance(0);
+
+      return;
+    }
+
+    const data = snapshot.data();
+
+    if (typeof data.balance === "number") {
+      setBalance(data.balance);
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Could not load Firebase balance:",
+      error
+    );
+
+  }
+}
+
+
+/* =========================================================
+   SAVE TEST BALANCE
+   ========================================================= */
+
+async function saveFirebaseBalance(balance) {
+
+  if (
+    !firebaseUser ||
+    typeof db === "undefined"
+  ) {
+    return false;
+  }
+
+  try {
+
+    await db
+      .collection("testBalances")
+      .doc(firebaseUser.uid)
+      .set(
+        {
+          uid: firebaseUser.uid,
+          userId: getUser().id,
+          balance: Number(balance) || 0,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          merge: true
+        }
+      );
+
+    return true;
+
+  } catch (error) {
+
+    console.warn(
+      "Firebase balance save failed:",
+      error
+    );
+
+    return false;
+  }
+}
+
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+const allPages = [
+  "homePage",
+  "productPage",
+  "infoPage",
+  "depositPage",
+  "withdrawPage",
+  "depositHistoryPage",
+  "withdrawalHistoryPage",
+  "historyPage",
+  "invitePage"
 ];
 
+function showPage(pageId) {
 
-let s=
-JSON.parse(localStorage.getItem("nsgState")||"null")
-||
-{
-balance:0,
-attendance:{},
-deposits:[],
-withdrawals:[],
-transactions:[],
-purchased:[]
-};
+  allPages.forEach(function (id) {
 
+    const page = $(id);
 
-function save(){
-localStorage.setItem(
-"nsgState",
-JSON.stringify(s)
-);
+    if (page) {
+      page.classList.remove("active");
+    }
+
+  });
+
+  const target = $(pageId);
+
+  if (target) {
+    target.classList.add("active");
+  }
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(function (item) {
+
+      item.classList.remove("active");
+
+      if (item.dataset.page === pageId) {
+        item.classList.add("active");
+      }
+
+    });
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  if (pageId === "depositHistoryPage") {
+    renderDepositHistory();
+  }
+
+  if (pageId === "withdrawalHistoryPage") {
+    renderWithdrawalHistory();
+  }
+
+  if (pageId === "historyPage") {
+    renderTransactions();
+  }
+
+  if (pageId === "infoPage") {
+    loadBankDetails();
+    updateBalanceUI();
+  }
 }
 
 
-function fmt(n){
-return Number(n||0).toLocaleString(
-"en-IN",
-{
-minimumFractionDigits:2,
-maximumFractionDigits:2
-}
-);
-}
-
-
-function userID(){
-
-let x=localStorage.getItem("nsgUid");
-
-if(!x){
-
-x=
-"You-"+
-Math.floor(
-1000000+
-Math.random()*8999999
-);
-
-localStorage.setItem(
-"nsgUid",
-x
-);
-
-}
-
-return x;
-}
-
-
-function go(page){
+/* =========================================================
+   BOTTOM NAV
+   ========================================================= */
 
 document
-.querySelectorAll(".page")
-.forEach(
-p=>p.classList.remove("active")
-);
+  .querySelectorAll(".nav-item")
+  .forEach(function (item) {
 
-const target=document.getElementById(page);
+    item.addEventListener("click", function () {
 
-if(target){
-target.classList.add("active");
-}
+      const pageId = item.dataset.page;
 
-window.scrollTo(0,0);
+      if (pageId) {
+        showPage(pageId);
+      }
 
-render();
+    });
 
-}
+  });
 
 
-function render(){
+/* =========================================================
+   HOME BUTTONS
+   ========================================================= */
 
-document.getElementById(
-"topBalance"
-).textContent=fmt(s.balance);
+if ($("depositBtn")) {
 
-
-document.getElementById(
-"homeBalance"
-).textContent=fmt(s.balance);
-
-
-document.getElementById(
-"withdrawBalance"
-).textContent=fmt(s.balance);
-
-
-document.getElementById(
-"profileId"
-).textContent=userID();
-
-
-document.getElementById(
-"userIdHome"
-).textContent=userID();
-
-
-document.getElementById(
-"inviteLink"
-).value=location.href;
-
-
-renderProducts();
-renderCalendar();
-renderRewards();
-renderHistory();
+  $("depositBtn").addEventListener("click", function () {
+    showPage("depositPage");
+  });
 
 }
 
 
-function productHTML(p){
+if ($("withdrawBtn")) {
 
-const bought=
-s.purchased.includes(p.id);
+  $("withdrawBtn").addEventListener("click", function () {
 
+    showPage("withdrawPage");
 
-return `
+    setTimeout(function () {
 
-<div class="product">
+      if ($("withdrawPageAmount")) {
+        $("withdrawPageAmount").focus();
+      }
 
-<div class="productTop">
+    }, 250);
 
-<div>
-
-<h3>${p.name}</h3>
-
-<p>
-Product plan
-</p>
-
-</div>
-
-<div class="price">
-₹${p.price}
-</div>
-
-</div>
-
-
-<ul>
-
-<li>
-Daily reward: ₹${p.reward}
-</li>
-
-<li>
-Terms and eligibility apply
-</li>
-
-</ul>
-
-
-<button
-class="${bought?"secondary":"primary"}"
-${bought?"disabled":""}
-onclick="buy(${p.id})"
->
-
-${bought?"Purchased":"Select Product"}
-
-</button>
-
-</div>
-
-`;
+  });
 
 }
 
 
-function renderProducts(){
+if ($("myInfoBtn")) {
 
-const html=
-plans.map(productHTML).join("");
-
-
-document.getElementById(
-"homeProducts"
-).innerHTML=html;
-
-
-document.getElementById(
-"productList"
-).innerHTML=html;
+  $("myInfoBtn").addEventListener("click", function () {
+    showPage("infoPage");
+  });
 
 }
 
 
-function buy(i){
+if ($("inviteBtn")) {
 
-const p=
-plans.find(x=>x.id===i);
-
-
-if(!p)return;
-
-
-if(s.purchased.includes(i)){
-return;
-}
-
-
-if(s.balance<p.price){
-
-alert(
-"Insufficient balance."
-);
-
-return;
+  $("inviteBtn").addEventListener("click", function () {
+    showPage("invitePage");
+  });
 
 }
 
 
-s.balance-=p.price;
+if ($("productsBtn")) {
 
-s.purchased.push(i);
-
-
-s.transactions.unshift({
-
-type:"Product",
-amount:p.price,
-status:"Completed",
-date:new Date().toLocaleString()
-
-});
-
-
-save();
-
-render();
-
-
-alert(
-"Product selected successfully."
-);
+  $("productsBtn").addEventListener("click", function () {
+    showPage("productPage");
+  });
 
 }
 
 
-let cd=new Date();
+if ($("topProfile")) {
 
-
-function month(v){
-
-cd.setMonth(
-cd.getMonth()+v
-);
-
-renderCalendar();
+  $("topProfile").addEventListener("click", function () {
+    showPage("infoPage");
+  });
 
 }
 
 
-function key(y,m,d){
+/* =========================================================
+   USER / GREETING
+   ========================================================= */
 
-return (
-y+
-"-"+
-String(m+1).padStart(2,"0")+
-"-"+
-String(d).padStart(2,"0")
-);
+function initializeUser() {
 
-}
+  const user = getUser();
 
+  if ($("profileUserId")) {
+    $("profileUserId").textContent =
+      "User ID: " + user.id;
+  }
 
-function renderCalendar(){
+  if ($("greeting")) {
 
-const y=cd.getFullYear();
-const m=cd.getMonth();
+    const hour = new Date().getHours();
 
-const calendar=
-document.getElementById(
-"calendar"
-);
+    let greeting = "Good evening";
 
+    if (hour < 12) {
+      greeting = "Good morning";
+    } else if (hour < 17) {
+      greeting = "Good afternoon";
+    }
 
-document.getElementById(
-"monthTitle"
-).textContent=
-new Intl.DateTimeFormat(
-"en-IN",
-{
-month:"long",
-year:"numeric"
-}
-).format(cd);
+    $("greeting").textContent =
+      greeting + ", User 👋";
 
-
-calendar.innerHTML="";
-
-
-const first=
-new Date(y,m,1).getDay();
-
-
-for(
-let i=0;
-i<first;
-i++
-){
-
-calendar.innerHTML+=
-'<div class="day empty"></div>';
+  }
 
 }
 
 
-const total=
-new Date(
-y,
-m+1,
-0
-).getDate();
+/* =========================================================
+   BALANCE UI
+   ========================================================= */
 
+function updateBalanceUI() {
 
-const now=new Date();
+  const balance = getBalance();
 
+  if ($("homeBalance")) {
+    $("homeBalance").textContent = money(balance);
+  }
 
-for(
-let d=1;
-d<=total;
-d++
-){
+  if ($("infoBalance")) {
+    $("infoBalance").textContent = money(balance);
+  }
 
-const k=
-key(y,m,d);
+  if ($("withdrawBalance")) {
+    $("withdrawBalance").textContent = money(balance);
+  }
 
-
-const e=
-document.createElement(
-"div"
-);
-
-
-e.className=
-"day"+
-(s.attendance[k]?" done":"")+
-(
-d===now.getDate()&&
-m===now.getMonth()&&
-y===now.getFullYear()
-?" today":""
-);
-
-
-e.textContent=d;
-
-
-e.onclick=()=>{
-
-if(!s.attendance[k]){
-
-s.attendance[k]=1;
-
-save();
-
-renderCalendar();
-
-}
-
-};
-
-
-calendar.appendChild(e);
+  if ($("withdrawPageBalance")) {
+    $("withdrawPageBalance").textContent = money(balance);
+  }
 
 }
 
 
-document.getElementById(
-"attCount"
-).textContent=
-Object.keys(
-s.attendance
-).length;
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+function loadProfile() {
+
+  const profile = getStorage(
+    STORAGE.profile,
+    null
+  );
+
+  if (!profile || !profile.image) {
+    return;
+  }
+
+  if ($("profileImage")) {
+
+    $("profileImage").src = profile.image;
+    $("profileImage").classList.add("show");
+
+  }
+
+  if ($("profileLetter")) {
+    $("profileLetter").style.display = "none";
+  }
+
+  if ($("topProfileImg")) {
+
+    $("topProfileImg").src = profile.image;
+    $("topProfileImg").classList.add("show");
+
+  }
+
+  if ($("topProfileLetter")) {
+    $("topProfileLetter").style.display = "none";
+  }
 
 }
 
 
-function renderRewards(){
+if ($("profileUploadBtn")) {
 
-const box=
-document.getElementById(
-"rewardsList"
-);
+  $("profileUploadBtn").addEventListener(
+    "click",
+    function () {
 
+      if ($("profileUpload")) {
+        $("profileUpload").click();
+      }
 
-if(!s.purchased.length){
-
-box.innerHTML=
-'<div class="item">No rewards available yet.</div>';
-
-return;
+    }
+  );
 
 }
 
 
-box.innerHTML=
-s.purchased
-.map(i=>{
+if ($("profileUpload")) {
 
-const p=
-plans.find(x=>x.id===i);
+  $("profileUpload").addEventListener(
+    "change",
+    function () {
 
-return `
+      const file = this.files && this.files[0];
 
-<div class="item">
+      if (!file) return;
 
-<b>
-🎁 ${p.name}
-</b>
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image.");
+        return;
+      }
 
-<small>
-Daily reward: ₹${p.reward}
-</small>
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image should be smaller than 5 MB.");
+        return;
+      }
 
-</div>
+      const reader = new FileReader();
 
-`;
+      reader.onload = function (event) {
 
-})
-.join("");
+        const image = event.target.result;
 
-}
+        setStorage(STORAGE.profile, {
+          image: image
+        });
 
+        loadProfile();
 
-function showDeposit(){
+      };
 
-go("deposit");
+      reader.readAsDataURL(file);
 
-}
-
-
-function copyUPI(){
-
-const copy=()=>{
-
-alert(
-"UPI ID copied: "+
-UPI
-);
-
-};
-
-
-if(
-navigator.clipboard
-){
-
-navigator.clipboard
-.writeText(UPI)
-.then(copy)
-.catch(
-()=>fallbackCopy()
-);
-
-}else{
-
-fallbackCopy();
-
-}
+    }
+  );
 
 }
 
 
-function fallbackCopy(){
+/* =========================================================
+   BANK DETAILS
+   ========================================================= */
 
-const x=
-document.createElement(
-"textarea"
-);
+function loadBankDetails() {
 
-x.value=UPI;
+  const bank = getStorage(
+    STORAGE.bank,
+    null
+  );
 
-document.body.appendChild(x);
+  if (!bank) return;
 
-x.select();
+  if ($("bankName")) {
+    $("bankName").value = bank.name || "";
+  }
 
-document.execCommand(
-"copy"
-);
+  if ($("bankIfsc")) {
+    $("bankIfsc").value = bank.ifsc || "";
+  }
 
-x.remove();
+  if ($("bankBankName")) {
+    $("bankBankName").value = bank.bankName || "";
+  }
 
-alert(
-"UPI ID copied: "+
-UPI
-);
+  if ($("bankAccount")) {
+    $("bankAccount").value = bank.account || "";
+  }
+
+  if ($("bankAccountRepeat")) {
+    $("bankAccountRepeat").value =
+      bank.accountRepeat || "";
+  }
+
+}
+
+
+if ($("saveBankBtn")) {
+
+  $("saveBankBtn").addEventListener(
+    "click",
+    function () {
+
+      const name =
+        $("bankName")
+          ? $("bankName").value.trim()
+          : "";
+
+      const ifsc =
+        $("bankIfsc")
+          ? $("bankIfsc").value.trim()
+          : "";
+
+      const bankName =
+        $("bankBankName")
+          ? $("bankBankName").value.trim()
+          : "";
+
+      const account =
+        $("bankAccount")
+          ? $("bankAccount").value.trim()
+          : "";
+
+      const accountRepeat =
+        $("bankAccountRepeat")
+          ? $("bankAccountRepeat").value.trim()
+          : "";
+
+      const message = $("bankMessage");
+
+      clearMessage(message);
+
+      if (!name) {
+        showMessage(
+          message,
+          "Enter account holder name.",
+          "error"
+        );
+        return;
+      }
+
+      if (!ifsc) {
+        showMessage(
+          message,
+          "Enter IFSC code.",
+          "error"
+        );
+        return;
+      }
+
+      if (!bankName) {
+        showMessage(
+          message,
+          "Enter bank name.",
+          "error"
+        );
+        return;
+      }
+
+      if (!account) {
+        showMessage(
+          message,
+          "Enter account number.",
+          "error"
+        );
+        return;
+      }
+
+      if (account !== accountRepeat) {
+        showMessage(
+          message,
+          "Account numbers do not match.",
+          "error"
+        );
+        return;
+      }
+
+      setStorage(STORAGE.bank, {
+        name: name,
+        ifsc: ifsc,
+        bankName: bankName,
+        account: account,
+        accountRepeat: accountRepeat
+      });
+
+      showMessage(
+        message,
+        "Bank details saved locally for this demo.",
+        "success"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   DEPOSIT
+   ========================================================= */
+
+let selectedScreenshotData = "";
+
+
+if ($("copyUpiBtn")) {
+
+  $("copyUpiBtn").addEventListener(
+    "click",
+    async function () {
+
+      try {
+
+        await navigator.clipboard.writeText(UPI_ID);
+
+        this.textContent = "Copied";
+
+        const button = this;
+
+        setTimeout(function () {
+          button.textContent = "Copy";
+        }, 1500);
+
+      } catch (error) {
+
+        alert("UPI ID: " + UPI_ID);
+
+      }
+
+    }
+  );
+
+}
+
+
+/* SCREENSHOT PREVIEW */
+
+if ($("paymentScreenshot")) {
+
+  $("paymentScreenshot").addEventListener(
+    "change",
+    function () {
+
+      const file =
+        this.files && this.files[0];
+
+      if (!file) {
+        selectedScreenshotData = "";
+
+        if ($("paymentScreenshotPreview")) {
+          $("paymentScreenshotPreview").innerHTML = "";
+          $("paymentScreenshotPreview")
+            .classList.remove("show");
+        }
+
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+
+        alert("Please select an image.");
+
+        this.value = "";
+        return;
+
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+
+        alert(
+          "Screenshot should be smaller than 5 MB."
+        );
+
+        this.value = "";
+        return;
+
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+
+        selectedScreenshotData =
+          event.target.result;
+
+        if ($("paymentScreenshotPreview")) {
+
+          $("paymentScreenshotPreview").innerHTML =
+            "<img src=\"" +
+            selectedScreenshotData +
+            "\" alt=\"Payment screenshot preview\">";
+
+          $("paymentScreenshotPreview")
+            .classList.add("show");
+
+        }
+
+      };
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   DEPOSIT REQUEST
+   ========================================================= */
+
+if ($("paymentSubmit")) {
+
+  $("paymentSubmit").addEventListener(
+    "click",
+    function () {
+
+      const amount = Number(
+        $("depositAmount")
+          ? $("depositAmount").value
+          : 0
+      );
+
+      const utr =
+        $("utr")
+          ? $("utr").value.trim()
+          : "";
+
+      const message =
+        $("paymentMessage");
+
+      clearMessage(message);
+
+      if (!amount || amount < 200 || amount > 50000) {
+
+        showMessage(
+          message,
+          "Enter an amount between ₹200 and ₹50,000.",
+          "error"
+        );
+
+        return;
+      }
+
+      if (!utr) {
+
+        showMessage(
+          message,
+          "Enter the transaction reference.",
+          "error"
+        );
+
+        return;
+      }
+
+      if (!selectedScreenshotData) {
+
+        showMessage(
+          message,
+          "Please select a payment screenshot.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const user = getUser();
+
+      const request = {
+
+        id:
+          "DEP-" +
+          Date.now(),
+
+        userId:
+          user.id,
+
+        amount:
+          amount,
+
+        utr:
+          utr,
+
+        status:
+          "Pending Verification",
+
+        createdAt:
+          new Date().toISOString()
+
+      };
+
+
+      const history = getStorage(
+        STORAGE.deposits,
+        []
+      );
+
+      history.unshift(request);
+
+      setStorage(
+        STORAGE.deposits,
+        history.slice(0, 100)
+      );
+
+
+      addTransaction({
+        type: "Deposit Request",
+        amount: amount,
+        status: "Pending Verification",
+        reference: request.id
+      });
+
+
+      showMessage(
+        message,
+        "Request submitted. Status: Pending Verification.",
+        "success"
+      );
+
+
+      if ($("depositAmount")) {
+        $("depositAmount").value = "";
+      }
+
+      if ($("utr")) {
+        $("utr").value = "";
+      }
+
+      if ($("paymentScreenshot")) {
+        $("paymentScreenshot").value = "";
+      }
+
+      selectedScreenshotData = "";
+
+      if ($("paymentScreenshotPreview")) {
+        $("paymentScreenshotPreview").innerHTML = "";
+        $("paymentScreenshotPreview")
+          .classList.remove("show");
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   WITHDRAWAL
+   ========================================================= */
+
+function createWithdrawal(amount, messageElement) {
+
+  const balance = getBalance();
+
+  if (!amount || amount < 500 || amount > 20000) {
+
+    showMessage(
+      messageElement,
+      "Enter an amount between ₹500 and ₹20,000.",
+      "error"
+    );
+
+    return false;
+  }
+
+  if (amount > balance) {
+
+    showMessage(
+      messageElement,
+      "Insufficient demo balance.",
+      "error"
+    );
+
+    return false;
+  }
+
+
+  const history = getStorage(
+    STORAGE.withdrawals,
+    []
+  );
+
+
+  const today = new Date().toDateString();
+
+  const todayCount =
+    history.filter(function (item) {
+
+      return new Date(item.createdAt)
+        .toDateString() === today;
+
+    }).length;
+
+
+  if (todayCount >= 3) {
+
+    showMessage(
+      messageElement,
+      "Maximum 3 withdrawal requests per day.",
+      "error"
+    );
+
+    return false;
+  }
+
+
+  const now = new Date();
+
+  const minutes =
+    now.getHours() * 60 +
+    now.getMinutes();
+
+  const opening =
+    10 * 60 + 30;
+
+  const closing =
+    17 * 60;
+
+
+  if (
+    minutes < opening ||
+    minutes > closing
+  ) {
+
+    showMessage(
+      messageElement,
+      "Withdrawal requests are available from 10:30 AM to 5:00 PM.",
+      "error"
+    );
+
+    return false;
+  }
+
+
+  const request = {
+
+    id:
+      "WDR-" +
+      Date.now(),
+
+    userId:
+      getUser().id,
+
+    amount:
+      amount,
+
+    status:
+      "Pending Verification",
+
+    createdAt:
+      new Date().toISOString()
+
+  };
+
+
+  history.unshift(request);
+
+  setStorage(
+    STORAGE.withdrawals,
+    history.slice(0, 100)
+  );
+
+
+  setBalance(balance - amount);
+
+  saveFirebaseBalance(
+    getBalance()
+  );
+
+
+  addTransaction({
+
+    type:
+      "Withdrawal Request",
+
+    amount:
+      amount,
+
+    status:
+      "Pending Verification",
+
+    reference:
+      request.id
+
+  });
+
+
+  showMessage(
+    messageElement,
+    "Withdrawal request submitted.",
+    "success"
+  );
+
+
+  return true;
+}
+
+
+/* OLD INFO WITHDRAW */
+
+if ($("withdrawSubmit")) {
+
+  $("withdrawSubmit").addEventListener(
+    "click",
+    function () {
+
+      const amount = Number(
+        $("withdrawAmount")
+          ? $("withdrawAmount").value
+          : 0
+      );
+
+      const success = createWithdrawal(
+        amount,
+        $("withdrawMessage")
+      );
+
+      if (success && $("withdrawAmount")) {
+        $("withdrawAmount").value = "";
+      }
+
+    }
+  );
+
+}
+
+
+/* SEPARATE WITHDRAW PAGE */
+
+if ($("withdrawPageSubmit")) {
+
+  $("withdrawPageSubmit").addEventListener(
+    "click",
+    function () {
+
+      const amount = Number(
+        $("withdrawPageAmount")
+          ? $("withdrawPageAmount").value
+          : 0
+      );
+
+      const success = createWithdrawal(
+        amount,
+        $("withdrawPageMessage")
+      );
+
+      if (success && $("withdrawPageAmount")) {
+        $("withdrawPageAmount").value = "";
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   TRANSACTIONS
+   ========================================================= */
+
+function addTransaction(transaction) {
+
+  const transactions =
+    getStorage(
+      STORAGE.transactions,
+      []
+    );
+
+  transactions.unshift({
+
+    id:
+      transaction.reference ||
+      ("TX-" + Date.now()),
+
+    type:
+      transaction.type || "Transaction",
+
+    amount:
+      Number(transaction.amount) || 0,
+
+    status:
+      transaction.status || "Pending",
+
+    createdAt:
+      new Date().toISOString()
+
+  });
+
+  setStorage(
+    STORAGE.transactions,
+    transactions.slice(0, 200)
+  );
+
+}
+
+
+/* =========================================================
+   HISTORY RENDER
+   ========================================================= */
+
+function emptyHistoryHTML(title, text) {
+
+  return `
+    <div class="history-empty">
+      <strong>${title}</strong>
+      <span>${text}</span>
+    </div>
+  `;
+
+}
+
+
+function historyItemHTML(item, type) {
+
+  const title =
+    type === "deposit"
+      ? "Deposit Request"
+      : "Withdrawal Request";
+
+  const amount =
+    money(item.amount);
+
+  const status =
+    String(item.status || "Pending")
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+  const date =
+    item.createdAt
+      ? new Date(item.createdAt)
+          .toLocaleString("en-IN")
+      : "-";
+
+
+  return `
+    <div class="history-item">
+
+      <div class="history-item-top">
+
+        <div>
+          <div class="history-item-title">
+            ${title}
+          </div>
+
+          <div class="history-item-meta">
+            ${date}
+          </div>
+        </div>
+
+        <div class="history-item-amount">
+          ₹${amount}
+        </div>
+
+      </div>
+
+      <div class="history-item-meta">
+
+        <span>
+          ${item.id || "-"}
+        </span>
+
+        <span class="status ${status}">
+          ${item.status || "Pending"}
+        </span>
+
+      </div>
+
+    </div>
+  `;
+
+}
+
+
+function renderDepositHistory() {
+
+  const container =
+    $("depositHistoryList");
+
+  if (!container) return;
+
+  const history =
+    getStorage(
+      STORAGE.deposits,
+      []
+    );
+
+  if (!history.length) {
+
+    container.innerHTML =
+      emptyHistoryHTML(
+        "No deposit requests",
+        "Your deposit requests will appear here."
+      );
+
+    return;
+  }
+
+  container.innerHTML =
+    history
+      .map(function (item) {
+        return historyItemHTML(
+          item,
+          "deposit"
+        );
+      })
+      .join("");
+
+}
+
+
+function renderWithdrawalHistory() {
+
+  const container =
+    $("withdrawalHistoryList");
+
+  if (!container) return;
+
+  const history =
+    getStorage(
+      STORAGE.withdrawals,
+      []
+    );
+
+  if (!history.length) {
+
+    container.innerHTML =
+      emptyHistoryHTML(
+        "No withdrawal requests",
+        "Your withdrawal requests will appear here."
+      );
+
+    return;
+  }
+
+  container.innerHTML =
+    history
+      .map(function (item) {
+        return historyItemHTML(
+          item,
+          "withdrawal"
+        );
+      })
+      .join("");
+
+}
+
+
+function renderTransactions() {
+
+  const container =
+    $("historyList");
+
+  if (!container) return;
+
+  const transactions =
+    getStorage(
+      STORAGE.transactions,
+      []
+    );
+
+  if (!transactions.length) {
+
+    container.innerHTML =
+      emptyHistoryHTML(
+        "No transactions",
+        "Your demo transactions will appear here."
+      );
+
+    return;
+  }
+
+
+  container.innerHTML =
+    transactions
+      .map(function (item) {
+
+        const status =
+          String(item.status || "Pending")
+            .toLowerCase()
+            .replace(/\s+/g, "-");
+
+        const date =
+          item.createdAt
+            ? new Date(item.createdAt)
+                .toLocaleString("en-IN")
+            : "-";
+
+        return `
+          <div class="history-item">
+
+            <div class="history-item-top">
+
+              <div>
+
+                <div class="history-item-title">
+                  ${item.type}
+                </div>
+
+                <div class="history-item-meta">
+                  ${date}
+                </div>
+
+              </div>
+
+              <div class="history-item-amount">
+                ₹${money(item.amount)}
+              </div>
+
+            </div>
+
+            <div class="history-item-meta">
+
+              <span>
+                ${item.id || "-"}
+              </span>
+
+              <span class="status ${status}">
+                ${item.status || "Pending"}
+              </span>
+
+            </div>
+
+          </div>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+/* =========================================================
+   HISTORY BUTTONS
+   ========================================================= */
+
+if ($("depositHistoryBtn")) {
+
+  $("depositHistoryBtn").addEventListener(
+    "click",
+    function () {
+
+      showPage("depositHistoryPage");
+
+    }
+  );
+
+}
+
+
+if ($("withdrawalHistoryBtn")) {
+
+  $("withdrawalHistoryBtn").addEventListener(
+    "click",
+    function () {
+
+      showPage("withdrawalHistoryPage");
+
+    }
+  );
+
+}
+
+
+if ($("transactionHistoryBtn")) {
+
+  $("transactionHistoryBtn").addEventListener(
+    "click",
+    function () {
+
+      showPage("historyPage");
+
+    }
+  );
+
+}
+
+
+/* BACK BUTTONS */
+
+if ($("historyBackBtn")) {
+
+  $("historyBackBtn").addEventListener(
+    "click",
+    function () {
+      showPage("infoPage");
+    }
+  );
+
+}
+
+
+if ($("withdrawHistoryBackBtn")) {
+
+  $("withdrawHistoryBackBtn").addEventListener(
+    "click",
+    function () {
+      showPage("infoPage");
+    }
+  );
+
+}
+
+
+if ($("transactionHistoryBackBtn")) {
+
+  $("transactionHistoryBackBtn").addEventListener(
+    "click",
+    function () {
+      showPage("infoPage");
+    }
+  );
+
+}
+
+
+/* =========================================================
+   INVITE
+   ========================================================= */
+
+function initializeReferral() {
+
+  const user =
+    getUser();
+
+  const base =
+    window.location.origin +
+    window.location.pathname;
+
+  const referral =
+    base +
+    "?ref=" +
+    encodeURIComponent(user.id);
+
+
+  setStorage(
+    STORAGE.referral,
+    referral
+  );
+
+
+  if ($("referralLink")) {
+    $("referralLink").value =
+      referral;
+  }
+
+}
+
+
+if ($("copyLinkBtn")) {
+
+  $("copyLinkBtn").addEventListener(
+    "click",
+    async function () {
+
+      const link =
+        $("referralLink")
+          ? $("referralLink").value
+          : "";
+
+      if (!link) return;
+
+      try {
+
+        await navigator.clipboard.writeText(link);
+
+        this.textContent = "Copied";
+
+        const button = this;
+
+        setTimeout(function () {
+          button.textContent = "Copy";
+        }, 1500);
+
+      } catch (error) {
+
+        alert(link);
+
+      }
+
+    }
+  );
+
+}
+
+
+if ($("whatsappBtn")) {
+
+  $("whatsappBtn").addEventListener(
+    "click",
+    function () {
+
+      const link =
+        $("referralLink")
+          ? $("referralLink").value
+          : window.location.href;
+
+      const message =
+        "Check this website: " +
+        link;
+
+      const url =
+        "https://wa.me/?text=" +
+        encodeURIComponent(message);
+
+      window.open(
+        url,
+        "_blank"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CUSTOMER SERVICE
+   ========================================================= */
+
+if ($("customerServiceBtn")) {
+
+  $("customerServiceBtn").addEventListener(
+    "click",
+    function () {
+
+      window.open(
+        CUSTOMER_SERVICE,
+        "_blank"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   PLAN MODAL
+   ========================================================= */
+
+function openPlanModal(amount) {
+
+  if (!$("planModal")) return;
+
+  if ($("modalTitle")) {
+    $("modalTitle").textContent =
+      "₹" + money(amount) + " Mining Plan";
+  }
+
+  if ($("modalText")) {
+    $("modalText").textContent =
+      "This is a demo mining plan. " +
+      "No guaranteed return or automatic real-money transaction is performed.";
+  }
+
+  $("planModal").classList.add("show");
+
+  $("planModal").setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  $("planModal").dataset.amount =
+    String(amount);
 
 }
 
 
 document
-.getElementById(
-"paymentScreenshot"
-)
-.addEventListener(
-"change",
-function(){
+  .querySelectorAll(".plan-open, .product-select")
+  .forEach(function (button) {
 
-const file=this.files[0];
+    button.addEventListener(
+      "click",
+      function () {
 
-const preview=
-document.getElementById(
-"preview"
+        const amount =
+          Number(this.dataset.plan);
+
+        if (amount) {
+          openPlanModal(amount);
+        }
+
+      }
+    );
+
+  });
+
+
+if ($("modalClose")) {
+
+  $("modalClose").addEventListener(
+    "click",
+    function () {
+
+      $("planModal").classList.remove("show");
+
+      $("planModal").setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+    }
+  );
+
+}
+
+
+if ($("planModal")) {
+
+  $("planModal").addEventListener(
+    "click",
+    function (event) {
+
+      if (event.target === this) {
+
+        this.classList.remove("show");
+
+        this.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+if ($("modalDepositBtn")) {
+
+  $("modalDepositBtn").addEventListener(
+    "click",
+    function () {
+
+      if ($("planModal")) {
+
+        $("planModal").classList.remove("show");
+
+        $("planModal").setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+      }
+
+      showPage("depositPage");
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
+
+function initializeApp() {
+
+  initializeUser();
+
+  initializeReferral();
+
+  loadProfile();
+
+  loadBankDetails();
+
+  updateBalanceUI();
+
+  renderDepositHistory();
+
+  renderWithdrawalHistory();
+
+  renderTransactions();
+
+  initializeFirebase();
+
+}
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    initializeApp();
+
+  }
 );
-
-
-if(!file){
-
-preview.innerHTML="";
-
-return;
-
-}
-
-
-if(
-file.size>
-5*1024*1024
-){
-
-alert(
-"Screenshot must be under 5 MB."
-);
-
-this.value="";
-
-return;
-
-}
-
-
-const reader=
-new FileReader();
-
-
-reader.onload=
-e=>{
-
-preview.innerHTML=
-`
-<img
-src="${e.target.result}"
-alt="Screenshot preview"
->
-`;
-
-};
-
-
-reader.readAsDataURL(file);
-
-}
-);
-
-
-function submitDeposit(){
-
-const amount=
-Number(
-document.getElementById(
-"depositAmount"
-).value
-);
-
-
-const utr=
-document.getElementById(
-"utr"
-).value.trim();
-
-
-const file=
-document.getElementById(
-"paymentScreenshot"
-).files[0];
-
-
-const msg=
-document.getElementById(
-"depositMsg"
-);
-
-
-if(
-amount<500||
-amount>50000
-){
-
-msg.textContent=
-"Enter an amount between ₹500 and ₹50,000.";
-
-return;
-
-}
-
-
-if(!utr){
-
-msg.textContent=
-"Enter UTR / Transaction ID.";
-
-return;
-
-}
-
-
-if(!file){
-
-msg.textContent=
-"Upload payment screenshot.";
-
-return;
-
-}
-
-
-const r={
-
-id:
-"DEP-"+Date.now(),
-
-amount:amount,
-
-utr:utr,
-
-status:
-"Pending Verification",
-
-date:
-new Date().toLocaleString()
-
-};
-
-
-s.deposits.unshift(r);
-
-
-s.transactions.unshift({
-
-type:"Deposit",
-
-amount:amount,
-
-status:
-"Pending Verification",
-
-date:r.date
-
-});
-
-
-save();
-
-
-document.getElementById(
-"depositAmount"
-).value="";
-
-
-document.getElementById(
-"utr"
-).value="";
-
-
-document.getElementById(
-"paymentScreenshot"
-).value="";
-
-
-document.getElementById(
-"preview"
-).innerHTML="";
-
-
-msg.textContent=
-"Deposit request submitted. Pending manual verification.";
-
-
-render();
-
-}
-
-
-function showWithdraw(){
-
-go("withdraw");
-
-}
-
-
-function submitWithdraw(){
-
-const amount=
-Number(
-document.getElementById(
-"withdrawAmount"
-).value
-);
-
-
-const name=
-document.getElementById(
-"bankName"
-).value.trim();
-
-
-const ifsc=
-document.getElementById(
-"ifsc"
-).value.trim().toUpperCase();
-
-
-const bank=
-document.getElementById(
-"bank"
-).value.trim();
-
-
-const account=
-document.getElementById(
-"accountNumber"
-).value.trim();
-
-
-const confirmAccount=
-document.getElementById(
-"confirmAccount"
-).value.trim();
-
-
-const msg=
-document.getElementById(
-"withdrawMsg"
-);
-
-
-if(
-amount<300||
-amount>20000
-){
-
-msg.textContent=
-"Enter an amount between ₹300 and ₹20,000.";
-
-return;
-
-}
-
-
-if(amount>s.balance){
-
-msg.textContent=
-"Insufficient balance.";
-
-return;
-
-}
-
-
-if(
-!name||
-!ifsc||
-!bank||
-!account||
-!confirmAccount
-){
-
-msg.textContent=
-"Please fill all bank details.";
-
-return;
-
-}
-
-
-if(
-account!==confirmAccount
-){
-
-msg.textContent=
-"Account numbers do not match.";
-
-return;
-
-}
-
-
-if(
-!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)
-){
-
-msg.textContent=
-"Enter a valid IFSC code.";
-
-return;
-
-}
-
-
-const r={
-
-id:
-"WDR-"+Date.now(),
-
-amount:amount,
-
-status:"Pending",
-
-date:
-new Date().toLocaleString()
-
-};
-
-
-s.withdrawals.unshift(r);
-
-
-s.transactions.unshift({
-
-type:"Withdrawal",
-
-amount:amount,
-
-status:"Pending",
-
-date:r.date
-
-});
-
-
-s.balance-=amount;
-
-
-save();
-
-
-document.getElementById(
-"withdrawAmount"
-).value="";
-
-
-msg.textContent=
-"Withdrawal request submitted for manual verification.";
-
-
-render();
-
-}
-
-
-function renderHistory(){
-
-const d=
-document.getElementById(
-"depositHistoryList"
-);
-
-
-const w=
-document.getElementById(
-"withdrawHistoryList"
-);
-
-
-const t=
-document.getElementById(
-"transactionList"
-);
-
-
-d.innerHTML=
-s.deposits.length
-
-?
-
-s.deposits
-.map(x=>`
-
-<div class="item">
-
-<b>
-Deposit ₹${fmt(x.amount)}
-</b>
-
-<small>
-${x.date}
-</small>
-
-<p>
-UTR: ${safe(x.utr)}
-</p>
-
-<p>
-Status: ${x.status}
-</p>
-
-</div>
-
-`)
-.join("")
-
-:
-
-'<div class="item">No deposit requests.</div>';
-
-
-w.innerHTML=
-s.withdrawals.length
-
-?
-
-s.withdrawals
-.map(x=>`
-
-<div class="item">
-
-<b>
-Withdrawal ₹${fmt(x.amount)}
-</b>
-
-<small>
-${x.date}
-</small>
-
-<p>
-Status: ${x.status}
-</p>
-
-</div>
-
-`)
-.join("")
-
-:
-
-'<div class="item">No withdrawal requests.</div>';
-
-
-t.innerHTML=
-s.transactions.length
-
-?
-
-s.transactions
-.map(x=>`
-
-<div class="item">
-
-<b>
-${safe(x.type)}
-₹${fmt(x.amount)}
-</b>
-
-<small>
-${x.date}
-</small>
-
-<p>
-Status: ${safe(x.status)}
-</p>
-
-</div>
-
-`)
-.join("")
-
-:
-
-'<div class="item">No transactions yet.</div>';
-
-}
-
-
-function safe(x){
-
-return String(x||"")
-.replace(
-/[&<>"']/g,
-a=>({
-
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#039;"
-
-}[a])
-);
-
-}
-
-
-function shareInvite(){
-
-window.open(
-"https://wa.me/?text="+
-encodeURIComponent(
-"Join NSG Wellfare: "+
-location.href
-),
-"_blank"
-);
-
-}
-
-
-function copyInvite(){
-
-const msg=
-document.getElementById(
-"inviteMsg"
-);
-
-
-if(
-navigator.clipboard
-){
-
-navigator.clipboard
-.writeText(location.href)
-.then(
-()=>{
-msg.textContent=
-"Invite link copied."
-}
-)
-.catch(
-()=>{
-msg.textContent=
-location.href
-}
-);
-
-}else{
-
-msg.textContent=
-location.href;
-
-}
-
-}
-
-
-function support(){
-
-window.open(
-SUPPORT,
-"_blank"
-);
-
-}
-
-
-render();
