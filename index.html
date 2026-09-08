@@ -1,350 +1,565 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NSG Wellfare</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header class="topbar">
+<header class="top">
   <div>
-    <h2>🌿 NSG Wellfare</h2>
-    <small>Secure Digital Platform</small>
+    <strong>🌿 NSG Wellfare</strong>
+    <small>Welcome back</small>
   </div>
-  <div class="balance">₹<span id="balance">0.00</span></div>
+
+  <div class="topbal">
+    ₹<span id="topBalance">0.00</span>
+  </div>
 </header>
 
 <main>
 
+<!-- HOME -->
 <section id="home" class="page active">
-  <div class="welcome card">
-    <h2>Welcome 👋</h2>
-    <p>Welcome to NSG Wellfare</p>
-    <p>+91 <span id="loggedMobile">ID:-78229</span></p>
-    <div class="balance-big">₹<span id="homeBalance">0.00</span></div>
+
+  <div class="hero">
+    <div>
+      <span class="muted">Available Balance</span>
+      <h1>₹<span id="homeBalance">0.00</span></h1>
+      <span id="userIdHome"></span>
+    </div>
+
+    <div class="heroIcon">₹</div>
   </div>
 
-  <div class="grid">
-    <button class="menu-card" onclick="openPage('attendance')">
-      <span>📅</span><b>Daily Attendance</b><small>Attendance Calendar</small>
+  <div class="quick">
+
+    <button onclick="go('attendance')">
+      📅
+      <b>Attendance</b>
+      <small>Daily check-in</small>
     </button>
-    <button class="menu-card" onclick="openPage('rewards')">
-      <span>🎁</span><b>Rewards</b><small>Claim available rewards</small>
+
+    <button onclick="go('products')">
+      📦
+      <b>Products</b>
+      <small>View plans</small>
     </button>
-    <button class="menu-card" onclick="customerService()">
-      <span>💬</span><b>Customer Service</b><small>Contact Support</small>
+
+    <button onclick="showDeposit()">
+      💰
+      <b>Deposit</b>
+      <small>Add funds</small>
     </button>
-    <button class="menu-card" onclick="openPage('products')">
-      <span>📦</span><b>Products</b><small>View products</small>
+
+    <button onclick="showWithdraw()">
+      🏦
+      <b>Withdraw</b>
+      <small>Request payout</small>
     </button>
+
   </div>
 
-  <h3 class="section-title">Investment Products</h3>
+  <h2>Products</h2>
+
   <div id="homeProducts"></div>
+
 </section>
 
 
+<!-- PRODUCTS -->
 <section id="products" class="page">
-  <h2 class="page-title">📦 Products</h2>
-  <div id="productsList"></div>
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
+    <h2>Products</h2>
+  </div>
+
+  <div id="productList"></div>
+
 </section>
 
 
+<!-- ATTENDANCE -->
 <section id="attendance" class="page">
-  <div class="page-head">
-    <button onclick="openPage('home')">←</button>
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
     <h2>Daily Attendance</h2>
   </div>
 
   <div class="card">
-    <div class="calendar-head">
-      <button onclick="changeMonth(-1)">‹</button>
-      <h3 id="monthTitle"></h3>
-      <button onclick="changeMonth(1)">›</button>
+
+    <div class="calHead">
+      <button onclick="month(-1)">‹</button>
+      <b id="monthTitle"></b>
+      <button onclick="month(1)">›</button>
     </div>
 
-    <div class="weekdays">
-      <span>Sun</span><span>Mon</span><span>Tue</span>
-      <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+    <div class="week">
+      <span>Sun</span>
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
     </div>
 
     <div id="calendar" class="calendar"></div>
-    <div class="attendance-info">
-      Total Attendance: <b id="attendanceTotal">0</b>
-    </div>
+
+    <p class="center">
+      Attendance:
+      <b id="attCount">0</b> days
+    </p>
+
   </div>
+
 </section>
 
 
+<!-- REWARDS -->
 <section id="rewards" class="page">
-  <div class="page-head">
-    <button onclick="openPage('home')">←</button>
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
     <h2>Rewards</h2>
   </div>
-  <div class="card">
-    <p class="notice">Available demo rewards are shown below.</p>
-    <div id="rewardsList"></div>
-  </div>
+
+  <div id="rewardsList"></div>
+
 </section>
 
 
+<!-- MY INFO -->
 <section id="info" class="page">
-  <h2 class="page-title">👤 My Info</h2>
 
-  <div class="profile-card card">
-    <div class="profile-icon">👤</div>
+  <h2>My Info</h2>
+
+  <div class="profile card">
+
+    <div class="avatar">👤</div>
+
     <div>
       <b>User ID</b>
-      <p id="profileUserId">You-7519001</p>
+      <p id="profileId"></p>
     </div>
+
   </div>
 
-  <div class="info-menu">
+
+  <div class="list">
 
     <button onclick="showDeposit()">
-      <span>💰</span>
-      <div><b>Deposit</b><small>payment request</small></div>
+      💰
+      <span>
+        <b>Deposit</b>
+        <small>Add funds through UPI</small>
+      </span>
+      ›
     </button>
 
-    <button onclick="showWithdrawal()">
-      <span>🏦</span>
-      <div><b>Withdrawal</b><small> ithdrawal request</small></div>
+
+    <button onclick="showWithdraw()">
+      🏦
+      <span>
+        <b>Withdrawal</b>
+        <small>Submit withdrawal request</small>
+      </span>
+      ›
     </button>
 
-    <button onclick="openPage('withdrawHistory')">
-      <span>📋</span>
-      <div><b>Withdrawal History</b><small>View requests</small></div>
+
+    <button onclick="go('depositHistory')">
+      📥
+      <span>
+        <b>Deposit History</b>
+        <small>View submitted requests</small>
+      </span>
+      ›
     </button>
 
-    <button onclick="openPage('depositHistory')">
-      <span>📥</span>
-      <div><b>Deposit History</b><small>View deposits</small></div>
+
+    <button onclick="go('withdrawHistory')">
+      📤
+      <span>
+        <b>Withdrawal History</b>
+        <small>View submitted requests</small>
+      </span>
+      ›
     </button>
 
-    <button onclick="openPage('transactions')">
-      <span>📊</span>
-      <div><b>Transaction History</b><small>View transactions</small></div>
+
+    <button onclick="go('transactions')">
+      📊
+      <span>
+        <b>Transaction History</b>
+        <small>View activity</small>
+      </span>
+      ›
     </button>
 
-    <button onclick="inviteNow()">
-      <span>🎁</span>
-      <div><b>Invite Now</b><small>Share with friends</small></div>
+
+    <button onclick="go('rewards')">
+      🎁
+      <span>
+        <b>Rewards</b>
+        <small>View rewards</small>
+      </span>
+      ›
+    </button>
+
+
+    <button onclick="support()">
+      💬
+      <span>
+        <b>Customer Service</b>
+        <small>Open support</small>
+      </span>
+      ›
     </button>
 
   </div>
+
 </section>
 
 
 <!-- DEPOSIT -->
 <section id="deposit" class="page">
 
-  <div class="page-head">
-    <button onclick="openPage('info')">←</button>
+  <div class="head">
+    <button onclick="go('info')">‹</button>
     <h2>Deposit</h2>
   </div>
+
 
   <div class="card">
 
     <label>Deposit Amount</label>
+
     <input
-      type="number"
       id="depositAmount"
-      placeholder="Minimum ₹500"
+      type="number"
       min="500"
-      max="20000"
+      max="50000"
+      placeholder="₹500 - ₹50,000"
     >
 
-    <div class="payment-box">
 
-      <p><b>Pay using UPI</b></p>
+    <div class="pay">
 
-      <div class="qr-wrap">
+      <h3>Pay using UPI</h3>
+
+
+      <!-- QR CODE -->
+      <div class="qr">
+
         <img
           src="assets/upi-qr.jpg"
           alt="UPI QR Code"
-          class="upi-qr"
-          onerror="this.style.display='none';document.getElementById('qrError').style.display='block';"
         >
-        <div id="qrError" class="qr-error hidden">
-          QR image load nahi hui.
-          <br>
-          File path check karein:
-          <b>/qr.jpg</b>
-        </div>
+
       </div>
 
-      <p>UPI ID:
-        <b id="upiId">yadav-rishab@fam</b>
+
+      <!-- UPI ID -->
+      <div class="upi">
+
+        <span id="upiId">
+          yadav-rishab@fam
+        </span>
+
+        <button onclick="copyUPI()">
+          Copy
+        </button>
+
+      </div>
+
+
+      <p class="muted center">
+        Scan the QR code or use the UPI ID above.
       </p>
-
-      <button
-        type="button"
-        class="secondary-btn"
-        onclick="copyUPI()">
-        Copy UPI ID
-      </button>
-
-      <small>
-        Indian Trusted and 100% secure app 
-      </small>
 
     </div>
 
-    <label>UTR / Transaction ID</label>
+
+    <label>
+      UTR / Transaction ID
+    </label>
+
     <input
-      type="text"
       id="utr"
-      placeholder="Enter UTR / Transaction ID"
       maxlength="50"
+      placeholder="Enter transaction reference"
     >
 
-    <label>Payment Screenshot</label>
+
+    <label>
+      Payment Screenshot
+    </label>
+
     <input
-      type="file"
       id="paymentScreenshot"
-      accept="image/png,image/jpeg,image/webp"
+      type="file"
+      accept="image/*"
     >
 
-    <div id="paymentPreview"></div>
+
+    <div id="preview"></div>
+
 
     <button
-      class="primary-btn"
-      id="depositSubmitBtn"
-      onclick="submitDeposit()">
+      class="primary"
+      onclick="submitDeposit()"
+    >
       Submit Deposit Request
     </button>
 
-    <p id="depositStatus" class="message"></p>
+
+    <p
+      id="depositMsg"
+      class="msg"
+    ></p>
 
   </div>
+
 </section>
 
 
 <!-- WITHDRAW -->
 <section id="withdraw" class="page">
 
-  <div class="page-head">
-    <button onclick="openPage('info')">←</button>
+  <div class="head">
+    <button onclick="go('info')">‹</button>
     <h2>Withdrawal</h2>
   </div>
 
+
   <div class="card">
 
-    <p>
-      Available Balance:
-      <b>₹<span id="withdrawBalance">500000.00</span></b>
-    </p>
+    <div class="balanceLine">
 
-    <label>Withdrawal Amount</label>
+      <span>
+        Available Balance
+      </span>
+
+      <b>
+        ₹<span id="withdrawBalance">0.00</span>
+      </b>
+
+    </div>
+
+
+    <label>Amount</label>
+
     <input
-      type="number"
       id="withdrawAmount"
-      placeholder="Minimum ₹300"
+      type="number"
       min="300"
-      max="10000"
+      max="20000"
+      placeholder="₹300 - ₹20,000"
     >
 
-    <h3>Bank Details</h3>
 
-    <input id="bankName" placeholder="Account Holder Name">
-    <input id="accountNumber" placeholder="Account Number">
-    <input id="confirmAccount" placeholder="Confirm Account Number">
-    <input id="bank" placeholder="Bank Name">
-    <input id="ifsc" placeholder="IFSC Code">
+    <label>
+      Account Holder Name
+    </label>
+
+    <input
+      id="bankName"
+      placeholder="Full name"
+    >
+
+
+    <label>
+      IFSC Code
+    </label>
+
+    <input
+      id="ifsc"
+      placeholder="e.g. SBIN0001234"
+    >
+
+
+    <label>
+      Bank Name
+    </label>
+
+    <input
+      id="bank"
+      placeholder="Bank name"
+    >
+
+
+    <label>
+      Account Number
+    </label>
+
+    <input
+      id="accountNumber"
+      inputmode="numeric"
+      placeholder="Account number"
+    >
+
+
+    <label>
+      Repeat Account Number
+    </label>
+
+    <input
+      id="confirmAccount"
+      inputmode="numeric"
+      placeholder="Repeat account number"
+    >
+
 
     <button
-      class="primary-btn"
-      id="withdrawSubmitBtn"
-      onclick="submitWithdrawal()">
+      class="primary"
+      onclick="submitWithdraw()"
+    >
       Submit Withdrawal Request
     </button>
 
-    <small class="warning">
-      i received your withdrawal request, please wait patiently 24-72 hours for successful withdrawal, Tha k You 🥰💗
-    </small>
 
-    <p id="withdrawMessage" class="message"></p>
+    <p class="muted">
+      Withdrawal requests are subject to manual verification.
+    </p>
+
+
+    <p
+      id="withdrawMsg"
+      class="msg"
+    ></p>
 
   </div>
+
 </section>
 
 
-<section id="withdrawHistory" class="page">
-  <div class="page-head">
-    <button onclick="openPage('info')">←</button>
-    <h2>Withdrawal History</h2>
-  </div>
-  <div id="withdrawHistoryList"></div>
-</section>
-
-
+<!-- DEPOSIT HISTORY -->
 <section id="depositHistory" class="page">
-  <div class="page-head">
-    <button onclick="openPage('info')">←</button>
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
     <h2>Deposit History</h2>
   </div>
+
   <div id="depositHistoryList"></div>
+
 </section>
 
 
+<!-- WITHDRAW HISTORY -->
+<section id="withdrawHistory" class="page">
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
+    <h2>Withdrawal History</h2>
+  </div>
+
+  <div id="withdrawHistoryList"></div>
+
+</section>
+
+
+<!-- TRANSACTIONS -->
 <section id="transactions" class="page">
-  <div class="page-head">
-    <button onclick="openPage('info')">←</button>
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
     <h2>Transaction History</h2>
   </div>
+
   <div id="transactionList"></div>
+
 </section>
 
 
+<!-- INVITE -->
 <section id="invite" class="page">
-  <div class="page-head">
-    <button onclick="openPage('home')">←</button>
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
     <h2>Invite</h2>
   </div>
 
-  <div class="card invite-card">
+
+  <div class="card center">
+
     <h3>🎁 Invite Friends</h3>
-    <p>Share your referral link with friends.</p>
 
-    <input id="inviteLink" readonly>
+    <p class="muted">
+      Share your referral link with friends.
+    </p>
 
-    <button class="primary-btn" onclick="inviteNow()">
+
+    <input
+      id="inviteLink"
+      readonly
+    >
+
+
+    <button
+      class="primary"
+      onclick="shareInvite()"
+    >
       Share on WhatsApp
     </button>
 
-    <button class="secondary-btn" onclick="copyInvite()">
+
+    <button
+      class="secondary"
+      onclick="copyInvite()"
+    >
       Copy Link
     </button>
 
-    <p id="inviteMessage" class="message"></p>
+
+    <p
+      id="inviteMsg"
+      class="msg"
+    ></p>
+
   </div>
+
 </section>
 
 </main>
 
 
-<nav class="bottom-nav">
-  <button onclick="openPage('home')">
-    <span>🏠</span>Home
+<!-- BOTTOM NAV -->
+<nav>
+
+  <button onclick="go('home')">
+    🏠
+    <span>Home</span>
   </button>
 
-  <button onclick="openPage('products')">
-    <span>📦</span>Product
+
+  <button onclick="go('products')">
+    📦
+    <span>Product</span>
   </button>
 
-  <button onclick="openPage('info')">
-    <span>👤</span>My Info
+
+  <button onclick="go('info')">
+    👤
+    <span>My Info</span>
   </button>
 
-  <button onclick="openPage('invite')">
-    <span>🎁</span>Invite
+
+  <button onclick="go('invite')">
+    🎁
+    <span>Invite</span>
   </button>
+
 </nav>
 
 
 <script src="script.js"></script>
+
 </body>
 </html>
