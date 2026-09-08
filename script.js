@@ -1,600 +1,1089 @@
-/* NSG WELLFARE - DEMO VERSION */
-
-const UPI_ID="yadav-rishab@fam";
+const UPI="yadav-rishab@fam";
 const SUPPORT="https://t.me/Hammerff7gcz";
 
-const products=[
- {id:1,name:"Product 1",price:500,daily:10},
- {id:2,name:"Product 2",price:1500,daily:30},
- {id:3,name:"Product 3",price:3600,daily:72}
+
+const plans=[
+{
+id:1,
+name:"Plan ₹500",
+price:500,
+reward:10
+},
+{
+id:2,
+name:"Plan ₹1,500",
+price:1500,
+reward:30
+},
+{
+id:3,
+name:"Plan ₹3,600",
+price:3600,
+reward:72
+}
 ];
 
-let data=JSON.parse(localStorage.getItem(NSG.Data")||"null")||{
- balance:500000.00,
- attendance:{},
- purchased:[],
- rewards:[],
- deposits:[],
- withdrawals:[],
- transactions:[]
+
+let s=
+JSON.parse(localStorage.getItem("nsgState")||"null")
+||
+{
+balance:0,
+attendance:{},
+deposits:[],
+withdrawals:[],
+transactions:[],
+purchased:[]
 };
 
+
 function save(){
- localStorage.setItem(NSG.Data",JSON.stringify(data));
+localStorage.setItem(
+"nsgState",
+JSON.stringify(s)
+);
 }
 
-function money(n){
- return Number(n||0).toLocaleString("en-IN",{
-  minimumFractionDigits:2,
-  maximumFractionDigits:2
- });
+
+function fmt(n){
+return Number(n||0).toLocaleString(
+"en-IN",
+{
+minimumFractionDigits:2,
+maximumFractionDigits:2
+}
+);
 }
 
-function openPage(id){
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
- const page=document.getElementById(id);
- if(page)page.classList.add("active");
- window.scrollTo({top:0,behavior:"smooth"});
- updateUI();
+
+function userID(){
+
+let x=localStorage.getItem("nsgUid");
+
+if(!x){
+
+x=
+"You-"+
+Math.floor(
+1000000+
+Math.random()*8999999
+);
+
+localStorage.setItem(
+"nsgUid",
+x
+);
+
 }
 
-function updateBalance(){
- const ids=["balance","homeBalance","withdrawBalance"];
-
- ids.forEach(id=>{
-  const el=document.getElementById(id);
-  if(el)el.textContent=money(data.balance);
- });
+return x;
 }
 
-function createUser(){
- let id=localStorage.getItem("nsgUserId");
 
- if(!id){
-  const n=Number(localStorage.getItem("nsgCounter")||0)+1;
-  localStorage.setItem("nsgCounter",n);
-  id="You-7519"+String(n).padStart(3,"0");
-  localStorage.setItem("nsgUserId",id);
- }
+function go(page){
 
- const p=document.getElementById("profileUserId");
- if(p)p.textContent=id;
+document
+.querySelectorAll(".page")
+.forEach(
+p=>p.classList.remove("active")
+);
+
+const target=document.getElementById(page);
+
+if(target){
+target.classList.add("active");
 }
+
+window.scrollTo(0,0);
+
+render();
+
+}
+
+
+function render(){
+
+document.getElementById(
+"topBalance"
+).textContent=fmt(s.balance);
+
+
+document.getElementById(
+"homeBalance"
+).textContent=fmt(s.balance);
+
+
+document.getElementById(
+"withdrawBalance"
+).textContent=fmt(s.balance);
+
+
+document.getElementById(
+"profileId"
+).textContent=userID();
+
+
+document.getElementById(
+"userIdHome"
+).textContent=userID();
+
+
+document.getElementById(
+"inviteLink"
+).value=location.href;
+
+
+renderProducts();
+renderCalendar();
+renderRewards();
+renderHistory();
+
+}
+
 
 function productHTML(p){
- const bought=data.purchased.includes(p.id);
 
- return `
- <div class="product">
-   <div class="product-head">
-     <div>
-       <h3>${p.name}</h3>
-       <p>Demo product</p>
-     </div>
-     <div class="product-price">₹${p.price}</div>
-   </div>
+const bought=
+s.purchased.includes(p.id);
 
-   <ul>
-     <li>Daily demo reward: ₹${p.daily}</li>
-     <li>Demo/Test mode</li>
-     <li>No real financial transaction</li>
-   </ul>
 
-   ${
-    bought
-    ? `<button class="secondary-btn" disabled>✓ Purchased</button>`
-    : `<button class="primary-btn" onclick="buyProduct(${p.id})">
-        Purchase Demo
-       </button>`
-   }
- </div>`;
+return `
+
+<div class="product">
+
+<div class="productTop">
+
+<div>
+
+<h3>${p.name}</h3>
+
+<p>
+Product plan
+</p>
+
+</div>
+
+<div class="price">
+₹${p.price}
+</div>
+
+</div>
+
+
+<ul>
+
+<li>
+Daily reward: ₹${p.reward}
+</li>
+
+<li>
+Terms and eligibility apply
+</li>
+
+</ul>
+
+
+<button
+class="${bought?"secondary":"primary"}"
+${bought?"disabled":""}
+onclick="buy(${p.id})"
+>
+
+${bought?"Purchased":"Select Product"}
+
+</button>
+
+</div>
+
+`;
+
 }
 
-function loadProducts(){
- const html=products.map(productHTML).join("");
 
- const home=document.getElementById("homeProducts");
- const list=document.getElementById("productsList");
+function renderProducts(){
 
- if(home)home.innerHTML=html;
- if(list)list.innerHTML=html;
+const html=
+plans.map(productHTML).join("");
+
+
+document.getElementById(
+"homeProducts"
+).innerHTML=html;
+
+
+document.getElementById(
+"productList"
+).innerHTML=html;
+
 }
 
-function buyProduct(id){
- const p=products.find(x=>x.id===id);
- if(!p)return;
 
- if(data.purchased.includes(id)){
-  alert("Already purchased.");
-  return;
- }
+function buy(i){
 
- if(data.balance<p.price){
-  alert("Insufficient demo balance.");
-  return;
- }
+const p=
+plans.find(x=>x.id===i);
 
- data.balance-=p.price;
- data.purchased.push(id);
 
- data.transactions.unshift({
-  type:"Product",
-  amount:p.price,
-  status:"COMPLETED",
-  date:new Date().toLocaleString()
- });
+if(!p)return;
 
- save();
- updateUI();
- alert("product purchased.");
+
+if(s.purchased.includes(i)){
+return;
 }
 
-let calDate=new Date();
 
-function changeMonth(step){
- calDate.setMonth(calDate.getMonth()+step);
- renderCalendar();
+if(s.balance<p.price){
+
+alert(
+"Insufficient balance."
+);
+
+return;
+
 }
+
+
+s.balance-=p.price;
+
+s.purchased.push(i);
+
+
+s.transactions.unshift({
+
+type:"Product",
+amount:p.price,
+status:"Completed",
+date:new Date().toLocaleString()
+
+});
+
+
+save();
+
+render();
+
+
+alert(
+"Product selected successfully."
+);
+
+}
+
+
+let cd=new Date();
+
+
+function month(v){
+
+cd.setMonth(
+cd.getMonth()+v
+);
+
+renderCalendar();
+
+}
+
+
+function key(y,m,d){
+
+return (
+y+
+"-"+
+String(m+1).padStart(2,"0")+
+"-"+
+String(d).padStart(2,"0")
+);
+
+}
+
 
 function renderCalendar(){
- const title=document.getElementById("monthTitle");
- const calendar=document.getElementById("calendar");
- if(!title||!calendar)return;
 
- const y=calDate.getFullYear();
- const m=calDate.getMonth();
+const y=cd.getFullYear();
+const m=cd.getMonth();
 
- title.textContent=new Intl.DateTimeFormat("en-IN",{
-  month:"long",
-  year:"numeric"
- }).format(calDate);
+const calendar=
+document.getElementById(
+"calendar"
+);
 
- calendar.innerHTML="";
 
- const first=new Date(y,m,1).getDay();
- const total=new Date(y,m+1,0).getDate();
+document.getElementById(
+"monthTitle"
+).textContent=
+new Intl.DateTimeFormat(
+"en-IN",
+{
+month:"long",
+year:"numeric"
+}
+).format(cd);
 
- for(let i=0;i<first;i++){
-  const d=document.createElement("div");
-  d.className="day empty";
-  calendar.appendChild(d);
- }
 
- for(let day=1;day<=total;day++){
-  const el=document.createElement("div");
-  el.className="day";
+calendar.innerHTML="";
 
-  const key=
-   y+"-"+String(m+1).padStart(2,"0")+"-"+String(day).padStart(2,"0");
 
-  el.textContent=day;
+const first=
+new Date(y,m,1).getDay();
 
-  if(data.attendance[key])el.classList.add("attended");
 
-  const now=new Date();
+for(
+let i=0;
+i<first;
+i++
+){
 
-  if(
-   day===now.getDate() &&
-   m===now.getMonth() &&
-   y===now.getFullYear()
-  ){
-   el.classList.add("today");
-  }
+calendar.innerHTML+=
+'<div class="day empty"></div>';
 
-  el.onclick=()=>{
-   if(data.attendance[key]){
-    alert("Attendance already marked.");
-    return;
-   }
-
-   data.attendance[key]=true;
-   save();
-   renderCalendar();
-   updateAttendanceTotal();
-  };
-
-  calendar.appendChild(el);
- }
-
- updateAttendanceTotal();
 }
 
-function updateAttendanceTotal(){
- const el=document.getElementById("attendanceTotal");
- if(el)el.textContent=Object.keys(data.attendance).length;
+
+const total=
+new Date(
+y,
+m+1,
+0
+).getDate();
+
+
+const now=new Date();
+
+
+for(
+let d=1;
+d<=total;
+d++
+){
+
+const k=
+key(y,m,d);
+
+
+const e=
+document.createElement(
+"div"
+);
+
+
+e.className=
+"day"+
+(s.attendance[k]?" done":"")+
+(
+d===now.getDate()&&
+m===now.getMonth()&&
+y===now.getFullYear()
+?" today":""
+);
+
+
+e.textContent=d;
+
+
+e.onclick=()=>{
+
+if(!s.attendance[k]){
+
+s.attendance[k]=1;
+
+save();
+
+renderCalendar();
+
 }
+
+};
+
+
+calendar.appendChild(e);
+
+}
+
+
+document.getElementById(
+"attCount"
+).textContent=
+Object.keys(
+s.attendance
+).length;
+
+}
+
 
 function renderRewards(){
- const box=document.getElementById("rewardsList");
- if(!box)return;
 
- if(!data.purchased.length){
-  box.innerHTML="<div class='history-item'>No demo rewards available yet.</div>";
-  return;
- }
+const box=
+document.getElementById(
+"rewardsList"
+);
 
- box.innerHTML=data.purchased.map(id=>{
-  const p=products.find(x=>x.id===id);
-  return `
-   <div class="history-item">
-    <b>🎁 ${p.name}</b>
-    <small> daily reward: ₹${p.daily}</small>
-   </div>`;
- }).join("");
+
+if(!s.purchased.length){
+
+box.innerHTML=
+'<div class="item">No rewards available yet.</div>';
+
+return;
+
 }
 
 
-/* =========================
-   DEPOSIT
-========================= */
+box.innerHTML=
+s.purchased
+.map(i=>{
+
+const p=
+plans.find(x=>x.id===i);
+
+return `
+
+<div class="item">
+
+<b>
+🎁 ${p.name}
+</b>
+
+<small>
+Daily reward: ₹${p.reward}
+</small>
+
+</div>
+
+`;
+
+})
+.join("");
+
+}
+
 
 function showDeposit(){
- openPage("deposit");
+
+go("deposit");
+
 }
+
 
 function copyUPI(){
- if(navigator.clipboard){
-  navigator.clipboard.writeText(UPI_ID)
-   .then(()=>alert("UPI ID copied: "+UPI_ID))
-   .catch(()=>fallbackCopy(UPI_ID));
- }else{
-  fallbackCopy(UPI_ID);
- }
+
+const copy=()=>{
+
+alert(
+"UPI ID copied: "+
+UPI
+);
+
+};
+
+
+if(
+navigator.clipboard
+){
+
+navigator.clipboard
+.writeText(UPI)
+.then(copy)
+.catch(
+()=>fallbackCopy()
+);
+
+}else{
+
+fallbackCopy();
+
 }
 
-function fallbackCopy(text){
- const input=document.createElement("input");
- input.value=text;
- document.body.appendChild(input);
- input.select();
- document.execCommand("copy");
- input.remove();
- alert("UPI ID copied: "+text);
 }
 
-const screenshotInput=document.getElementById("paymentScreenshot");
 
-if(screenshotInput){
- screenshotInput.addEventListener("change",function(){
-  const file=this.files[0];
-  const box=document.getElementById("paymentPreview");
+function fallbackCopy(){
 
-  if(!file){
-   box.innerHTML="";
-   return;
-  }
+const x=
+document.createElement(
+"textarea"
+);
 
-  if(file.size>3*1024*1024){
-   alert("Screenshot must be 3 MB or smaller.");
-   this.value="";
-   box.innerHTML="";
-   return;
-  }
+x.value=UPI;
 
-  const reader=new FileReader();
+document.body.appendChild(x);
 
-  reader.onload=e=>{
-   box.innerHTML=
-    `<img src="${e.target.result}" alt="Payment screenshot preview">`;
-  };
+x.select();
 
-  reader.readAsDataURL(file);
- });
+document.execCommand(
+"copy"
+);
+
+x.remove();
+
+alert(
+"UPI ID copied: "+
+UPI
+);
+
 }
+
+
+document
+.getElementById(
+"paymentScreenshot"
+)
+.addEventListener(
+"change",
+function(){
+
+const file=this.files[0];
+
+const preview=
+document.getElementById(
+"preview"
+);
+
+
+if(!file){
+
+preview.innerHTML="";
+
+return;
+
+}
+
+
+if(
+file.size>
+5*1024*1024
+){
+
+alert(
+"Screenshot must be under 5 MB."
+);
+
+this.value="";
+
+return;
+
+}
+
+
+const reader=
+new FileReader();
+
+
+reader.onload=
+e=>{
+
+preview.innerHTML=
+`
+<img
+src="${e.target.result}"
+alt="Screenshot preview"
+>
+`;
+
+};
+
+
+reader.readAsDataURL(file);
+
+}
+);
+
 
 function submitDeposit(){
 
- const amount=Number(
-  document.getElementById("depositAmount")?.value||0
- );
+const amount=
+Number(
+document.getElementById(
+"depositAmount"
+).value
+);
 
- const utr=
-  document.getElementById("utr")?.value.trim()||"";
 
- const file=
-  document.getElementById("paymentScreenshot")?.files?.[0];
+const utr=
+document.getElementById(
+"utr"
+).value.trim();
 
- const msg=document.getElementById("depositStatus");
 
- if(amount<500){
-  msg.textContent="Minimum deposit is ₹500.";
-  return;
- }
+const file=
+document.getElementById(
+"paymentScreenshot"
+).files[0];
 
- if(amount>20000){
-  msg.textContent="Maximum deposit is ₹20,000.";
-  return;
- }
 
- if(!utr){
-  msg.textContent="Please enter UTR / Transaction ID.";
-  return;
- }
+const msg=
+document.getElementById(
+"depositMsg"
+);
 
- if(!file){
-  msg.textContent="Please select payment screenshot.";
-  return;
- }
 
- const request={
-  id:"DEP-"+Date.now(),
-  amount,
-  utr,
-  status:"Pending Verification",
-  date:new Date().toLocaleString()
- };
+if(
+amount<500||
+amount>50000
+){
 
- data.deposits.unshift(request);
+msg.textContent=
+"Enter an amount between ₹500 and ₹50,000.";
 
- data.transactions.unshift({
-  type:"Deposit",
-  amount,
-  status:"Pending Verification",
-  date:request.date
- });
+return;
 
- save();
-
- document.getElementById("depositAmount").value="";
- document.getElementById("utr").value="";
- document.getElementById("paymentScreenshot").value="";
- document.getElementById("paymentPreview").innerHTML="";
-
- msg.textContent=
-  "Demo deposit request recorded locally. No payment was processed.";
-
- updateUI();
 }
 
 
-/* =========================
-   WITHDRAWAL
-========================= */
+if(!utr){
 
-function showWithdrawal(){
- openPage("withdraw");
-}
+msg.textContent=
+"Enter UTR / Transaction ID.";
 
-function submitWithdrawal(){
+return;
 
- const amount=Number(
-  document.getElementById("withdrawAmount")?.value||0
- );
-
- const name=
-  document.getElementById("bankName")?.value.trim()||"";
-
- const account=
-  document.getElementById("accountNumber")?.value.trim()||"";
-
- const confirm=
-  document.getElementById("confirmAccount")?.value.trim()||"";
-
- const bank=
-  document.getElementById("bank")?.value.trim()||"";
-
- const ifsc=
-  document.getElementById("ifsc")?.value.trim().toUpperCase()||"";
-
- const msg=document.getElementById("withdrawMessage");
-
- if(amount<300){
-  msg.textContent="Minimum withdrawal is ₹300.";
-  return;
- }
-
- if(amount>10000){
-  msg.textContent="Maximum withdrawal is ₹10,000.";
-  return;
- }
-
- if(amount>data.balance){
-  msg.textContent="Insufficient demo balance.";
-  return;
- }
-
- if(!name||!account||!confirm||!bank||!ifsc){
-  msg.textContent="Please fill all bank details.";
-  return;
- }
-
- if(account!==confirm){
-  msg.textContent="Account numbers do not match.";
-  return;
- }
-
- if(!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)){
-  msg.textContent="Invalid IFSC code.";
-  return;
- }
-
- const now=new Date();
-
- const indiaTime=new Intl.DateTimeFormat("en-IN",{
-  timeZone:"Asia/Kolkata",
-  hour:"2-digit",
-  minute:"2-digit",
-  hour12:false
- }).format(now);
-
- const parts=indiaTime.split(":");
- const mins=Number(parts[0])*60+Number(parts[1]);
-
- if(mins<630||mins>1050){
-  msg.textContent="Withdrawal time is 10:30 AM - 5:30 PM India time.";
-  return;
- }
-
- const today=new Intl.DateTimeFormat("en-CA",{
-  timeZone:"Asia/Kolkata"
- }).format(now);
-
- const count=data.withdrawals.filter(x=>x.dateKey===today).length;
-
- if(count>=3){
-  msg.textContent="Daily withdrawal limit of 3 reached.";
-  return;
- }
-
- const request={
-  id:"WDR-"+Date.now(),
-  amount,
-  date:new Date().toLocaleString(),
-  dateKey:today,
-  status:"Pending",
-  holder:name,
-  account:account,
-  bank:bank,
-  ifsc:ifsc
- };
-
- data.withdrawals.unshift(request);
-
- data.transactions.unshift({
-  type:"Withdrawal",
-  amount,
-  status:"Pending",
-  date:request.date
- });
-
- data.balance-=amount;
-
- save();
-
- document.getElementById("withdrawAmount").value="";
-
- msg.textContent=
-  "withdrawal request recorded local storage.";
-
- updateUI();
 }
 
 
-/* =========================
-   HISTORY
-========================= */
+if(!file){
 
-function renderHistories(){
+msg.textContent=
+"Upload payment screenshot.";
 
- const wd=document.getElementById("withdrawHistoryList");
- const dp=document.getElementById("depositHistoryList");
- const tr=document.getElementById("transactionList");
+return;
 
- if(wd){
-  wd.innerHTML=data.withdrawals.length
-   ?data.withdrawals.map(x=>`
-    <div class="history-item">
-     <b>Withdrawal ₹${money(x.amount)}</b>
-     <small>${x.date}</small>
-     <p>Status: ${x.status}</p>
-    </div>
-   `).join("")
-   :"<div class='history-item'>No withdrawal history.</div>";
- }
-
- if(dp){
-  dp.innerHTML=data.deposits.length
-   ?data.deposits.map(x=>`
-    <div class="history-item">
-     <b>Deposit ₹${money(x.amount)}</b>
-     <small>${x.date}</small>
-     <p>UTR: ${escapeHTML(x.utr)}</p>
-     <p>Status: ${x.status}</p>
-    </div>
-   `).join("")
-   :"<div class='history-item'>No deposit history.</div>";
- }
-
- if(tr){
-  tr.innerHTML=data.transactions.length
-   ?data.transactions.map(x=>`
-    <div class="history-item">
-     <b>${escapeHTML(x.type)} ₹${money(x.amount)}</b>
-     <small>${x.date}</small>
-     <p>Status: ${escapeHTML(x.status)}</p>
-    </div>
-   `).join("")
-   :"<div class='history-item'>No transactions yet.</div>";
- }
-}
-
-function escapeHTML(v){
- return String(v||"")
-  .replace(/&/g,"&amp;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;")
-  .replace(/"/g,"&quot;")
-  .replace(/'/g,"&#039;");
 }
 
 
-/* =========================
-   INVITE
-========================= */
+const r={
 
-function inviteNow(){
+id:
+"DEP-"+Date.now(),
 
- const link=location.href;
+amount:amount,
 
- const text=
-  "Check out NSG Wellfare:\n"+link;
+utr:utr,
 
- const url=
-  "https://wa.me/?text="+encodeURIComponent(text);
+status:
+"Pending Verification",
 
- window.open(url,"_blank");
+date:
+new Date().toLocaleString()
+
+};
+
+
+s.deposits.unshift(r);
+
+
+s.transactions.unshift({
+
+type:"Deposit",
+
+amount:amount,
+
+status:
+"Pending Verification",
+
+date:r.date
+
+});
+
+
+save();
+
+
+document.getElementById(
+"depositAmount"
+).value="";
+
+
+document.getElementById(
+"utr"
+).value="";
+
+
+document.getElementById(
+"paymentScreenshot"
+).value="";
+
+
+document.getElementById(
+"preview"
+).innerHTML="";
+
+
+msg.textContent=
+"Deposit request submitted. Pending manual verification.";
+
+
+render();
+
 }
+
+
+function showWithdraw(){
+
+go("withdraw");
+
+}
+
+
+function submitWithdraw(){
+
+const amount=
+Number(
+document.getElementById(
+"withdrawAmount"
+).value
+);
+
+
+const name=
+document.getElementById(
+"bankName"
+).value.trim();
+
+
+const ifsc=
+document.getElementById(
+"ifsc"
+).value.trim().toUpperCase();
+
+
+const bank=
+document.getElementById(
+"bank"
+).value.trim();
+
+
+const account=
+document.getElementById(
+"accountNumber"
+).value.trim();
+
+
+const confirmAccount=
+document.getElementById(
+"confirmAccount"
+).value.trim();
+
+
+const msg=
+document.getElementById(
+"withdrawMsg"
+);
+
+
+if(
+amount<300||
+amount>20000
+){
+
+msg.textContent=
+"Enter an amount between ₹300 and ₹20,000.";
+
+return;
+
+}
+
+
+if(amount>s.balance){
+
+msg.textContent=
+"Insufficient balance.";
+
+return;
+
+}
+
+
+if(
+!name||
+!ifsc||
+!bank||
+!account||
+!confirmAccount
+){
+
+msg.textContent=
+"Please fill all bank details.";
+
+return;
+
+}
+
+
+if(
+account!==confirmAccount
+){
+
+msg.textContent=
+"Account numbers do not match.";
+
+return;
+
+}
+
+
+if(
+!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)
+){
+
+msg.textContent=
+"Enter a valid IFSC code.";
+
+return;
+
+}
+
+
+const r={
+
+id:
+"WDR-"+Date.now(),
+
+amount:amount,
+
+status:"Pending",
+
+date:
+new Date().toLocaleString()
+
+};
+
+
+s.withdrawals.unshift(r);
+
+
+s.transactions.unshift({
+
+type:"Withdrawal",
+
+amount:amount,
+
+status:"Pending",
+
+date:r.date
+
+});
+
+
+s.balance-=amount;
+
+
+save();
+
+
+document.getElementById(
+"withdrawAmount"
+).value="";
+
+
+msg.textContent=
+"Withdrawal request submitted for manual verification.";
+
+
+render();
+
+}
+
+
+function renderHistory(){
+
+const d=
+document.getElementById(
+"depositHistoryList"
+);
+
+
+const w=
+document.getElementById(
+"withdrawHistoryList"
+);
+
+
+const t=
+document.getElementById(
+"transactionList"
+);
+
+
+d.innerHTML=
+s.deposits.length
+
+?
+
+s.deposits
+.map(x=>`
+
+<div class="item">
+
+<b>
+Deposit ₹${fmt(x.amount)}
+</b>
+
+<small>
+${x.date}
+</small>
+
+<p>
+UTR: ${safe(x.utr)}
+</p>
+
+<p>
+Status: ${x.status}
+</p>
+
+</div>
+
+`)
+.join("")
+
+:
+
+'<div class="item">No deposit requests.</div>';
+
+
+w.innerHTML=
+s.withdrawals.length
+
+?
+
+s.withdrawals
+.map(x=>`
+
+<div class="item">
+
+<b>
+Withdrawal ₹${fmt(x.amount)}
+</b>
+
+<small>
+${x.date}
+</small>
+
+<p>
+Status: ${x.status}
+</p>
+
+</div>
+
+`)
+.join("")
+
+:
+
+'<div class="item">No withdrawal requests.</div>';
+
+
+t.innerHTML=
+s.transactions.length
+
+?
+
+s.transactions
+.map(x=>`
+
+<div class="item">
+
+<b>
+${safe(x.type)}
+₹${fmt(x.amount)}
+</b>
+
+<small>
+${x.date}
+</small>
+
+<p>
+Status: ${safe(x.status)}
+</p>
+
+</div>
+
+`)
+.join("")
+
+:
+
+'<div class="item">No transactions yet.</div>';
+
+}
+
+
+function safe(x){
+
+return String(x||"")
+.replace(
+/[&<>"']/g,
+a=>({
+
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#039;"
+
+}[a])
+);
+
+}
+
+
+function shareInvite(){
+
+window.open(
+"https://wa.me/?text="+
+encodeURIComponent(
+"Join NSG Wellfare: "+
+location.href
+),
+"_blank"
+);
+
+}
+
 
 function copyInvite(){
 
- const link=location.href;
+const msg=
+document.getElementById(
+"inviteMsg"
+);
 
- const msg=document.getElementById("inviteMessage");
 
- if(navigator.clipboard){
-  navigator.clipboard.writeText(link)
-   .then(()=>{
-    msg.textContent="Invite link copied successfully.";
-   })
-   .catch(()=>{
-    msg.textContent=link;
-   });
- }else{
-  msg.textContent=link;
- }
+if(
+navigator.clipboard
+){
+
+navigator.clipboard
+.writeText(location.href)
+.then(
+()=>{
+msg.textContent=
+"Invite link copied."
+}
+)
+.catch(
+()=>{
+msg.textContent=
+location.href
+}
+);
+
+}else{
+
+msg.textContent=
+location.href;
+
+}
+
 }
 
 
-/* =========================
-   CUSTOMER SERVICE
-========================= */
+function support(){
 
-function customerService(){
- window.open(SUPPORT,"_blank");
+window.open(
+SUPPORT,
+"_blank"
+);
+
 }
 
 
-/* =========================
-   UPDATE UI
-========================= */
-
-function updateUI(){
-
- updateBalance();
- loadProducts();
- renderRewards();
- renderCalendar();
- renderHistories();
-
- const invite=document.getElementById("inviteLink");
- if(invite)invite.value=location.href;
-}
-
-
-/* =========================
-   START
-========================= */
-
-createUser();
-updateUI();
-openPage("home");
+render();
