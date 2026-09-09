@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
   <title>Admin Panel - Bitcoin Minning</title>
 
@@ -16,936 +19,1630 @@
     body {
       min-height: 100vh;
       background:
-        radial-gradient(circle at top right, #123f2b, transparent 35%),
-        #06100b;
-      color: #f4fff9;
-      font-family: Arial, Helvetica, sans-serif;
+        radial-gradient(
+          circle at top,
+          #164d32 0%,
+          #07150e 45%,
+          #030805 100%
+        );
+
+      color: #ffffff;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
       padding: 20px;
     }
 
     .container {
-      width: min(100%, 650px);
-      margin: auto;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
     }
 
     .header {
-      padding: 20px;
-      margin-bottom: 15px;
-      border-radius: 20px;
-      background: #102119;
-      border: 1px solid rgba(255,255,255,.08);
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .logo {
+      width: 65px;
+      height: 65px;
+      margin: 0 auto 12px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: #0d6b3c;
+
+      font-size: 30px;
+      font-weight: 800;
+
+      box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, .35);
     }
 
     .header h1 {
-      font-size: 22px;
+      font-size: 25px;
+      margin-bottom: 6px;
     }
 
     .header p {
-      color: #8fa79b;
-      font-size: 11px;
-      margin-top: 5px;
+      color: #9bb5a7;
+      font-size: 14px;
     }
 
     .card {
-      padding: 20px;
-      margin-bottom: 14px;
+      background:
+        rgba(12, 28, 20, .96);
+
+      border:
+        1px solid
+        rgba(100, 180, 130, .16);
+
       border-radius: 18px;
-      background: #102119;
-      border: 1px solid rgba(255,255,255,.08);
+
+      padding: 20px;
+
+      margin-bottom: 16px;
+
+      box-shadow:
+        0 15px 40px
+        rgba(0, 0, 0, .25);
     }
 
     .card h2 {
-      font-size: 16px;
-      margin-bottom: 14px;
+      font-size: 18px;
+      margin-bottom: 15px;
     }
 
     label {
       display: block;
-      color: #b9cec3;
-      font-size: 11px;
-      font-weight: bold;
-      margin: 13px 0 6px;
+
+      font-size: 13px;
+
+      color: #a9c0b3;
+
+      margin-bottom: 7px;
     }
 
     input {
       width: 100%;
-      min-height: 44px;
-      padding: 10px 12px;
-      color: white;
-      background: #08150f;
-      border: 1px solid rgba(255,255,255,.09);
-      border-radius: 10px;
+
+      height: 48px;
+
+      border-radius: 11px;
+
+      border:
+        1px solid
+        rgba(255, 255, 255, .10);
+
       outline: none;
+
+      background: #08140d;
+
+      color: #ffffff;
+
+      padding: 0 14px;
+
+      font-size: 15px;
+
+      margin-bottom: 12px;
     }
 
     input:focus {
-      border-color: #20c77a;
+      border-color: #28a866;
     }
 
     button {
       width: 100%;
-      min-height: 44px;
-      margin-top: 13px;
-      border: 0;
-      border-radius: 10px;
+
+      min-height: 48px;
+
+      border: none;
+
+      border-radius: 11px;
+
       cursor: pointer;
-      color: white;
-      background: linear-gradient(135deg,#20c77a,#087344);
-      font-weight: 800;
+
+      font-size: 15px;
+
+      font-weight: 700;
+
+      transition: .2s;
     }
 
     button:active {
       transform: scale(.98);
     }
 
-    .danger {
-      background: #9e3038;
+    .primary {
+      background:
+        linear-gradient(
+          135deg,
+          #159957,
+          #0d6b3c
+        );
+
+      color: #ffffff;
     }
 
     .secondary {
-      background: rgba(32,199,122,.12);
-      color: #20c77a;
+      background: #14271d;
+      color: #d8e7df;
+
+      border:
+        1px solid
+        rgba(255, 255, 255, .08);
+
+      margin-top: 10px;
+    }
+
+    .danger {
+      background: #642626;
+      color: #ffffff;
+
+      margin-top: 10px;
     }
 
     .message {
-      min-height: 18px;
-      margin-top: 9px;
-      font-size: 11px;
-    }
+      min-height: 20px;
 
-    .success {
-      color: #20c77a;
+      margin-top: 10px;
+
+      font-size: 14px;
+
+      color: #9ee6b9;
+
+      line-height: 1.5;
     }
 
     .error {
-      color: #ff646c;
+      color: #ff9b9b;
     }
 
-    .balance-box {
-      padding: 18px;
-      margin-top: 12px;
+    .success {
+      color: #9ee6b9;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .user-box {
+      margin-top: 18px;
+
+      padding: 15px;
+
       border-radius: 14px;
-      background: rgba(32,199,122,.08);
-      border: 1px solid rgba(32,199,122,.16);
+
+      background: #07130c;
+
+      border:
+        1px solid
+        rgba(86, 169, 117, .18);
     }
 
-    .balance-box span {
-      color: #91a99d;
-      font-size: 11px;
-    }
-
-    .balance-box strong {
-      display: block;
-      margin-top: 4px;
-      color: #20c77a;
-      font-size: 27px;
-    }
-
-    .user-info {
-      display: none;
-      padding: 13px;
-      margin-top: 12px;
-      border-radius: 11px;
-      background: #091710;
-      border: 1px solid rgba(255,255,255,.07);
-    }
-
-    .user-info.show {
-      display: block;
-    }
-
-    .user-info div {
+    .row {
       display: flex;
+
+      align-items: center;
+
       justify-content: space-between;
+
       gap: 15px;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(255,255,255,.05);
-      font-size: 11px;
+
+      padding: 10px 0;
+
+      border-bottom:
+        1px solid
+        rgba(255, 255, 255, .06);
     }
 
-    .user-info div:last-child {
-      border-bottom: 0;
+    .row:last-child {
+      border-bottom: none;
     }
 
-    .user-info span:first-child {
-      color: #7f968a;
+    .row span:first-child {
+      color: #8fa99a;
+      font-size: 13px;
     }
 
-    .user-info span:last-child {
+    .row span:last-child {
+      color: #ffffff;
+      font-weight: 700;
       text-align: right;
-      word-break: break-all;
+      word-break: break-word;
     }
 
-    .login-only {
-      display: block;
+    .balance {
+      font-size: 28px !important;
+      color: #72dda0 !important;
     }
 
-    .admin-only {
-      display: none;
+    .actions {
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 10px;
+
+      margin-top: 15px;
     }
 
-    body.logged-in .login-only {
-      display: none;
-    }
-
-    body.logged-in .admin-only {
-      display: block;
+    .actions button {
+      min-height: 45px;
     }
 
     .logout {
-      background: #202d27;
-      color: #d2e2da;
+      margin-top: 20px;
     }
 
-    .warning {
-      padding: 13px;
-      margin-bottom: 14px;
-      border-radius: 12px;
-      background: rgba(245,184,61,.08);
-      border: 1px solid rgba(245,184,61,.18);
-      color: #d9c18a;
-      font-size: 10px;
+    .notice {
+      padding: 12px 14px;
+
+      border-radius: 11px;
+
+      background: #101f16;
+
+      color: #a8bcaf;
+
+      font-size: 12px;
+
       line-height: 1.5;
+
+      margin-top: 14px;
+    }
+
+    @media (max-width: 420px) {
+
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
     }
   </style>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
 </head>
 
 <body>
 
-<div class="container">
+  <div class="container">
 
-  <div class="header">
-    <h1>₿ Admin Panel</h1>
-    <p>Bitcoin Minning — Test Balance Management</p>
-  </div>
+    <!-- HEADER -->
 
+    <div class="header">
 
-  <!-- ================= LOGIN ================= -->
+      <div class="logo">
+        ₿
+      </div>
 
-  <div class="card login-only">
+      <h1>
+        Admin Panel
+      </h1>
 
-    <h2>Admin Login</h2>
+      <p>
+        Bitcoin Minning • Test / Demo Balance
+      </p>
 
-    <label>Email</label>
-
-    <input
-      type="email"
-      id="loginEmail"
-      placeholder="Admin email"
-      autocomplete="email"
-    >
-
-    <label>Password</label>
-
-    <input
-      type="password"
-      id="loginPassword"
-      placeholder="Password"
-      autocomplete="current-password"
-    >
-
-    <button id="loginBtn">
-      Login
-    </button>
-
-    <p id="loginMessage" class="message"></p>
-
-  </div>
-
-
-  <!-- ================= ADMIN ================= -->
-
-  <div class="admin-only">
-
-    <div class="warning">
-      This panel manages the website's test/demo balance only.
-      It does not process real-money payments or bank transfers.
     </div>
 
 
-    <!-- USER SEARCH -->
+    <!-- LOGIN -->
 
-    <div class="card">
+    <div
+      class="card"
+      id="loginCard">
 
-      <h2>Find User</h2>
+      <h2>
+        Admin Login
+      </h2>
 
-      <label>User ID</label>
+      <label>
+        Admin Email
+      </label>
 
       <input
-        type="text"
-        id="userIdInput"
-        placeholder="Example: You-7519001"
-      >
+        id="adminEmail"
+        type="email"
+        value="yadavroushan8269@gmail.com"
+        autocomplete="username"
+        placeholder="Admin email">
 
-      <button id="findUserBtn">
-        Find User
+      <label>
+        Password
+      </label>
+
+      <input
+        id="adminPassword"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Firebase password">
+
+      <button
+        class="primary"
+        id="loginBtn">
+
+        Login
+
       </button>
 
-      <p id="userMessage" class="message"></p>
+      <p
+        class="message"
+        id="loginMessage">
+      </p>
 
-      <div class="user-info" id="userInfo">
+    </div>
 
-        <div>
-          <span>User ID</span>
-          <span id="foundUserId">-</span>
-        </div>
 
-        <div>
-          <span>Firebase UID</span>
-          <span id="foundUid">-</span>
-        </div>
+    <!-- ADMIN -->
 
-        <div>
-          <span>Balance</span>
-          <span id="foundBalance">₹0.00</span>
+    <div
+      class="hidden"
+      id="adminArea">
+
+
+      <!-- SEARCH -->
+
+      <div class="card">
+
+        <h2>
+          Find User
+        </h2>
+
+        <label>
+          User ID
+        </label>
+
+        <input
+          id="searchUserId"
+          type="text"
+          placeholder="Example: You-6133548"
+          autocomplete="off">
+
+        <button
+          class="primary"
+          id="searchBtn">
+
+          Find User
+
+        </button>
+
+        <p
+          class="message"
+          id="searchMessage">
+        </p>
+
+
+        <!-- USER RESULT -->
+
+        <div
+          class="user-box hidden"
+          id="userResult">
+
+          <div class="row">
+
+            <span>
+              User ID
+            </span>
+
+            <span
+              id="resultUserId">
+              -
+            </span>
+
+          </div>
+
+
+          <div class="row">
+
+            <span>
+              Firebase UID
+            </span>
+
+            <span
+              id="resultUid">
+              -
+            </span>
+
+          </div>
+
+
+          <div class="row">
+
+            <span>
+              Test Balance
+            </span>
+
+            <span
+              class="balance"
+              id="resultBalance">
+              ₹0
+            </span>
+
+          </div>
+
+
+          <!-- BALANCE ACTIONS -->
+
+          <div
+            class="actions">
+
+            <button
+              class="primary"
+              id="addBalanceBtn">
+
+              + Add Balance
+
+            </button>
+
+            <button
+              class="secondary"
+              id="removeBalanceBtn">
+
+              − Remove Balance
+
+            </button>
+
+          </div>
+
+
+          <button
+            class="secondary"
+            id="setBalanceBtn">
+
+            Set Exact Balance
+
+          </button>
+
+
+          <p
+            class="message"
+            id="balanceMessage">
+          </p>
+
         </div>
 
       </div>
 
-    </div>
 
+      <!-- INFORMATION -->
 
-    <!-- BALANCE -->
+      <div class="card">
 
-    <div class="card">
+        <h2>
+          Admin Information
+        </h2>
 
-      <h2>Manage Test Balance</h2>
+        <div class="row">
 
-      <div class="balance-box">
+          <span>
+            Admin
+          </span>
 
-        <span>Current Balance</span>
+          <span>
+            yadavroushan8269@gmail.com
+          </span>
 
-        <strong>
-          ₹<span id="currentBalance">0.00</span>
-        </strong>
+        </div>
+
+        <div class="row">
+
+          <span>
+            Mode
+          </span>
+
+          <span>
+            Test / Demo
+          </span>
+
+        </div>
+
+        <div class="notice">
+
+          This panel only manages test/demo
+          balances stored in Firestore.
+          It does not process real-money
+          transfers or payments.
+
+        </div>
 
       </div>
 
 
-      <label>New Balance</label>
-
-      <input
-        type="number"
-        id="newBalance"
-        min="0"
-        step="0.01"
-        placeholder="Enter new balance"
-      >
-
-      <button id="setBalanceBtn">
-        Set Balance
-      </button>
+      <!-- LOGOUT -->
 
       <button
-        id="addBalanceBtn"
-        class="secondary"
-      >
-        Add Test Balance
-      </button>
+        class="danger logout"
+        id="logoutBtn">
 
-      <button
-        id="removeBalanceBtn"
-        class="danger"
-      >
-        Remove Test Balance
-      </button>
-
-      <p id="balanceMessage" class="message"></p>
-
-    </div>
-
-
-    <!-- LOGOUT -->
-
-    <div class="card">
-
-      <button
-        id="logoutBtn"
-        class="logout"
-      >
         Logout
+
       </button>
 
     </div>
 
   </div>
 
-</div>
+
+  <!-- FIREBASE -->
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-<script>
+  <script>
 
-"use strict";
+    /* =====================================================
+       FIREBASE CONFIG
+    ===================================================== */
 
+    const firebaseConfig = {
 
-/* =========================================================
-   FIREBASE CONFIG
-   ========================================================= */
+      apiKey:
+        "AIzaSYAN5jFZ0hBOb-Zmbrv8W1E2aGqnmd8_iOM",
 
-const firebaseConfig = {
+      authDomain:
+        "bitcoin-minning-web.firebaseapp.com",
 
-  apiKey:
-    "AIzaSyAN5jFZ0hBOb-Zmbrv8W1E2aGqnmd8_iOM",
+      projectId:
+        "bitcoin-minning-web",
 
-  authDomain:
-    "bitcoin-minning-web.firebaseapp.com",
+      storageBucket:
+        "bitcoin-minning-web.firebasestorage.app",
 
-  projectId:
-    "bitcoin-minning-web",
+      messagingSenderId:
+        "691683594489",
 
-  storageBucket:
-    "bitcoin-minning-web.firebasestorage.app",
+      appId:
+        "1:691683594489:web:96252fee18748e54ad9228"
 
-  messagingSenderId:
-    "691683594489",
-
-  appId:
-    "1:691683594489:web:96252fee18748e54ad9228"
-
-};
+    };
 
 
-firebase.initializeApp(firebaseConfig);
+    /* =====================================================
+       ADMIN EMAIL
+    ===================================================== */
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-
-/* =========================================================
-   ADMIN EMAIL
-   ========================================================= */
-
-const ADMIN_EMAIL =
-  "yadavroushan8269@gmail.com";
+    const ADMIN_EMAIL =
+      "yadavroushan8269@gmail.com";
 
 
-/* =========================================================
-   VARIABLES
-   ========================================================= */
+    /* =====================================================
+       FIREBASE
+    ===================================================== */
 
-let selectedUser = null;
+    let db = null;
 
+    let auth = null;
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
+    let currentUser = null;
 
-function $(id) {
-  return document.getElementById(id);
-}
+    let selectedUser = null;
 
 
-function showMessage(element, text, type) {
-
-  if (!element) return;
-
-  element.textContent = text;
-
-  element.className = "message";
-
-  if (type) {
-    element.classList.add(type);
-  }
-
-}
-
-
-function money(value) {
-
-  return Number(value || 0)
-    .toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-
-}
-
-
-/* =========================================================
-   AUTH STATE
-   ========================================================= */
-
-auth.onAuthStateChanged(function(user) {
-
-  if (!user) {
-
-    document.body.classList.remove(
-      "logged-in"
-    );
-
-    selectedUser = null;
-
-    return;
-  }
-
-
-  if (
-    user.email &&
-    user.email.toLowerCase() ===
-    ADMIN_EMAIL.toLowerCase()
-  ) {
-
-    document.body.classList.add(
-      "logged-in"
-    );
-
-    return;
-  }
-
-
-  showMessage(
-    $("loginMessage"),
-    "This account is not authorized as admin.",
-    "error"
-  );
-
-  auth.signOut();
-
-});
-
-
-/* =========================================================
-   LOGIN
-   ========================================================= */
-
-$("loginBtn").addEventListener(
-  "click",
-  async function() {
-
-    const email =
-      $("loginEmail").value.trim();
-
-    const password =
-      $("loginPassword").value;
-
-
-    showMessage(
-      $("loginMessage"),
-      "",
-      ""
+    firebase.initializeApp(
+      firebaseConfig
     );
 
 
-    if (!email || !password) {
+    auth =
+      firebase.auth();
 
-      showMessage(
-        $("loginMessage"),
-        "Enter email and password.",
-        "error"
+
+    db =
+      firebase.firestore();
+
+
+    /* =====================================================
+       ELEMENTS
+    ===================================================== */
+
+    const loginCard =
+      document.getElementById(
+        "loginCard"
       );
 
-      return;
-    }
 
-
-    try {
-
-      await auth.signInWithEmailAndPassword(
-        email,
-        password
+    const adminArea =
+      document.getElementById(
+        "adminArea"
       );
 
 
-    } catch (error) {
-
-      console.error(error);
-
-      showMessage(
-        $("loginMessage"),
-        error.message ||
-        "Login failed.",
-        "error"
+    const loginBtn =
+      document.getElementById(
+        "loginBtn"
       );
 
-    }
 
-  }
-);
-
-
-/* =========================================================
-   FIND USER
-   ========================================================= */
-
-$("findUserBtn").addEventListener(
-  "click",
-  async function() {
-
-    const userId =
-      $("userIdInput")
-        .value
-        .trim();
-
-
-    showMessage(
-      $("userMessage"),
-      "",
-      ""
-    );
-
-
-    $("userInfo")
-      .classList.remove("show");
-
-
-    selectedUser = null;
-
-
-    if (!userId) {
-
-      showMessage(
-        $("userMessage"),
-        "Enter a User ID.",
-        "error"
+    const loginMessage =
+      document.getElementById(
+        "loginMessage"
       );
 
-      return;
-    }
+
+    const searchBtn =
+      document.getElementById(
+        "searchBtn"
+      );
 
 
-    try {
-
-      const snapshot =
-        await db
-          .collection("testBalances")
-          .where(
-            "userId",
-            "==",
-            userId
-          )
-          .limit(1)
-          .get();
+    const searchMessage =
+      document.getElementById(
+        "searchMessage"
+      );
 
 
-      if (snapshot.empty) {
+    const userResult =
+      document.getElementById(
+        "userResult"
+      );
 
-        showMessage(
-          $("userMessage"),
-          "User not found.",
-          "error"
-        );
 
+    const balanceMessage =
+      document.getElementById(
+        "balanceMessage"
+      );
+
+
+    /* =====================================================
+       MESSAGE
+    ===================================================== */
+
+    function setMessage(
+      element,
+      text,
+      type
+    ) {
+
+      if (!element) {
         return;
       }
 
 
-      const doc =
-        snapshot.docs[0];
-
-      const data =
-        doc.data();
+      element.textContent =
+        text;
 
 
-      selectedUser = {
-
-        docId:
-          doc.id,
-
-        userId:
-          data.userId || userId,
-
-        uid:
-          data.uid || "",
-
-        balance:
-          Number(data.balance) || 0
-
-      };
-
-
-      $("foundUserId").textContent =
-        selectedUser.userId;
-
-      $("foundUid").textContent =
-        selectedUser.uid || "-";
-
-      $("foundBalance").textContent =
-        "₹" +
-        money(selectedUser.balance);
-
-      $("currentBalance").textContent =
-        money(selectedUser.balance);
-
-      $("newBalance").value =
-        selectedUser.balance;
-
-
-      $("userInfo")
-        .classList.add("show");
-
-
-      showMessage(
-        $("userMessage"),
-        "User found.",
+      element.classList.remove(
+        "error",
         "success"
       );
 
 
-    } catch (error) {
+      if (type) {
 
-      console.error(error);
+        element.classList.add(
+          type
+        );
 
-      showMessage(
-        $("userMessage"),
-        "Could not find user.",
-        "error"
-      );
+      }
 
     }
 
-  }
-);
 
+    /* =====================================================
+       FORMAT MONEY
+    ===================================================== */
 
-/* =========================================================
-   UPDATE BALANCE
-   ========================================================= */
-
-async function updateBalance(
-  newBalance
-) {
-
-  if (!selectedUser) {
-
-    showMessage(
-      $("balanceMessage"),
-      "Find a user first.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  newBalance =
-    Number(newBalance);
-
-
-  if (
-    !Number.isFinite(newBalance) ||
-    newBalance < 0
-  ) {
-
-    showMessage(
-      $("balanceMessage"),
-      "Enter a valid balance.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  try {
-
-    await db
-      .collection("testBalances")
-      .doc(selectedUser.docId)
-      .update({
-
-        balance:
-          newBalance,
-
-        updatedAt:
-          firebase.firestore.FieldValue
-            .serverTimestamp()
-
-      });
-
-
-    selectedUser.balance =
-      newBalance;
-
-
-    $("currentBalance").textContent =
-      money(newBalance);
-
-    $("foundBalance").textContent =
-      "₹" +
-      money(newBalance);
-
-    $("newBalance").value =
-      newBalance;
-
-
-    showMessage(
-      $("balanceMessage"),
-      "Test balance updated successfully.",
-      "success"
-    );
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    showMessage(
-      $("balanceMessage"),
-      "Could not update balance. Check Firestore rules.",
-      "error"
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   SET BALANCE
-   ========================================================= */
-
-$("setBalanceBtn").addEventListener(
-  "click",
-  function() {
-
-    const value =
-      $("newBalance").value;
-
-    updateBalance(value);
-
-  }
-);
-
-
-/* =========================================================
-   ADD BALANCE
-   ========================================================= */
-
-$("addBalanceBtn").addEventListener(
-  "click",
-  function() {
-
-    if (!selectedUser) {
-
-      showMessage(
-        $("balanceMessage"),
-        "Find a user first.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    const amount =
-      Number(
-        prompt(
-          "Enter test balance to add:"
-        )
-      );
-
-
-    if (
-      !Number.isFinite(amount) ||
-      amount <= 0
-    ) {
-
-      showMessage(
-        $("balanceMessage"),
-        "Invalid amount.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    updateBalance(
-      selectedUser.balance +
+    function formatMoney(
       amount
-    );
+    ) {
 
-  }
-);
-
-
-/* =========================================================
-   REMOVE BALANCE
-   ========================================================= */
-
-$("removeBalanceBtn").addEventListener(
-  "click",
-  function() {
-
-    if (!selectedUser) {
-
-      showMessage(
-        $("balanceMessage"),
-        "Find a user first.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    const amount =
-      Number(
-        prompt(
-          "Enter test balance to remove:"
+      return (
+        "₹" +
+        Number(
+          amount || 0
+        ).toLocaleString(
+          "en-IN"
         )
       );
 
-
-    if (
-      !Number.isFinite(amount) ||
-      amount <= 0
-    ) {
-
-      showMessage(
-        $("balanceMessage"),
-        "Invalid amount.",
-        "error"
-      );
-
-      return;
     }
 
 
-    const newBalance =
-      Math.max(
-        0,
-        selectedUser.balance -
-        amount
-      );
+    /* =====================================================
+       LOGIN
+    ===================================================== */
+
+    loginBtn.addEventListener(
+      "click",
+      async function () {
+
+        const email =
+          document
+            .getElementById(
+              "adminEmail"
+            )
+            .value
+            .trim();
 
 
-    updateBalance(
-      newBalance
+        const password =
+          document
+            .getElementById(
+              "adminPassword"
+            )
+            .value;
+
+
+        setMessage(
+          loginMessage,
+          "",
+          null
+        );
+
+
+        if (!email || !password) {
+
+          setMessage(
+            loginMessage,
+            "Email and password required.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        if (
+          email.toLowerCase() !==
+          ADMIN_EMAIL.toLowerCase()
+        ) {
+
+          setMessage(
+            loginMessage,
+            "This email is not the admin email.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        loginBtn.disabled =
+          true;
+
+
+        loginBtn.textContent =
+          "Logging in...";
+
+
+        try {
+
+          const result =
+            await auth
+              .signInWithEmailAndPassword(
+                email,
+                password
+              );
+
+
+          currentUser =
+            result.user;
+
+
+          if (
+            !currentUser ||
+            !currentUser.email ||
+            currentUser.email.toLowerCase() !==
+              ADMIN_EMAIL.toLowerCase()
+          ) {
+
+            await auth.signOut();
+
+
+            throw new Error(
+              "Admin account not authorized."
+            );
+
+          }
+
+
+          loginCard.classList.add(
+            "hidden"
+          );
+
+
+          adminArea.classList.remove(
+            "hidden"
+          );
+
+
+          setMessage(
+            loginMessage,
+            "",
+            null
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Admin login error:",
+            error
+          );
+
+
+          setMessage(
+            loginMessage,
+            getFirebaseError(
+              error
+            ),
+            "error"
+          );
+
+        }
+
+
+        loginBtn.disabled =
+          false;
+
+
+        loginBtn.textContent =
+          "Login";
+
+      }
     );
 
-  }
-);
+
+    /* =====================================================
+       FIREBASE ERROR
+    ===================================================== */
+
+    function getFirebaseError(
+      error
+    ) {
+
+      if (!error) {
+
+        return "Something went wrong.";
+
+      }
 
 
-/* =========================================================
-   LOGOUT
-   ========================================================= */
+      const code =
+        error.code || "";
 
-$("logoutBtn").addEventListener(
-  "click",
-  async function() {
 
-    try {
+      if (
+        code ===
+        "auth/invalid-credential"
+      ) {
 
-      await auth.signOut();
+        return (
+          "Invalid email or password."
+        );
 
-    } catch (error) {
+      }
 
-      console.error(error);
+
+      if (
+        code ===
+        "auth/invalid-login-credentials"
+      ) {
+
+        return (
+          "Invalid email or password."
+        );
+
+      }
+
+
+      if (
+        code ===
+        "auth/user-not-found"
+      ) {
+
+        return (
+          "Admin account not found in Firebase Authentication."
+        );
+
+      }
+
+
+      if (
+        code ===
+        "auth/wrong-password"
+      ) {
+
+        return (
+          "Wrong password."
+        );
+
+      }
+
+
+      if (
+        code ===
+        "permission-denied"
+      ) {
+
+        return (
+          "Firestore permission denied. Check Firestore Rules."
+        );
+
+      }
+
+
+      return (
+        error.message ||
+        "Firebase error."
+      );
 
     }
 
-  }
-);
 
-</script>
+    /* =====================================================
+       FIND USER
+    ===================================================== */
+
+    searchBtn.addEventListener(
+      "click",
+      searchUser
+    );
+
+
+    document
+      .getElementById(
+        "searchUserId"
+      )
+      .addEventListener(
+        "keydown",
+        function (event) {
+
+          if (
+            event.key ===
+            "Enter"
+          ) {
+
+            searchUser();
+
+          }
+
+        }
+      );
+
+
+    async function searchUser() {
+
+      if (
+        !currentUser ||
+        currentUser.email.toLowerCase() !==
+          ADMIN_EMAIL.toLowerCase()
+      ) {
+
+        setMessage(
+          searchMessage,
+          "Please login as admin first.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      const userId =
+        document
+          .getElementById(
+            "searchUserId"
+          )
+          .value
+          .trim();
+
+
+      if (!userId) {
+
+        setMessage(
+          searchMessage,
+          "Enter a User ID.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      setMessage(
+        searchMessage,
+        "Searching...",
+        null
+      );
+
+
+      userResult.classList.add(
+        "hidden"
+      );
+
+
+      selectedUser =
+        null;
+
+
+      try {
+
+        /*
+          Search by public User ID.
+          Firebase document ID is the
+          anonymous Firebase UID.
+        */
+
+        const snapshot =
+          await db
+            .collection(
+              "testBalances"
+            )
+            .where(
+              "userId",
+              "==",
+              userId
+            )
+            .limit(1)
+            .get();
+
+
+        if (
+          snapshot.empty
+        ) {
+
+          setMessage(
+            searchMessage,
+            "User not found. Ask the user to open/reload the main website once so the Firebase test balance record is created.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        const doc =
+          snapshot.docs[0];
+
+
+        const data =
+          doc.data() || {};
+
+
+        selectedUser = {
+
+          docId:
+            doc.id,
+
+          uid:
+            data.uid ||
+            doc.id,
+
+          userId:
+            data.userId ||
+            userId,
+
+          balance:
+            Number(
+              data.balance || 0
+            )
+
+        };
+
+
+        document
+          .getElementById(
+            "resultUserId"
+          )
+          .textContent =
+            selectedUser.userId;
+
+
+        document
+          .getElementById(
+            "resultUid"
+          )
+          .textContent =
+            selectedUser.uid;
+
+
+        document
+          .getElementById(
+            "resultBalance"
+          )
+          .textContent =
+            formatMoney(
+              selectedUser.balance
+            );
+
+
+        setMessage(
+          searchMessage,
+          "✓ User found.",
+          "success"
+        );
+
+
+        userResult.classList.remove(
+          "hidden"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Search error:",
+          error
+        );
+
+
+        setMessage(
+          searchMessage,
+          getFirebaseError(
+            error
+          ),
+          "error"
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       SAVE BALANCE
+    ===================================================== */
+
+    async function saveBalance(
+      newBalance
+    ) {
+
+      if (
+        !selectedUser
+      ) {
+
+        setMessage(
+          balanceMessage,
+          "Find a user first.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      newBalance =
+        Number(
+          newBalance
+        );
+
+
+      if (
+        !Number.isFinite(
+          newBalance
+        ) ||
+        newBalance < 0
+      ) {
+
+        setMessage(
+          balanceMessage,
+          "Enter a valid balance.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        const ref =
+          db
+            .collection(
+              "testBalances"
+            )
+            .doc(
+              selectedUser.docId
+            );
+
+
+        await ref.update({
+
+          balance:
+            newBalance,
+
+          updatedAt:
+            firebase.firestore
+              .FieldValue
+              .serverTimestamp()
+
+        });
+
+
+        selectedUser.balance =
+          newBalance;
+
+
+        document
+          .getElementById(
+            "resultBalance"
+          )
+          .textContent =
+            formatMoney(
+              newBalance
+            );
+
+
+        setMessage(
+          balanceMessage,
+          "✓ Test/demo balance updated successfully.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Balance update error:",
+          error
+        );
+
+
+        setMessage(
+          balanceMessage,
+          getFirebaseError(
+            error
+          ),
+          "error"
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       ADD BALANCE
+    ===================================================== */
+
+    document
+      .getElementById(
+        "addBalanceBtn"
+      )
+      .addEventListener(
+        "click",
+        async function () {
+
+          if (!selectedUser) {
+
+            setMessage(
+              balanceMessage,
+              "Find a user first.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+          const value =
+            prompt(
+              "Enter amount to ADD:"
+            );
+
+
+          if (
+            value === null
+          ) {
+
+            return;
+
+          }
+
+
+          const amount =
+            Number(
+              value
+            );
+
+
+          if (
+            !Number.isFinite(
+              amount
+            ) ||
+            amount <= 0
+          ) {
+
+            setMessage(
+              balanceMessage,
+              "Enter a valid positive amount.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+          await saveBalance(
+            selectedUser.balance +
+            amount
+          );
+
+        }
+      );
+
+
+    /* =====================================================
+       REMOVE BALANCE
+    ===================================================== */
+
+    document
+      .getElementById(
+        "removeBalanceBtn"
+      )
+      .addEventListener(
+        "click",
+        async function () {
+
+          if (!selectedUser) {
+
+            setMessage(
+              balanceMessage,
+              "Find a user first.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+          const value =
+            prompt(
+              "Enter amount to REMOVE:"
+            );
+
+
+          if (
+            value === null
+          ) {
+
+            return;
+
+          }
+
+
+          const amount =
+            Number(
+              value
+            );
+
+
+          if (
+            !Number.isFinite(
+              amount
+            ) ||
+            amount <= 0
+          ) {
+
+            setMessage(
+              balanceMessage,
+              "Enter a valid positive amount.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+          const newBalance =
+            Math.max(
+              0,
+              selectedUser.balance -
+              amount
+            );
+
+
+          await saveBalance(
+            newBalance
+          );
+
+        }
+      );
+
+
+    /* =====================================================
+       SET EXACT BALANCE
+    ===================================================== */
+
+    document
+      .getElementById(
+        "setBalanceBtn"
+      )
+      .addEventListener(
+        "click",
+        async function () {
+
+          if (!selectedUser) {
+
+            setMessage(
+              balanceMessage,
+              "Find a user first.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+          const value =
+            prompt(
+              "Enter new exact balance:"
+            );
+
+
+          if (
+            value === null
+          ) {
+
+            return;
+
+          }
+
+
+          const amount =
+            Number(
+              value
+            );
+
+
+          if (
+            !Number.isFinite(
+              amount
+            ) ||
+            amount < 0
+          ) {
+
+            setMessage(
+              balanceMessage,
+              "Enter a valid balance.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+          await saveBalance(
+            amount
+          );
+
+        }
+      );
+
+
+    /* =====================================================
+       LOGOUT
+    ===================================================== */
+
+    document
+      .getElementById(
+        "logoutBtn"
+      )
+      .addEventListener(
+        "click",
+        async function () {
+
+          try {
+
+            await auth.signOut();
+
+          } catch (error) {
+
+            console.error(
+              error
+            );
+
+          }
+
+
+          currentUser =
+            null;
+
+
+          selectedUser =
+            null;
+
+
+          adminArea.classList.add(
+            "hidden"
+          );
+
+
+          loginCard.classList.remove(
+            "hidden"
+          );
+
+
+          document
+            .getElementById(
+              "adminPassword"
+            )
+            .value =
+            "";
+
+
+          userResult.classList.add(
+            "hidden"
+          );
+
+
+          setMessage(
+            searchMessage,
+            "",
+            null
+          );
+
+        }
+      );
+
+
+    /* =====================================================
+       AUTH STATE
+    ===================================================== */
+
+    auth.onAuthStateChanged(
+      function (user) {
+
+        if (
+          user &&
+          user.email &&
+          user.email.toLowerCase() ===
+            ADMIN_EMAIL.toLowerCase()
+        ) {
+
+          currentUser =
+            user;
+
+
+          loginCard.classList.add(
+            "hidden"
+          );
+
+
+          adminArea.classList.remove(
+            "hidden"
+          );
+
+        }
+
+      }
+    );
+
+  </script>
 
 </body>
 </html>
