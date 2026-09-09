@@ -1,18 +1,11 @@
 /* =========================================================
-   NSG WELLFARE - SCRIPT.JS
-   PRODUCT + DAILY REWARD + DEPOSIT + WITHDRAWAL
-========================================================= */
-
-
-/* =========================================================
-   CONFIG
+   NSG WELLFARE - COMPLETE SCRIPT
 ========================================================= */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbyvDFs6hUu-jSEwOCk9s0exPJXGtCtMc3LiADj_0jZFsyuLSmTHskmf3W-b9H1o-QBK/exec";
+  "https://script.google.com/macros/s/AKfycbyvDFs6hU-jSEwOCk9s0exPJXGtCtMc3LiADj_0jZFsyuLSmTHskmf3W-b9H1o-QBK/exec";
 
-const UPI =
-  "yadav-rishab@fam";
+const UPI = "yadav-rishab@fam";
 
 const SUPPORT =
   "https://t.me/Hammerff7gcz";
@@ -23,28 +16,24 @@ const SUPPORT =
 ========================================================= */
 
 const plans = [
-
   {
     id: 1,
     name: "Plan ₹500",
     price: 500,
     reward: 10
   },
-
   {
     id: 2,
     name: "Plan ₹1,500",
     price: 1500,
     reward: 30
   },
-
   {
     id: 3,
     name: "Plan ₹3,600",
     price: 3600,
     reward: 72
   }
-
 ];
 
 
@@ -52,40 +41,17 @@ const plans = [
    LOCAL STATE
 ========================================================= */
 
-let s =
-  JSON.parse(
-    localStorage.getItem("nsgState") || "null"
-  ) ||
-  {
-    balance: 0,
-    attendance: {},
-    deposits: [],
-    withdrawals: [],
-    transactions: [],
-    purchased: [],
-    rewards: []
-  };
-
-
-if (!Array.isArray(s.deposits)) {
-  s.deposits = [];
-}
-
-if (!Array.isArray(s.withdrawals)) {
-  s.withdrawals = [];
-}
-
-if (!Array.isArray(s.transactions)) {
-  s.transactions = [];
-}
-
-if (!Array.isArray(s.purchased)) {
-  s.purchased = [];
-}
-
-if (!Array.isArray(s.rewards)) {
-  s.rewards = [];
-}
+let s = JSON.parse(
+  localStorage.getItem("nsgState") || "null"
+) || {
+  balance: 0,
+  attendance: {},
+  deposits: [],
+  withdrawals: [],
+  transactions: [],
+  purchased: [],
+  rewardClaims: {}
+};
 
 
 /* =========================================================
@@ -93,21 +59,18 @@ if (!Array.isArray(s.rewards)) {
 ========================================================= */
 
 function save() {
-
   localStorage.setItem(
     "nsgState",
     JSON.stringify(s)
   );
-
 }
 
 
 /* =========================================================
-   FORMAT
+   FORMAT MONEY
 ========================================================= */
 
 function fmt(n) {
-
   return Number(n || 0).toLocaleString(
     "en-IN",
     {
@@ -115,7 +78,24 @@ function fmt(n) {
       maximumFractionDigits: 2
     }
   );
+}
 
+
+/* =========================================================
+   SAFE HTML
+========================================================= */
+
+function safe(x) {
+  return String(x || "").replace(
+    /[&<>"']/g,
+    a => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[a])
+  );
 }
 
 
@@ -141,279 +121,222 @@ function userID() {
       "nsgUid",
       x
     );
-
   }
 
   return x;
-
 }
 
 
 /* =========================================================
-   API REQUEST HELPER
+   API REQUEST
 ========================================================= */
 
-async function apiPost(payload) {
+async function api(action, data = {}) {
 
-  const response =
-    await fetch(
-      API_URL,
-      {
+  const payload = {
+    action: action,
+    userId: userID(),
+    userKey: userID(),
+    deviceId:
+      localStorage.getItem("nsgDevice") ||
+      "",
+    ...data
+  };
+
+  try {
+
+    const response =
+      await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type":
             "text/plain;charset=utf-8"
         },
         body: JSON.stringify(payload)
-      }
-    );
+      });
 
-  const text =
-    await response.text();
+    const text =
+      await response.text();
 
-  let result;
+    let result;
 
-  try {
-
-    result =
-      JSON.parse(text);
-
-  } catch (e) {
-
-    throw new Error(
-      "Invalid server response."
-    );
-
-  }
-
-  if (
-    result.ok === false ||
-    result.success === false
-  ) {
-
-    throw new Error(
-      result.message ||
-      result.error ||
-      "Request failed."
-    );
-
-  }
-
-  return result;
-
-}
-
-
-/* =========================================================
-   API GET
-========================================================= */
-
-async function apiGet(
-  action,
-  extra = {}
-) {
-
-  const params =
-    new URLSearchParams();
-
-  params.set(
-    "action",
-    action
-  );
-
-  Object.keys(extra).forEach(
-    key => {
-
-      if (
-        extra[key] !== undefined &&
-        extra[key] !== null
-      ) {
-
-        params.set(
-          key,
-          extra[key]
-        );
-
-      }
-
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      return {
+        success: false,
+        message:
+          "Invalid server response."
+      };
     }
-  );
 
-  const response =
-    await fetch(
-      API_URL +
-      "?" +
-      params.toString()
-    );
+    return result;
 
-  const text =
-    await response.text();
+  } catch (error) {
 
-  let result;
+    console.error(error);
 
-  try {
-
-    result =
-      JSON.parse(text);
-
-  } catch (e) {
-
-    throw new Error(
-      "Invalid server response."
-    );
-
+    return {
+      success: false,
+      message:
+        "Server connection failed."
+    };
   }
-
-  return result;
-
 }
 
 
 /* =========================================================
-   OPEN PAGE
+   PAGE NAVIGATION
 ========================================================= */
 
 function go(page) {
 
   document
     .querySelectorAll(".page")
-    .forEach(
-      p =>
-        p.classList.remove(
-          "active"
-        )
+    .forEach(p =>
+      p.classList.remove("active")
     );
 
   const target =
     document.getElementById(page);
 
   if (target) {
-
-    target.classList.add(
-      "active"
-    );
-
+    target.classList.add("active");
   }
 
-  window.scrollTo(
-    0,
-    0
-  );
+  updateNav(page);
+
+  window.scrollTo(0, 0);
 
   render();
 
   if (page === "rewards") {
-
     loadRewards();
-
   }
-
 }
 
 
 /* =========================================================
-   RENDER EVERYTHING
+   BOTTOM NAV ACTIVE
+========================================================= */
+
+function updateNav(page) {
+
+  document
+    .querySelectorAll(".nav")
+    .forEach(n =>
+      n.classList.remove("active")
+    );
+
+  const map = {
+    home: "navHome",
+    products: "navProducts",
+    rewards: "navRewards",
+    deposit: "navDeposit",
+    info: "navInfo"
+  };
+
+  const id = map[page];
+
+  if (id) {
+
+    const el =
+      document.getElementById(id);
+
+    if (el) {
+      el.classList.add("active");
+    }
+  }
+}
+
+
+/* =========================================================
+   RENDER
 ========================================================= */
 
 function render() {
 
-  setText(
-    "topBalance",
-    fmt(s.balance)
-  );
+  const topBalance =
+    document.getElementById(
+      "topBalance"
+    );
 
-  setText(
-    "homeBalance",
-    fmt(s.balance)
-  );
+  const homeBalance =
+    document.getElementById(
+      "homeBalance"
+    );
 
-  setText(
-    "withdrawBalance",
-    fmt(s.balance)
-  );
+  const withdrawBalance =
+    document.getElementById(
+      "withdrawBalance"
+    );
 
-  setText(
-    "profileId",
-    userID()
-  );
+  const profileId =
+    document.getElementById(
+      "profileId"
+    );
 
-  setText(
-    "userIdHome",
-    userID()
-  );
+  const userHome =
+    document.getElementById(
+      "userIdHome"
+    );
 
   const invite =
     document.getElementById(
       "inviteLink"
     );
 
-  if (invite) {
+  if (topBalance)
+    topBalance.textContent =
+      fmt(s.balance);
 
+  if (homeBalance)
+    homeBalance.textContent =
+      fmt(s.balance);
+
+  if (withdrawBalance)
+    withdrawBalance.textContent =
+      fmt(s.balance);
+
+  if (profileId)
+    profileId.textContent =
+      userID();
+
+  if (userHome)
+    userHome.textContent =
+      "User ID: " + userID();
+
+  if (invite)
     invite.value =
       location.href;
 
-  }
-
   renderProducts();
-
   renderCalendar();
-
   renderRewards();
-
   renderHistory();
-
 }
 
 
 /* =========================================================
-   SAFE TEXT
-========================================================= */
-
-function setText(
-  id,
-  value
-) {
-
-  const el =
-    document.getElementById(id);
-
-  if (el) {
-
-    el.textContent =
-      value;
-
-  }
-
-}
-
-
-/* =========================================================
-   PRODUCT HTML
+   PRODUCTS
 ========================================================= */
 
 function productHTML(p) {
 
   const bought =
-    s.purchased.includes(
-      p.id
-    );
+    s.purchased.includes(p.id);
 
   return `
-
     <div class="product">
 
       <div class="productTop">
 
         <div>
-
-          <h3>
-            ${safe(p.name)}
-          </h3>
+          <h3>${safe(p.name)}</h3>
 
           <p>
             Product plan
           </p>
-
         </div>
 
         <div class="price">
@@ -421,7 +344,6 @@ function productHTML(p) {
         </div>
 
       </div>
-
 
       <ul>
 
@@ -436,31 +358,22 @@ function productHTML(p) {
 
       </ul>
 
-
       <button
         class="${bought ? "secondary" : "primary"}"
         ${bought ? "disabled" : ""}
         onclick="buy(${p.id})"
       >
-
         ${
           bought
             ? "Purchased"
             : "Select Product"
         }
-
       </button>
 
     </div>
-
   `;
-
 }
 
-
-/* =========================================================
-   RENDER PRODUCTS
-========================================================= */
 
 function renderProducts() {
 
@@ -479,20 +392,11 @@ function renderProducts() {
       "productList"
     );
 
-  if (home) {
+  if (home)
+    home.innerHTML = html;
 
-    home.innerHTML =
-      html;
-
-  }
-
-  if (list) {
-
-    list.innerHTML =
-      html;
-
-  }
-
+  if (list)
+    list.innerHTML = html;
 }
 
 
@@ -502,149 +406,95 @@ function renderProducts() {
 
 async function buy(productId) {
 
-  const product =
+  const p =
     plans.find(
-      p =>
-        p.id ===
-        Number(productId)
+      x => x.id === productId
     );
 
-  if (!product) {
-
-    return;
-
-  }
-
+  if (!p) return;
 
   if (
-    s.purchased.includes(
-      product.id
+    s.purchased.includes(productId)
+  ) {
+    alert("This product is already purchased.");
+    return;
+  }
+
+  if (s.balance < p.price) {
+    alert(
+      "Insufficient balance. Please deposit first."
+    );
+    return;
+  }
+
+  if (
+    !confirm(
+      `${p.name}\n\nPrice: ₹${fmt(p.price)}\nDaily reward: ₹${fmt(p.reward)}\n\nPurchase this plan?`
     )
   ) {
-
-    alert(
-      "This product is already purchased."
-    );
-
     return;
-
   }
 
-
-  const confirmed =
-    confirm(
-      product.name +
-      "\n\nPrice: ₹" +
-      fmt(product.price) +
-      "\nDaily Reward: ₹" +
-      fmt(product.reward) +
-      "\n\nReward starts today.\n\nContinue?"
-    );
-
-  if (!confirmed) {
-
-    return;
-
-  }
-
-
-  try {
-
-    const result =
-      await apiPost({
-
-        action:
-          "createPurchase",
-
-        requestId:
-          "PUR-" +
-          Date.now(),
-
-        userId:
-          userID(),
-
-        userKey:
-          userID(),
-
+  /*
+   * Try server purchase first.
+   */
+  const result =
+    await api(
+      "createPurchase",
+      {
         productId:
-          product.id
+          String(productId)
+      }
+    );
 
-      });
+  /*
+   * If backend already supports purchase,
+   * use authoritative response.
+   */
+  if (result && result.success) {
 
-
-    if (
-      result.balance !==
-      undefined
-    ) {
-
-      s.balance =
-        Number(
-          result.balance
-        );
-
-    }
-
+    s.balance =
+      Number(
+        result.balance ??
+        s.balance - p.price
+      );
 
     if (
       !s.purchased.includes(
-        product.id
+        productId
       )
     ) {
-
       s.purchased.push(
-        product.id
+        productId
       );
-
     }
 
-
     s.transactions.unshift({
-
-      type:
-        "Product Purchase",
-
-      amount:
-        product.price,
-
-      status:
-        "Completed",
-
+      type: "Product Purchase",
+      amount: p.price,
+      status: "Completed",
       date:
-        new Date()
-          .toLocaleString()
-
+        new Date().toLocaleString()
     });
 
-
     save();
-
     render();
 
-    await loadRewards();
-
     alert(
-      product.name +
-      " purchased successfully.\n\n" +
-      "Today's reward of ₹" +
-      fmt(product.reward) +
-      " is available in Reward Today."
+      "Product purchased successfully."
     );
 
-
-  } catch (error) {
-
-    console.error(
-      "Purchase error:",
-      error
-    );
-
-    alert(
-      error.message ||
-      "Product purchase failed."
-    );
-
+    return;
   }
 
+  /*
+   * Backend not supporting purchase yet:
+   * do not silently fake a server purchase.
+   */
+  alert(
+    result?.message ||
+    "Product purchase service is not available yet."
+  );
 }
 
 
@@ -652,47 +502,32 @@ async function buy(productId) {
    CALENDAR
 ========================================================= */
 
-let cd =
-  new Date();
+let cd = new Date();
 
 
-function month(value) {
+function month(v) {
 
   cd.setMonth(
-    cd.getMonth() +
-    Number(value)
+    cd.getMonth() + v
   );
 
   renderCalendar();
-
 }
 
 
-function key(
-  y,
-  m,
-  d
-) {
+function key(y, m, d) {
 
   return (
     y +
     "-" +
-    String(
-      m + 1
-    ).padStart(2, "0") +
+    String(m + 1)
+      .padStart(2, "0") +
     "-" +
-    String(d).padStart(
-      2,
-      "0"
-    )
+    String(d)
+      .padStart(2, "0")
   );
-
 }
 
-
-/* =========================================================
-   RENDER CALENDAR
-========================================================= */
 
 function renderCalendar() {
 
@@ -706,12 +541,12 @@ function renderCalendar() {
       "monthTitle"
     );
 
-  if (!calendar || !title) {
+  const count =
+    document.getElementById(
+      "attCount"
+    );
 
-    return;
-
-  }
-
+  if (!calendar) return;
 
   const y =
     cd.getFullYear();
@@ -719,22 +554,19 @@ function renderCalendar() {
   const m =
     cd.getMonth();
 
+  if (title) {
 
-  title.textContent =
-    new Intl.DateTimeFormat(
-      "en-IN",
-      {
-        month:
-          "long",
-        year:
-          "numeric"
-      }
-    ).format(cd);
+    title.textContent =
+      new Intl.DateTimeFormat(
+        "en-IN",
+        {
+          month: "long",
+          year: "numeric"
+        }
+      ).format(cd);
+  }
 
-
-  calendar.innerHTML =
-    "";
-
+  calendar.innerHTML = "";
 
   const first =
     new Date(
@@ -742,7 +574,6 @@ function renderCalendar() {
       m,
       1
     ).getDay();
-
 
   for (
     let i = 0;
@@ -752,9 +583,7 @@ function renderCalendar() {
 
     calendar.innerHTML +=
       '<div class="day empty"></div>';
-
   }
-
 
   const total =
     new Date(
@@ -763,10 +592,8 @@ function renderCalendar() {
       0
     ).getDate();
 
-
   const now =
     new Date();
-
 
   for (
     let d = 1;
@@ -775,85 +602,44 @@ function renderCalendar() {
   ) {
 
     const k =
-      key(
-        y,
-        m,
-        d
-      );
-
+      key(y, m, d);
 
     const e =
       document.createElement(
         "div"
       );
 
+    let cls = "day";
 
-    e.className =
-      "day";
-
-
-    if (
-      s.attendance[k]
-    ) {
-
-      e.classList.add(
-        "done"
-      );
-
-      e.classList.add(
-        "attended"
-      );
-
+    if (s.attendance[k]) {
+      cls += " done";
     }
 
-
     if (
-      d ===
-        now.getDate() &&
-      m ===
-        now.getMonth() &&
-      y ===
-        now.getFullYear()
+      d === now.getDate() &&
+      m === now.getMonth() &&
+      y === now.getFullYear()
     ) {
-
-      e.classList.add(
-        "today"
-      );
-
+      cls += " today";
     }
 
+    e.className = cls;
 
-    e.textContent =
-      d;
+    e.textContent = d;
 
+    e.onclick = () =>
+      markAttendance(k);
 
-    e.onclick =
-      () => markTodayAttendance(
-        k
-      );
-
-
-    calendar.appendChild(
-      e
-    );
-
+    calendar.appendChild(e);
   }
 
+  if (count) {
 
-  setText(
-    "attCount",
-    Object.keys(
-      s.attendance
-    ).length
-  );
-
-  setText(
-    "attendanceTotal",
-    Object.keys(
-      s.attendance
-    ).length
-  );
-
+    count.textContent =
+      Object.keys(
+        s.attendance
+      ).length;
+  }
 }
 
 
@@ -861,162 +647,76 @@ function renderCalendar() {
    ATTENDANCE
 ========================================================= */
 
-async function markTodayAttendance(
-  dateKey
-) {
+async function markAttendance(dateKey) {
+
+  if (
+    s.attendance[dateKey]
+  ) {
+    return;
+  }
 
   const today =
-    localDateString();
+    key(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate()
+    );
 
-
-  if (
-    dateKey !==
-    today
-  ) {
+  if (dateKey !== today) {
 
     alert(
-      "Attendance can only be marked for today."
+      "Only today's attendance can be marked."
     );
 
     return;
-
   }
 
+  const result =
+    await api(
+      "attendance",
+      {
+        date: dateKey
+      }
+    );
 
   if (
-    s.attendance[
-      dateKey
-    ]
+    result &&
+    result.success
   ) {
 
-    return;
-
-  }
-
-
-  try {
-
-    const result =
-      await apiPost({
-
-        action:
-          "markAttendance",
-
-        userId:
-          userID(),
-
-        userKey:
-          userID(),
-
-        date:
-          dateKey
-
-      });
-
-
-    s.attendance[
-      dateKey
-    ] = 1;
-
-    save();
-
-    renderCalendar();
-
-
-  } catch (error) {
-
-    console.error(
-      "Attendance error:",
-      error
-    );
-
-    alert(
-      error.message ||
-      "Attendance could not be marked."
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   REWARD TODAY
-========================================================= */
-
-async function loadRewards() {
-
-  try {
-
-    const result =
-      await apiGet(
-        "userRewards",
-        {
-          userId:
-            userID(),
-
-          userKey:
-            userID()
-        }
-      );
-
-
-    if (
-      !result.ok &&
-      result.success !== true
-    ) {
-
-      return;
-
-    }
-
-
-    const purchases =
-      result.purchases ||
-      result.rewards ||
-      [];
-
+    s.attendance[dateKey] = 1;
 
     if (
       result.balance !==
       undefined
     ) {
-
       s.balance =
         Number(
           result.balance
         );
-
     }
-
-
-    s.serverRewards =
-      purchases;
-
 
     save();
 
-    renderRewards();
-
     render();
 
-
-  } catch (error) {
-
-    console.log(
-      "Reward loading:",
-      error
+    alert(
+      result.message ||
+      "Attendance marked successfully."
     );
 
-    renderRewards();
+  } else {
 
+    alert(
+      result?.message ||
+      "Unable to mark attendance."
+    );
   }
-
 }
 
 
 /* =========================================================
-   RENDER REWARDS
+   REWARD TODAY
 ========================================================= */
 
 function renderRewards() {
@@ -1026,232 +726,147 @@ function renderRewards() {
       "rewardsList"
     );
 
-  if (!box) {
-
-    return;
-
-  }
-
-
-  const serverRewards =
-    Array.isArray(
-      s.serverRewards
-    )
-      ? s.serverRewards
-      : [];
-
-
-  /*
-     If server data is available,
-     use it.
-  */
-
-  if (
-    serverRewards.length
-  ) {
-
-    box.innerHTML =
-      serverRewards
-        .map(
-          renderServerReward
-        )
-        .join("");
-
-    return;
-
-  }
-
-
-  /*
-     Fallback for products already
-     stored locally.
-  */
+  if (!box) return;
 
   if (
     !s.purchased.length
   ) {
 
     box.innerHTML = `
-
-      <div class="reward-item">
-
-        <b>
-          No purchased products
-        </b>
-
-        <p>
-          Purchase a product to receive daily rewards.
-        </p>
-
+      <div class="empty">
+        No purchased products yet.
       </div>
-
     `;
 
     return;
-
   }
 
+  const today =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
 
   box.innerHTML =
     s.purchased
-      .map(
-        productId => {
+      .map(productId => {
 
-          const p =
-            plans.find(
-              x =>
-                x.id ===
-                productId
-            );
+        const p =
+          plans.find(
+            x => x.id === productId
+          );
 
-          if (!p) {
+        if (!p) return "";
 
-            return "";
+        const claimKey =
+          productId +
+          "_" +
+          today;
 
-          }
+        const claimed =
+          !!s.rewardClaims[
+            claimKey
+          ];
 
+        return `
+          <div class="reward-card">
 
-          return `
+            <div class="reward-card-top">
 
-            <div class="reward-item">
+              <div>
+                <h3>
+                  🎁 ${safe(p.name)}
+                </h3>
 
-              <b>
-                🎁 ${safe(p.name)}
-              </b>
+                <p>
+                  Daily reward available
+                </p>
+              </div>
 
-              <p>
-                Daily Reward:
+              <div class="reward-amount">
                 ₹${fmt(p.reward)}
-              </p>
-
-              <button
-                class="primary-btn"
-                onclick="claimReward(${p.id})"
-              >
-                Claim Reward
-              </button>
+              </div>
 
             </div>
 
-          `;
+            <button
+              class="${
+                claimed
+                  ? "secondary"
+                  : "primary"
+              }"
+              ${
+                claimed
+                  ? "disabled"
+                  : ""
+              }
+              onclick="claimReward(${p.id})"
+            >
+              ${
+                claimed
+                  ? "Claimed Today"
+                  : "Claim Reward"
+              }
+            </button>
 
-        }
-      )
+          </div>
+        `;
+      })
       .join("");
-
 }
 
 
 /* =========================================================
-   SERVER REWARD HTML
+   LOAD SERVER REWARDS
 ========================================================= */
 
-function renderServerReward(
-  item
-) {
+async function loadRewards() {
 
-  const productId =
-    Number(
-      item.productId ||
-      item.productID ||
-      item.id
+  /*
+   * Current backend must expose
+   * a reward-reading action.
+   */
+  const result =
+    await api(
+      "userRewards"
     );
-
-
-  const p =
-    plans.find(
-      x =>
-        x.id ===
-        productId
-    );
-
-
-  const name =
-    item.productName ||
-    (p ? p.name : "Product");
-
-
-  const daily =
-    Number(
-      item.dailyReward ||
-      item.reward ||
-      (p ? p.reward : 0)
-    );
-
-
-  const purchaseId =
-    item.purchaseId ||
-    item.id;
-
-
-  const claimAvailable =
-    item.claimAvailable !==
-    false;
-
 
   if (
-    !claimAvailable
+    !result ||
+    !result.success
   ) {
-
-    return `
-
-      <div class="reward-item">
-
-        <b>
-          🎁 ${safe(name)}
-        </b>
-
-        <p>
-          Daily Reward:
-          ₹${fmt(daily)}
-        </p>
-
-        <p>
-          ✓ Reward already claimed today
-        </p>
-
-        <button
-          class="secondary-btn"
-          disabled
-        >
-          ✓ Claimed Today
-        </button>
-
-      </div>
-
-    `;
-
+    return;
   }
 
+  if (
+    result.balance !==
+    undefined
+  ) {
 
-  return `
+    s.balance =
+      Number(
+        result.balance
+      );
+  }
 
-    <div class="reward-item">
+  if (
+    Array.isArray(
+      result.purchases
+    )
+  ) {
 
-      <b>
-        🎁 ${safe(name)}
-      </b>
+    s.purchased =
+      result.purchases
+        .map(x =>
+          Number(
+            x.productId
+          )
+        )
+        .filter(Boolean);
+  }
 
-      <p>
-        Daily Reward:
-        ₹${fmt(daily)}
-      </p>
-
-      <p>
-        Reward is available today.
-      </p>
-
-      <button
-        class="primary-btn"
-        onclick="claimReward('${safeAttr(purchaseId)}')"
-      >
-        Claim Reward
-      </button>
-
-    </div>
-
-  `;
-
+  save();
+  renderRewards();
+  render();
 }
 
 
@@ -1260,169 +875,117 @@ function renderServerReward(
 ========================================================= */
 
 async function claimReward(
-  purchaseId
+  productId
 ) {
 
-  if (!purchaseId) {
+  const p =
+    plans.find(
+      x => x.id === productId
+    );
+
+  if (!p) return;
+
+  const today =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+  const claimKey =
+    productId +
+    "_" +
+    today;
+
+  if (
+    s.rewardClaims[
+      claimKey
+    ]
+  ) {
 
     alert(
-      "Invalid purchase."
+      "Reward already claimed today."
     );
 
     return;
-
   }
 
+  const result =
+    await api(
+      "claimReward",
+      {
+        productId:
+          String(productId)
+      }
+    );
 
-  const button =
-    event &&
-    event.target
-      ? event.target
-      : null;
+  if (
+    !result ||
+    !result.success
+  ) {
 
+    alert(
+      result?.message ||
+      "Unable to claim reward."
+    );
 
-  if (button) {
-
-    button.disabled =
-      true;
-
-    button.textContent =
-      "Claiming...";
-
+    return;
   }
 
+  /*
+   * Server balance is authoritative.
+   */
+  if (
+    result.balance !==
+    undefined
+  ) {
 
-  try {
-
-    const result =
-      await apiPost({
-
-        action:
-          "claimReward",
-
-        userId:
-          userID(),
-
-        userKey:
-          userID(),
-
-        purchaseId:
-          purchaseId
-
-      });
-
-
-    if (
-      result.balance !==
-      undefined
-    ) {
-
-      s.balance =
-        Number(
-          result.balance
-        );
-
-    }
-
-
-    /*
-       Save local transaction
-    */
-
-    const amount =
+    s.balance =
       Number(
-        result.amount ||
-        result.reward ||
-        0
+        result.balance
       );
 
+  } else {
 
-    s.rewards.push({
-
-      purchaseId:
-        purchaseId,
-
-      amount:
-        amount,
-
-      date:
-        localDateString()
-
-    });
-
-
-    s.transactions.unshift({
-
-      type:
-        "Daily Reward",
-
-      amount:
-        amount,
-
-      status:
-        "Completed",
-
-      date:
-        new Date()
-          .toLocaleString()
-
-    });
-
-
-    save();
-
-    render();
-
-    await loadRewards();
-
-
-    alert(
-      "Reward claimed successfully.\n\n" +
-      "₹" +
-      fmt(amount) +
-      " has been added to your balance."
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Claim reward error:",
-      error
-    );
-
-    alert(
-      error.message ||
-      "Reward claim failed."
-    );
-
-    if (button) {
-
-      button.disabled =
-        false;
-
-      button.textContent =
-        "Claim Reward";
-
-    }
-
+    s.balance +=
+      p.reward;
   }
 
+  s.rewardClaims[
+    claimKey
+  ] = 1;
+
+  s.transactions.unshift({
+    type: "Daily Reward",
+    amount: p.reward,
+    status: "Completed",
+    date:
+      new Date().toLocaleString()
+  });
+
+  save();
+
+  render();
+
+  alert(
+    `₹${fmt(p.reward)} reward added to your balance.`
+  );
 }
 
 
 /* =========================================================
-   DEPOSIT
+   DEPOSIT PAGE
 ========================================================= */
 
 function showDeposit() {
-
   go("deposit");
-
 }
 
 
 function copyUPI() {
+
+  const done = () =>
+    alert(
+      "UPI ID copied: " + UPI
+    );
 
   if (
     navigator.clipboard
@@ -1430,39 +993,28 @@ function copyUPI() {
 
     navigator.clipboard
       .writeText(UPI)
-      .then(
-        () =>
-          alert(
-            "UPI ID copied: " +
-            UPI
-          )
-      )
+      .then(done)
       .catch(
-        fallbackCopyUPI
+        fallbackCopy
       );
 
   } else {
 
-    fallbackCopyUPI();
-
+    fallbackCopy();
   }
-
 }
 
 
-function fallbackCopyUPI() {
+function fallbackCopy() {
 
   const x =
     document.createElement(
       "textarea"
     );
 
-  x.value =
-    UPI;
+  x.value = UPI;
 
-  document.body.appendChild(
-    x
-  );
+  document.body.appendChild(x);
 
   x.select();
 
@@ -1473,10 +1025,8 @@ function fallbackCopyUPI() {
   x.remove();
 
   alert(
-    "UPI ID copied: " +
-    UPI
+    "UPI ID copied: " + UPI
   );
-
 }
 
 
@@ -1484,103 +1034,212 @@ function fallbackCopyUPI() {
    SCREENSHOT PREVIEW
 ========================================================= */
 
-function setupScreenshot() {
+function previewScreenshot(
+  event
+) {
 
-  const input =
+  const file =
+    event?.target?.files?.[0];
+
+  const preview =
     document.getElementById(
-      "paymentScreenshot"
+      "preview"
     );
 
-  if (!input) {
+  if (!preview) return;
+
+  if (!file) {
+
+    preview.innerHTML = "";
 
     return;
-
   }
 
+  if (
+    file.size >
+    5 * 1024 * 1024
+  ) {
 
-  input.addEventListener(
-    "change",
-    function () {
+    alert(
+      "Screenshot must be under 5 MB."
+    );
 
-      const file =
-        this.files &&
-        this.files[0];
+    event.target.value = "";
+
+    preview.innerHTML = "";
+
+    return;
+  }
+
+  const reader =
+    new FileReader();
+
+  reader.onload = e => {
+
+    preview.innerHTML = `
+      <img
+        src="${e.target.result}"
+        alt="Payment Screenshot"
+      >
+    `;
+  };
+
+  reader.readAsDataURL(
+    file
+  );
+}
 
 
-      const preview =
-        document.getElementById(
-          "preview"
-        );
+/* =========================================================
+   DEPOSIT SUBMIT
+========================================================= */
 
+async function submitDeposit() {
 
-      if (!preview) {
+  const amount =
+    Number(
+      document.getElementById(
+        "depositAmount"
+      )?.value
+    );
 
-        return;
+  const utr =
+    document.getElementById(
+      "utr"
+    )?.value.trim();
 
+  const file =
+    document.getElementById(
+      "paymentScreenshot"
+    )?.files?.[0];
+
+  const msg =
+    document.getElementById(
+      "depositMsg"
+    );
+
+  if (
+    !amount ||
+    amount < 500 ||
+    amount > 50000
+  ) {
+
+    msg.textContent =
+      "Enter an amount between ₹500 and ₹50,000.";
+
+    return;
+  }
+
+  if (!utr) {
+
+    msg.textContent =
+      "Enter UTR / Transaction ID.";
+
+    return;
+  }
+
+  if (!file) {
+
+    msg.textContent =
+      "Upload payment screenshot.";
+
+    return;
+  }
+
+  msg.textContent =
+    "Uploading deposit request...";
+
+  const base64 =
+    await fileToBase64(
+      file
+    );
+
+  const result =
+    await api(
+      "deposit",
+      {
+        amount: amount,
+        utr: utr,
+        screenshot:
+          base64
       }
+    );
 
+  if (
+    result &&
+    result.success
+  ) {
 
-      if (!file) {
-
-        preview.innerHTML =
-          "";
-
-        return;
-
-      }
-
-
-      if (
-        file.size >
-        5 * 1024 * 1024
-      ) {
-
-        alert(
-          "Screenshot must be under 5 MB."
-        );
-
-        this.value =
-          "";
-
-        preview.innerHTML =
-          "";
-
-        return;
-
-      }
-
-
-      const reader =
-        new FileReader();
-
-
-      reader.onload =
-        e => {
-
-          preview.innerHTML = `
-
-            <img
-              src="${e.target.result}"
-              alt="Payment screenshot"
-              style="
-                max-width:100%;
-                border-radius:10px;
-                margin-top:10px;
-              "
-            >
-
-          `;
-
-        };
-
-
-      reader.readAsDataURL(
-        file
+    const id =
+      result.depositId ||
+      result.requestId ||
+      (
+        "DEP-" +
+        Date.now()
       );
 
-    }
-  );
+    s.deposits.unshift({
+      id: id,
+      amount: amount,
+      utr: utr,
+      status:
+        result.status ||
+        "Pending",
+      date:
+        new Date().toLocaleString()
+    });
 
+    s.transactions.unshift({
+      type: "Deposit",
+      amount: amount,
+      status:
+        result.status ||
+        "Pending",
+      date:
+        new Date().toLocaleString()
+    });
+
+    if (
+      result.balance !==
+      undefined
+    ) {
+
+      s.balance =
+        Number(
+          result.balance
+        );
+    }
+
+    save();
+
+    document.getElementById(
+      "depositAmount"
+    ).value = "";
+
+    document.getElementById(
+      "utr"
+    ).value = "";
+
+    document.getElementById(
+      "paymentScreenshot"
+    ).value = "";
+
+    document.getElementById(
+      "preview"
+    ).innerHTML = "";
+
+    msg.textContent =
+      result.message ||
+      "Deposit submitted successfully.";
+
+    render();
+
+  } else {
+
+    msg.textContent =
+      result?.message ||
+      "Deposit submission failed.";
+  }
 }
 
 
@@ -1593,30 +1252,15 @@ function fileToBase64(
 ) {
 
   return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
+    (resolve, reject) => {
 
       const reader =
         new FileReader();
 
-      reader.onload =
-        () => {
-
-          const result =
-            String(
-              reader.result ||
-              ""
-            );
-
-          resolve(
-            result.split(
-              ","
-            )[1] || ""
-          );
-
-        };
+      reader.onload = () =>
+        resolve(
+          reader.result
+        );
 
       reader.onerror =
         reject;
@@ -1624,470 +1268,22 @@ function fileToBase64(
       reader.readAsDataURL(
         file
       );
-
     }
   );
-
 }
 
 
 /* =========================================================
-   SUBMIT DEPOSIT
-========================================================= */
-
-async function submitDeposit() {
-
-  const amount =
-    Number(
-      document.getElementById(
-        "depositAmount"
-      )?.value || 0
-    );
-
-
-  const utr =
-    document.getElementById(
-      "utr"
-    )?.value.trim() || "";
-
-
-  const file =
-    document.getElementById(
-      "paymentScreenshot"
-    )?.files?.[0];
-
-
-  const msg =
-    document.getElementById(
-      "depositMsg"
-    );
-
-
-  const btn =
-    document.querySelector(
-      '#deposit button[onclick="submitDeposit()"]'
-    );
-
-
-  if (
-    amount < 500 ||
-    amount > 20000
-  ) {
-
-    if (msg) {
-
-      msg.textContent =
-        "Enter an amount between ₹500 and ₹20,000.";
-
-    }
-
-    return;
-
-  }
-
-
-  if (!utr) {
-
-    if (msg) {
-
-      msg.textContent =
-        "Enter UTR / Transaction ID.";
-
-    }
-
-    return;
-
-  }
-
-
-  if (!file) {
-
-    if (msg) {
-
-      msg.textContent =
-        "Upload payment screenshot.";
-
-    }
-
-    return;
-
-  }
-
-
-  if (
-    file.size >
-    5 * 1024 * 1024
-  ) {
-
-    if (msg) {
-
-      msg.textContent =
-        "Screenshot must be 5 MB or smaller.";
-
-    }
-
-    return;
-
-  }
-
-
-  if (btn) {
-
-    btn.disabled =
-      true;
-
-    btn.textContent =
-      "Submitting...";
-
-  }
-
-
-  if (msg) {
-
-    msg.textContent =
-      "Submitting deposit request...";
-
-  }
-
-
-  try {
-
-    const base64 =
-      await fileToBase64(
-        file
-      );
-
-
-    const requestId =
-      "DEP-" +
-      Date.now();
-
-
-    const result =
-      await apiPost({
-
-        action:
-          "createDeposit",
-
-        requestId:
-          requestId,
-
-        userId:
-          userID(),
-
-        userKey:
-          userID(),
-
-        amount:
-          amount,
-
-        utr:
-          utr,
-
-        screenshot:
-          base64,
-
-        screenshotName:
-          file.name,
-
-        screenshotType:
-          file.type ||
-          "image/jpeg"
-
-      });
-
-
-    const id =
-      result.requestId ||
-      requestId;
-
-
-    s.deposits.unshift({
-
-      id:
-        id,
-
-      amount:
-        amount,
-
-      utr:
-        utr,
-
-      status:
-        "Pending Verification",
-
-      date:
-        new Date()
-          .toLocaleString()
-
-    });
-
-
-    s.transactions.unshift({
-
-      type:
-        "Deposit",
-
-      amount:
-        amount,
-
-      status:
-        "Pending Verification",
-
-      date:
-        new Date()
-          .toLocaleString()
-
-    });
-
-
-    save();
-
-
-    const amountEl =
-      document.getElementById(
-        "depositAmount"
-      );
-
-    const utrEl =
-      document.getElementById(
-        "utr"
-      );
-
-    const screenshotEl =
-      document.getElementById(
-        "paymentScreenshot"
-      );
-
-    const preview =
-      document.getElementById(
-        "preview"
-      );
-
-
-    if (amountEl) {
-
-      amountEl.value =
-        "";
-
-    }
-
-    if (utrEl) {
-
-      utrEl.value =
-        "";
-
-    }
-
-    if (screenshotEl) {
-
-      screenshotEl.value =
-        "";
-
-    }
-
-    if (preview) {
-
-      preview.innerHTML =
-        "";
-
-    }
-
-
-    if (msg) {
-
-      msg.textContent =
-        "Deposit submitted successfully. Waiting for admin verification.";
-
-    }
-
-
-    render();
-
-    pollDeposit(
-      id
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Deposit error:",
-      error
-    );
-
-    if (msg) {
-
-      msg.textContent =
-        "Deposit failed: " +
-        (
-          error.message ||
-          "Please try again."
-        );
-
-    }
-
-  } finally {
-
-    if (btn) {
-
-      btn.disabled =
-        false;
-
-      btn.textContent =
-        "Submit Deposit Request";
-
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   POLL DEPOSIT
-========================================================= */
-
-function pollDeposit(
-  requestId
-) {
-
-  let tries =
-    0;
-
-
-  const timer =
-    setInterval(
-      async () => {
-
-        tries++;
-
-
-        try {
-
-          const result =
-            await apiGet(
-              "depositStatus",
-              {
-                requestId:
-                  requestId,
-
-                userId:
-                  userID()
-              }
-            );
-
-
-          if (
-            result.ok &&
-            (
-              result.status ===
-                "APPROVED" ||
-              result.status ===
-                "REJECTED"
-            )
-          ) {
-
-            clearInterval(
-              timer
-            );
-
-
-            const deposit =
-              s.deposits.find(
-                x =>
-                  x.id ===
-                  requestId
-              );
-
-
-            if (deposit) {
-
-              deposit.status =
-                result.status ===
-                "APPROVED"
-                  ? "Approved"
-                  : "Rejected";
-
-            }
-
-
-            if (
-              result.balance !==
-              undefined
-            ) {
-
-              s.balance =
-                Number(
-                  result.balance
-                );
-
-            }
-
-
-            save();
-
-            render();
-
-
-            const msg =
-              document.getElementById(
-                "depositMsg"
-              );
-
-
-            if (msg) {
-
-              msg.textContent =
-                result.status ===
-                "APPROVED"
-                  ? "Deposit approved. Balance updated."
-                  : "Deposit rejected by admin.";
-
-            }
-
-          }
-
-        } catch (error) {
-
-          console.log(
-            "Deposit status:",
-            error
-          );
-
-        }
-
-
-        if (
-          tries >= 120
-        ) {
-
-          clearInterval(
-            timer
-          );
-
-        }
-
-      },
-      5000
-    );
-
-}
-
-
-/* =========================================================
-   WITHDRAWAL
+   WITHDRAW PAGE
 ========================================================= */
 
 function showWithdraw() {
-
   go("withdraw");
-
 }
 
 
 /* =========================================================
-   SUBMIT WITHDRAWAL
+   WITHDRAW SUBMIT
 ========================================================= */
 
 async function submitWithdraw() {
@@ -2096,213 +1292,148 @@ async function submitWithdraw() {
     Number(
       document.getElementById(
         "withdrawAmount"
-      )?.value || 0
+      )?.value
     );
 
-
-  const name =
+  const bankName =
     document.getElementById(
       "bankName"
-    )?.value.trim() || "";
-
+    )?.value.trim();
 
   const ifsc =
     document.getElementById(
       "ifsc"
     )?.value.trim()
-      .toUpperCase() || "";
+    .toUpperCase();
 
-
-  const bank =
+  const holder =
     document.getElementById(
       "bank"
-    )?.value.trim() || "";
-
+    )?.value.trim();
 
   const account =
     document.getElementById(
       "accountNumber"
-    )?.value.trim() || "";
-
+    )?.value.trim();
 
   const confirmAccount =
     document.getElementById(
       "confirmAccount"
-    )?.value.trim() || "";
-
+    )?.value.trim();
 
   const msg =
     document.getElementById(
       "withdrawMsg"
     );
 
-
-  const btn =
-    document.querySelector(
-      '#withdraw button[onclick="submitWithdraw()"]'
-    );
-
-
   if (
     amount < 300 ||
-    amount > 10000
+    amount > 20000
   ) {
 
-    if (msg) {
-
-      msg.textContent =
-        "Enter an amount between ₹300 and ₹10,000.";
-
-    }
+    msg.textContent =
+      "Enter an amount between ₹300 and ₹20,000.";
 
     return;
-
   }
-
 
   if (
     amount >
-    Number(s.balance || 0)
+    Number(s.balance)
   ) {
 
-    if (msg) {
-
-      msg.textContent =
-        "Insufficient balance.";
-
-    }
+    msg.textContent =
+      "Insufficient balance.";
 
     return;
-
   }
 
-
   if (
-    !name ||
+    !bankName ||
     !ifsc ||
-    !bank ||
+    !holder ||
     !account ||
     !confirmAccount
   ) {
 
-    if (msg) {
-
-      msg.textContent =
-        "Please fill all bank details.";
-
-    }
+    msg.textContent =
+      "Please fill all bank details.";
 
     return;
-
   }
-
 
   if (
     account !==
     confirmAccount
   ) {
 
-    if (msg) {
-
-      msg.textContent =
-        "Account numbers do not match.";
-
-    }
+    msg.textContent =
+      "Account numbers do not match.";
 
     return;
-
   }
-
 
   if (
     !/^[A-Z]{4}0[A-Z0-9]{6}$/
       .test(ifsc)
   ) {
 
-    if (msg) {
-
-      msg.textContent =
-        "Enter a valid IFSC code.";
-
-    }
+    msg.textContent =
+      "Enter a valid IFSC code.";
 
     return;
-
   }
 
+  msg.textContent =
+    "Submitting withdrawal...";
 
-  if (btn) {
-
-    btn.disabled =
-      true;
-
-    btn.textContent =
-      "Submitting...";
-
-  }
-
-
-  if (msg) {
-
-    msg.textContent =
-      "Submitting withdrawal request...";
-
-  }
-
-
-  try {
-
-    const requestId =
-      "WDR-" +
-      Date.now();
-
-
-    const result =
-      await apiPost({
-
-        action:
-          "createWithdrawal",
-
-        requestId:
-          requestId,
-
-        userId:
-          userID(),
-
-        userKey:
-          userID(),
-
-        amount:
-          amount,
-
+  const result =
+    await api(
+      "withdraw",
+      {
+        amount: amount,
         accountHolder:
-          name,
-
-        holderName:
-          name,
-
-        name:
-          name,
-
+          holder,
         bankName:
-          bank,
-
-        bank:
-          bank,
-
-        ifsc:
-          ifsc,
-
+          bankName,
+        ifsc: ifsc,
         accountNumber:
           account
+      }
+    );
 
-      });
-
+  if (
+    result &&
+    result.success
+  ) {
 
     const id =
+      result.withdrawalId ||
       result.requestId ||
-      requestId;
+      (
+        "WDR-" +
+        Date.now()
+      );
 
+    s.withdrawals.unshift({
+      id: id,
+      amount: amount,
+      status:
+        result.status ||
+        "Pending",
+      date:
+        new Date().toLocaleString()
+    });
+
+    s.transactions.unshift({
+      type: "Withdrawal",
+      amount: amount,
+      status:
+        result.status ||
+        "Pending",
+      date:
+        new Date().toLocaleString()
+    });
 
     if (
       result.balance !==
@@ -2316,245 +1447,28 @@ async function submitWithdraw() {
 
     } else {
 
-      s.balance =
-        Number(
-          s.balance
-        ) -
+      s.balance -=
         amount;
-
     }
-
-
-    s.withdrawals.unshift({
-
-      id:
-        id,
-
-      amount:
-        amount,
-
-      status:
-        "Pending",
-
-      date:
-        new Date()
-          .toLocaleString()
-
-    });
-
-
-    s.transactions.unshift({
-
-      type:
-        "Withdrawal",
-
-      amount:
-        amount,
-
-      status:
-        "Pending",
-
-      date:
-        new Date()
-          .toLocaleString()
-
-    });
-
 
     save();
 
+    document.getElementById(
+      "withdrawAmount"
+    ).value = "";
 
-    const amountEl =
-      document.getElementById(
-        "withdrawAmount"
-      );
-
-    if (amountEl) {
-
-      amountEl.value =
-        "";
-
-    }
-
-
-    if (msg) {
-
-      msg.textContent =
-        "Withdrawal request submitted. Waiting for admin verification.";
-
-    }
-
+    msg.textContent =
+      result.message ||
+      "Withdrawal request submitted.";
 
     render();
 
-    pollWithdrawal(
-      id
-    );
+  } else {
 
-
-  } catch (error) {
-
-    console.error(
-      "Withdrawal error:",
-      error
-    );
-
-    if (msg) {
-
-      msg.textContent =
-        "Withdrawal failed: " +
-        (
-          error.message ||
-          "Please try again."
-        );
-
-    }
-
-  } finally {
-
-    if (btn) {
-
-      btn.disabled =
-        false;
-
-      btn.textContent =
-        "Submit Withdrawal Request";
-
-    }
-
+    msg.textContent =
+      result?.message ||
+      "Withdrawal submission failed.";
   }
-
-}
-
-
-/* =========================================================
-   POLL WITHDRAWAL
-========================================================= */
-
-function pollWithdrawal(
-  requestId
-) {
-
-  let tries =
-    0;
-
-
-  const timer =
-    setInterval(
-      async () => {
-
-        tries++;
-
-
-        try {
-
-          const result =
-            await apiGet(
-              "withdrawalStatus",
-              {
-                requestId:
-                  requestId,
-
-                userId:
-                  userID()
-              }
-            );
-
-
-          if (
-            result.ok &&
-            (
-              result.status ===
-                "APPROVED" ||
-              result.status ===
-                "REJECTED"
-            )
-          ) {
-
-            clearInterval(
-              timer
-            );
-
-
-            const item =
-              s.withdrawals.find(
-                x =>
-                  x.id ===
-                  requestId
-              );
-
-
-            if (item) {
-
-              item.status =
-                result.status ===
-                "APPROVED"
-                  ? "Approved"
-                  : "Rejected";
-
-            }
-
-
-            if (
-              result.balance !==
-              undefined
-            ) {
-
-              s.balance =
-                Number(
-                  result.balance
-                );
-
-            }
-
-
-            save();
-
-            render();
-
-
-            const msg =
-              document.getElementById(
-                "withdrawMsg"
-              );
-
-
-            if (msg) {
-
-              msg.textContent =
-                result.status ===
-                "APPROVED"
-                  ? "Withdrawal approved."
-                  : "Withdrawal rejected. Amount returned to balance.";
-
-            }
-
-          }
-
-        } catch (error) {
-
-          console.log(
-            "Withdrawal status:",
-            error
-          );
-
-        }
-
-
-        if (
-          tries >= 120
-        ) {
-
-          clearInterval(
-            timer
-          );
-
-        }
-
-      },
-      5000
-    );
-
 }
 
 
@@ -2584,41 +1498,38 @@ function renderHistory() {
 
     d.innerHTML =
       s.deposits.length
+
         ? s.deposits
-            .map(
-              x => `
+            .map(x => `
+              <div class="item">
 
-                <div class="item">
+                <b>
+                  Deposit ₹${fmt(x.amount)}
+                </b>
 
-                  <b>
-                    Deposit ₹${fmt(x.amount)}
-                  </b>
+                <small>
+                  ${safe(x.date)}
+                </small>
 
-                  <small>
-                    ${safe(x.date)}
-                  </small>
+                <p>
+                  UTR:
+                  ${safe(x.utr)}
+                </p>
 
-                  <p>
-                    UTR:
-                    ${safe(x.utr)}
-                  </p>
+                <p>
+                  Status:
+                  ${safe(x.status)}
+                </p>
 
-                  <p>
-                    Status:
-                    ${safe(x.status)}
-                  </p>
-
-                </div>
-
-              `
-            )
+              </div>
+            `)
             .join("")
+
         : `
           <div class="item">
             No deposit requests.
           </div>
         `;
-
   }
 
 
@@ -2626,36 +1537,33 @@ function renderHistory() {
 
     w.innerHTML =
       s.withdrawals.length
+
         ? s.withdrawals
-            .map(
-              x => `
+            .map(x => `
+              <div class="item">
 
-                <div class="item">
+                <b>
+                  Withdrawal ₹${fmt(x.amount)}
+                </b>
 
-                  <b>
-                    Withdrawal ₹${fmt(x.amount)}
-                  </b>
+                <small>
+                  ${safe(x.date)}
+                </small>
 
-                  <small>
-                    ${safe(x.date)}
-                  </small>
+                <p>
+                  Status:
+                  ${safe(x.status)}
+                </p>
 
-                  <p>
-                    Status:
-                    ${safe(x.status)}
-                  </p>
-
-                </div>
-
-              `
-            )
+              </div>
+            `)
             .join("")
+
         : `
           <div class="item">
             No withdrawal requests.
           </div>
         `;
-
   }
 
 
@@ -2663,59 +1571,41 @@ function renderHistory() {
 
     t.innerHTML =
       s.transactions.length
+
         ? s.transactions
-            .map(
-              x => `
+            .map(x => `
+              <div class="item">
 
-                <div class="item">
+                <b>
+                  ${safe(x.type)}
+                  ₹${fmt(x.amount)}
+                </b>
 
-                  <b>
-                    ${safe(x.type)}
-                    ₹${fmt(x.amount)}
-                  </b>
+                <small>
+                  ${safe(x.date)}
+                </small>
 
-                  <small>
-                    ${safe(x.date)}
-                  </small>
+                <p>
+                  Status:
+                  ${safe(x.status)}
+                </p>
 
-                  <p>
-                    Status:
-                    ${safe(x.status)}
-                  </p>
-
-                </div>
-
-              `
-            )
+              </div>
+            `)
             .join("")
+
         : `
           <div class="item">
             No transactions yet.
           </div>
         `;
-
   }
-
 }
 
 
 /* =========================================================
    INVITE
 ========================================================= */
-
-function shareInvite() {
-
-  window.open(
-    "https://wa.me/?text=" +
-      encodeURIComponent(
-        "Join NSG Wellfare: " +
-        location.href
-      ),
-    "_blank"
-  );
-
-}
-
 
 function copyInvite() {
 
@@ -2724,51 +1614,53 @@ function copyInvite() {
       "inviteMsg"
     );
 
+  const link =
+    location.href;
 
   if (
     navigator.clipboard
   ) {
 
     navigator.clipboard
-      .writeText(
-        location.href
-      )
-      .then(
-        () => {
+      .writeText(link)
+      .then(() => {
 
-          if (msg) {
-
-            msg.textContent =
-              "Invite link copied.";
-
-          }
-
+        if (msg) {
+          msg.textContent =
+            "Invite link copied.";
         }
-      )
-      .catch(
-        () => {
+      })
+      .catch(() => {
 
-          if (msg) {
-
-            msg.textContent =
-              location.href;
-
-          }
-
+        if (msg) {
+          msg.textContent =
+            link;
         }
-      );
+      });
 
   } else {
 
     if (msg) {
-
       msg.textContent =
-        location.href;
-
+        link;
     }
-
   }
+}
 
+
+function shareInvite() {
+
+  const link =
+    location.href;
+
+  window.open(
+    "https://wa.me/?text=" +
+    encodeURIComponent(
+      "Join NSG Wellfare:\n" +
+      link
+    ),
+    "_blank"
+  );
 }
 
 
@@ -2782,75 +1674,35 @@ function support() {
     SUPPORT,
     "_blank"
   );
-
 }
 
 
 /* =========================================================
-   LOCAL DATE
+   INITIALIZE DEVICE
 ========================================================= */
 
-function localDateString() {
+function initDevice() {
 
-  const d =
-    new Date();
-
-
-  return (
-    d.getFullYear() +
-    "-" +
-    String(
-      d.getMonth() + 1
-    ).padStart(2, "0") +
-    "-" +
-    String(
-      d.getDate()
-    ).padStart(2, "0")
-  );
-
-}
-
-
-/* =========================================================
-   HTML SAFE
-========================================================= */
-
-function safe(value) {
-
-  return String(
-    value == null
-      ? ""
-      : value
-  )
-    .replace(
-      /[&<>"']/g,
-      a =>
-        ({
-          "&":
-            "&amp;",
-          "<":
-            "&lt;",
-          ">":
-            "&gt;",
-          '"':
-            "&quot;",
-          "'":
-            "&#039;"
-        }[a])
+  let device =
+    localStorage.getItem(
+      "nsgDevice"
     );
 
-}
+  if (!device) {
 
+    device =
+      "DEV-" +
+      Date.now() +
+      "-" +
+      Math.random()
+        .toString(36)
+        .slice(2, 10);
 
-function safeAttr(value) {
-
-  return safe(
-    value
-  ).replace(
-    /`/g,
-    "&#096;"
-  );
-
+    localStorage.setItem(
+      "nsgDevice",
+      device
+    );
+  }
 }
 
 
@@ -2858,39 +1710,141 @@ function safeAttr(value) {
    INITIALIZE
 ========================================================= */
 
+function init() {
+
+  initDevice();
+
+  render();
+
+  updateNav("home");
+
+  /*
+   * Try to synchronize the account
+   * with the server.
+   */
+  syncUser();
+}
+
+
+/* =========================================================
+   SERVER USER SYNC
+========================================================= */
+
+async function syncUser() {
+
+  const result =
+    await api(
+      "getUser"
+    );
+
+  if (
+    !result ||
+    !result.success
+  ) {
+    return;
+  }
+
+  /*
+   * Accept common response formats.
+   */
+  const user =
+    result.user ||
+    result.data ||
+    result;
+
+  if (
+    user.balance !==
+    undefined
+  ) {
+
+    s.balance =
+      Number(
+        user.balance
+      );
+  }
+
+  save();
+
+  render();
+}
+
+
+/* =========================================================
+   SCREENSHOT INPUT
+========================================================= */
+
 document.addEventListener(
   "DOMContentLoaded",
   () => {
 
-    setupScreenshot();
+    const input =
+      document.getElementById(
+        "paymentScreenshot"
+      );
 
-    render();
+    if (input) {
 
-    /*
-       Load server rewards after
-       page starts.
-    */
+      input.addEventListener(
+        "change",
+        function () {
 
-    loadRewards();
+          const file =
+            this.files?.[0];
 
+          const preview =
+            document.getElementById(
+              "preview"
+            );
+
+          if (!preview)
+            return;
+
+          if (!file) {
+
+            preview.innerHTML =
+              "";
+
+            return;
+          }
+
+          if (
+            file.size >
+            5 * 1024 * 1024
+          ) {
+
+            alert(
+              "Screenshot must be under 5 MB."
+            );
+
+            this.value = "";
+
+            preview.innerHTML =
+              "";
+
+            return;
+          }
+
+          const reader =
+            new FileReader();
+
+          reader.onload =
+            e => {
+
+              preview.innerHTML = `
+                <img
+                  src="${e.target.result}"
+                  alt="Payment Screenshot"
+                >
+              `;
+            };
+
+          reader.readAsDataURL(
+            file
+          );
+        }
+      );
+    }
+
+    init();
   }
 );
-
-
-/*
-   In case script is loaded after
-   DOM is already ready.
-*/
-
-if (
-  document.readyState !==
-  "loading"
-) {
-
-  setupScreenshot();
-
-  render();
-
-  loadRewards();
-
-}
