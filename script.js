@@ -1,1801 +1,3353 @@
 /* =========================================================
    BITCOIN MINNING
-   Main JavaScript
-   Firebase + Local Demo Data
-   ========================================================= */
+   COMPLETE SCRIPT
+   Firebase Test/Demo Balance + Website Functions
+========================================================= */
 
-"use strict";
+(function () {
 
+  "use strict";
 
-/* =========================================================
-   CONFIG
-   ========================================================= */
 
-const UPI_ID = "yadav-rishab@fam";
-const CUSTOMER_SERVICE = "https://t.me/Hammerff7gcz";
+  /* =======================================================
+     CONFIG
+  ======================================================= */
 
-const STORAGE = {
-  user: "bm_user",
-  balance: "bm_balance",
-  profile: "bm_profile",
-  bank: "bm_bank",
-  deposits: "bm_deposit_history",
-  withdrawals: "bm_withdrawal_history",
-  transactions: "bm_transactions",
-  referral: "bm_referral"
-};
+  const UPI_ID = "yadav-rishab@fam";
 
+  const CUSTOMER_SERVICE =
+    "https://t.me/Hammerff7gcz";
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
+  const ADMIN_EMAIL =
+    "yadavroushan8269@gmail.com";
 
-function $(id) {
-  return document.getElementById(id);
-}
 
-function safeJSONParse(value, fallback) {
-  try {
-    return value ? JSON.parse(value) : fallback;
-  } catch (error) {
-    return fallback;
-  }
-}
+  /* =======================================================
+     FIREBASE CONFIG
+  ======================================================= */
 
-function getStorage(key, fallback) {
-  return safeJSONParse(localStorage.getItem(key), fallback);
-}
+  const FIREBASE_CONFIG = {
 
-function setStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
+    apiKey:
+      "AIzaSyAN5jFZ0hBOb-Zmbrv8W1E2aGqnmd8_iOM",
 
-function money(value) {
-  const number = Number(value) || 0;
+    authDomain:
+      "bitcoin-minning-web.firebaseapp.com",
 
-  return number.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
+    projectId:
+      "bitcoin-minning-web",
 
-function nowString() {
-  return new Date().toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
-}
+    storageBucket:
+      "bitcoin-minning-web.firebasestorage.app",
 
-function generateUserId() {
-  return "You-" + Math.floor(1000000 + Math.random() * 9000000);
-}
+    messagingSenderId:
+      "691683594489",
 
-function getUser() {
-  let user = getStorage(STORAGE.user, null);
-
-  if (!user) {
-    user = {
-      id: generateUserId(),
-      createdAt: new Date().toISOString()
-    };
-
-    setStorage(STORAGE.user, user);
-  }
-
-  return user;
-}
-
-function getBalance() {
-  return Number(localStorage.getItem(STORAGE.balance)) || 0;
-}
-
-function setBalance(value) {
-  const balance = Math.max(0, Number(value) || 0);
-
-  localStorage.setItem(STORAGE.balance, String(balance));
-
-  updateBalanceUI();
-}
-
-function showMessage(element, text, type) {
-  if (!element) return;
-
-  element.textContent = text;
-  element.className = "message";
-
-  if (type) {
-    element.classList.add(type);
-  }
-}
-
-function clearMessage(element) {
-  if (!element) return;
-
-  element.textContent = "";
-  element.className = "message";
-}
-
-
-/* =========================================================
-   FIREBASE
-   ========================================================= */
-
-let firebaseUser = null;
-
-async function initializeFirebase() {
-
-  if (
-    typeof firebase === "undefined" ||
-    typeof auth === "undefined"
-  ) {
-    console.warn("Firebase is not available.");
-    return;
-  }
-
-  try {
-
-    if (!auth.currentUser) {
-      await auth.signInAnonymously();
-    }
-
-    firebaseUser = auth.currentUser;
-
-    console.log("Firebase connected:", firebaseUser.uid);
-
-    await loadFirebaseTestBalance();
-
-  } catch (error) {
-
-    console.warn(
-      "Firebase initialization failed:",
-      error
-    );
-
-  }
-}
-
-
-async function loadFirebaseTestBalance() {
-
-  if (
-    !firebaseUser ||
-    typeof db === "undefined"
-  ) {
-    return;
-  }
-
-  try {
-
-    const ref = db
-      .collection("testBalances")
-      .doc(firebaseUser.uid);
-
-    const snapshot = await ref.get();
-
-    if (!snapshot.exists) {
-
-      await ref.set({
-        uid: firebaseUser.uid,
-        userId: getUser().id,
-        balance: 0,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      setBalance(0);
-
-      return;
-    }
-
-    const data = snapshot.data();
-
-    if (typeof data.balance === "number") {
-      setBalance(data.balance);
-    }
-
-  } catch (error) {
-
-    console.warn(
-      "Could not load Firebase balance:",
-      error
-    );
-
-  }
-}
-
-
-/* =========================================================
-   SAVE TEST BALANCE
-   ========================================================= */
-
-async function saveFirebaseBalance(balance) {
-
-  if (
-    !firebaseUser ||
-    typeof db === "undefined"
-  ) {
-    return false;
-  }
-
-  try {
-
-    await db
-      .collection("testBalances")
-      .doc(firebaseUser.uid)
-      .set(
-        {
-          uid: firebaseUser.uid,
-          userId: getUser().id,
-          balance: Number(balance) || 0,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        },
-        {
-          merge: true
-        }
-      );
-
-    return true;
-
-  } catch (error) {
-
-    console.warn(
-      "Firebase balance save failed:",
-      error
-    );
-
-    return false;
-  }
-}
-
-
-/* =========================================================
-   NAVIGATION
-   ========================================================= */
-
-const allPages = [
-  "homePage",
-  "productPage",
-  "infoPage",
-  "depositPage",
-  "withdrawPage",
-  "depositHistoryPage",
-  "withdrawalHistoryPage",
-  "historyPage",
-  "invitePage"
-];
-
-function showPage(pageId) {
-
-  allPages.forEach(function (id) {
-
-    const page = $(id);
-
-    if (page) {
-      page.classList.remove("active");
-    }
-
-  });
-
-  const target = $(pageId);
-
-  if (target) {
-    target.classList.add("active");
-  }
-
-  document
-    .querySelectorAll(".nav-item")
-    .forEach(function (item) {
-
-      item.classList.remove("active");
-
-      if (item.dataset.page === pageId) {
-        item.classList.add("active");
-      }
-
-    });
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-
-  if (pageId === "depositHistoryPage") {
-    renderDepositHistory();
-  }
-
-  if (pageId === "withdrawalHistoryPage") {
-    renderWithdrawalHistory();
-  }
-
-  if (pageId === "historyPage") {
-    renderTransactions();
-  }
-
-  if (pageId === "infoPage") {
-    loadBankDetails();
-    updateBalanceUI();
-  }
-}
-
-
-/* =========================================================
-   BOTTOM NAV
-   ========================================================= */
-
-document
-  .querySelectorAll(".nav-item")
-  .forEach(function (item) {
-
-    item.addEventListener("click", function () {
-
-      const pageId = item.dataset.page;
-
-      if (pageId) {
-        showPage(pageId);
-      }
-
-    });
-
-  });
-
-
-/* =========================================================
-   HOME BUTTONS
-   ========================================================= */
-
-if ($("depositBtn")) {
-
-  $("depositBtn").addEventListener("click", function () {
-    showPage("depositPage");
-  });
-
-}
-
-
-if ($("withdrawBtn")) {
-
-  $("withdrawBtn").addEventListener("click", function () {
-
-    showPage("withdrawPage");
-
-    setTimeout(function () {
-
-      if ($("withdrawPageAmount")) {
-        $("withdrawPageAmount").focus();
-      }
-
-    }, 250);
-
-  });
-
-}
-
-
-if ($("myInfoBtn")) {
-
-  $("myInfoBtn").addEventListener("click", function () {
-    showPage("infoPage");
-  });
-
-}
-
-
-if ($("inviteBtn")) {
-
-  $("inviteBtn").addEventListener("click", function () {
-    showPage("invitePage");
-  });
-
-}
-
-
-if ($("productsBtn")) {
-
-  $("productsBtn").addEventListener("click", function () {
-    showPage("productPage");
-  });
-
-}
-
-
-if ($("topProfile")) {
-
-  $("topProfile").addEventListener("click", function () {
-    showPage("infoPage");
-  });
-
-}
-
-
-/* =========================================================
-   USER / GREETING
-   ========================================================= */
-
-function initializeUser() {
-
-  const user = getUser();
-
-  if ($("profileUserId")) {
-    $("profileUserId").textContent =
-      "User ID: " + user.id;
-  }
-
-  if ($("greeting")) {
-
-    const hour = new Date().getHours();
-
-    let greeting = "Good evening";
-
-    if (hour < 12) {
-      greeting = "Good morning";
-    } else if (hour < 17) {
-      greeting = "Good afternoon";
-    }
-
-    $("greeting").textContent =
-      greeting + ", User 👋";
-
-  }
-
-}
-
-
-/* =========================================================
-   BALANCE UI
-   ========================================================= */
-
-function updateBalanceUI() {
-
-  const balance = getBalance();
-
-  if ($("homeBalance")) {
-    $("homeBalance").textContent = money(balance);
-  }
-
-  if ($("infoBalance")) {
-    $("infoBalance").textContent = money(balance);
-  }
-
-  if ($("withdrawBalance")) {
-    $("withdrawBalance").textContent = money(balance);
-  }
-
-  if ($("withdrawPageBalance")) {
-    $("withdrawPageBalance").textContent = money(balance);
-  }
-
-}
-
-
-/* =========================================================
-   PROFILE
-   ========================================================= */
-
-function loadProfile() {
-
-  const profile = getStorage(
-    STORAGE.profile,
-    null
-  );
-
-  if (!profile || !profile.image) {
-    return;
-  }
-
-  if ($("profileImage")) {
-
-    $("profileImage").src = profile.image;
-    $("profileImage").classList.add("show");
-
-  }
-
-  if ($("profileLetter")) {
-    $("profileLetter").style.display = "none";
-  }
-
-  if ($("topProfileImg")) {
-
-    $("topProfileImg").src = profile.image;
-    $("topProfileImg").classList.add("show");
-
-  }
-
-  if ($("topProfileLetter")) {
-    $("topProfileLetter").style.display = "none";
-  }
-
-}
-
-
-if ($("profileUploadBtn")) {
-
-  $("profileUploadBtn").addEventListener(
-    "click",
-    function () {
-
-      if ($("profileUpload")) {
-        $("profileUpload").click();
-      }
-
-    }
-  );
-
-}
-
-
-if ($("profileUpload")) {
-
-  $("profileUpload").addEventListener(
-    "change",
-    function () {
-
-      const file = this.files && this.files[0];
-
-      if (!file) return;
-
-      if (!file.type.startsWith("image/")) {
-        alert("Please select an image.");
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image should be smaller than 5 MB.");
-        return;
-      }
-
-      const reader = new FileReader();
-
-      reader.onload = function (event) {
-
-        const image = event.target.result;
-
-        setStorage(STORAGE.profile, {
-          image: image
-        });
-
-        loadProfile();
-
-      };
-
-      reader.readAsDataURL(file);
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   BANK DETAILS
-   ========================================================= */
-
-function loadBankDetails() {
-
-  const bank = getStorage(
-    STORAGE.bank,
-    null
-  );
-
-  if (!bank) return;
-
-  if ($("bankName")) {
-    $("bankName").value = bank.name || "";
-  }
-
-  if ($("bankIfsc")) {
-    $("bankIfsc").value = bank.ifsc || "";
-  }
-
-  if ($("bankBankName")) {
-    $("bankBankName").value = bank.bankName || "";
-  }
-
-  if ($("bankAccount")) {
-    $("bankAccount").value = bank.account || "";
-  }
-
-  if ($("bankAccountRepeat")) {
-    $("bankAccountRepeat").value =
-      bank.accountRepeat || "";
-  }
-
-}
-
-
-if ($("saveBankBtn")) {
-
-  $("saveBankBtn").addEventListener(
-    "click",
-    function () {
-
-      const name =
-        $("bankName")
-          ? $("bankName").value.trim()
-          : "";
-
-      const ifsc =
-        $("bankIfsc")
-          ? $("bankIfsc").value.trim()
-          : "";
-
-      const bankName =
-        $("bankBankName")
-          ? $("bankBankName").value.trim()
-          : "";
-
-      const account =
-        $("bankAccount")
-          ? $("bankAccount").value.trim()
-          : "";
-
-      const accountRepeat =
-        $("bankAccountRepeat")
-          ? $("bankAccountRepeat").value.trim()
-          : "";
-
-      const message = $("bankMessage");
-
-      clearMessage(message);
-
-      if (!name) {
-        showMessage(
-          message,
-          "Enter account holder name.",
-          "error"
-        );
-        return;
-      }
-
-      if (!ifsc) {
-        showMessage(
-          message,
-          "Enter IFSC code.",
-          "error"
-        );
-        return;
-      }
-
-      if (!bankName) {
-        showMessage(
-          message,
-          "Enter bank name.",
-          "error"
-        );
-        return;
-      }
-
-      if (!account) {
-        showMessage(
-          message,
-          "Enter account number.",
-          "error"
-        );
-        return;
-      }
-
-      if (account !== accountRepeat) {
-        showMessage(
-          message,
-          "Account numbers do not match.",
-          "error"
-        );
-        return;
-      }
-
-      setStorage(STORAGE.bank, {
-        name: name,
-        ifsc: ifsc,
-        bankName: bankName,
-        account: account,
-        accountRepeat: accountRepeat
-      });
-
-      showMessage(
-        message,
-        "Bank details saved locally for this demo.",
-        "success"
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   DEPOSIT
-   ========================================================= */
-
-let selectedScreenshotData = "";
-
-
-if ($("copyUpiBtn")) {
-
-  $("copyUpiBtn").addEventListener(
-    "click",
-    async function () {
-
-      try {
-
-        await navigator.clipboard.writeText(UPI_ID);
-
-        this.textContent = "Copied";
-
-        const button = this;
-
-        setTimeout(function () {
-          button.textContent = "Copy";
-        }, 1500);
-
-      } catch (error) {
-
-        alert("UPI ID: " + UPI_ID);
-
-      }
-
-    }
-  );
-
-}
-
-
-/* SCREENSHOT PREVIEW */
-
-if ($("paymentScreenshot")) {
-
-  $("paymentScreenshot").addEventListener(
-    "change",
-    function () {
-
-      const file =
-        this.files && this.files[0];
-
-      if (!file) {
-        selectedScreenshotData = "";
-
-        if ($("paymentScreenshotPreview")) {
-          $("paymentScreenshotPreview").innerHTML = "";
-          $("paymentScreenshotPreview")
-            .classList.remove("show");
-        }
-
-        return;
-      }
-
-      if (!file.type.startsWith("image/")) {
-
-        alert("Please select an image.");
-
-        this.value = "";
-        return;
-
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-
-        alert(
-          "Screenshot should be smaller than 5 MB."
-        );
-
-        this.value = "";
-        return;
-
-      }
-
-      const reader = new FileReader();
-
-      reader.onload = function (event) {
-
-        selectedScreenshotData =
-          event.target.result;
-
-        if ($("paymentScreenshotPreview")) {
-
-          $("paymentScreenshotPreview").innerHTML =
-            "<img src=\"" +
-            selectedScreenshotData +
-            "\" alt=\"Payment screenshot preview\">";
-
-          $("paymentScreenshotPreview")
-            .classList.add("show");
-
-        }
-
-      };
-
-      reader.readAsDataURL(file);
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   DEPOSIT REQUEST
-   ========================================================= */
-
-if ($("paymentSubmit")) {
-
-  $("paymentSubmit").addEventListener(
-    "click",
-    function () {
-
-      const amount = Number(
-        $("depositAmount")
-          ? $("depositAmount").value
-          : 0
-      );
-
-      const utr =
-        $("utr")
-          ? $("utr").value.trim()
-          : "";
-
-      const message =
-        $("paymentMessage");
-
-      clearMessage(message);
-
-      if (!amount || amount < 200 || amount > 50000) {
-
-        showMessage(
-          message,
-          "Enter an amount between ₹200 and ₹50,000.",
-          "error"
-        );
-
-        return;
-      }
-
-      if (!utr) {
-
-        showMessage(
-          message,
-          "Enter the transaction reference.",
-          "error"
-        );
-
-        return;
-      }
-
-      if (!selectedScreenshotData) {
-
-        showMessage(
-          message,
-          "Please select a payment screenshot.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      const user = getUser();
-
-      const request = {
-
-        id:
-          "DEP-" +
-          Date.now(),
-
-        userId:
-          user.id,
-
-        amount:
-          amount,
-
-        utr:
-          utr,
-
-        status:
-          "Pending Verification",
-
-        createdAt:
-          new Date().toISOString()
-
-      };
-
-
-      const history = getStorage(
-        STORAGE.deposits,
-        []
-      );
-
-      history.unshift(request);
-
-      setStorage(
-        STORAGE.deposits,
-        history.slice(0, 100)
-      );
-
-
-      addTransaction({
-        type: "Deposit Request",
-        amount: amount,
-        status: "Pending Verification",
-        reference: request.id
-      });
-
-
-      showMessage(
-        message,
-        "Request submitted. Status: Pending Verification.",
-        "success"
-      );
-
-
-      if ($("depositAmount")) {
-        $("depositAmount").value = "";
-      }
-
-      if ($("utr")) {
-        $("utr").value = "";
-      }
-
-      if ($("paymentScreenshot")) {
-        $("paymentScreenshot").value = "";
-      }
-
-      selectedScreenshotData = "";
-
-      if ($("paymentScreenshotPreview")) {
-        $("paymentScreenshotPreview").innerHTML = "";
-        $("paymentScreenshotPreview")
-          .classList.remove("show");
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   WITHDRAWAL
-   ========================================================= */
-
-function createWithdrawal(amount, messageElement) {
-
-  const balance = getBalance();
-
-  if (!amount || amount < 500 || amount > 20000) {
-
-    showMessage(
-      messageElement,
-      "Enter an amount between ₹500 and ₹20,000.",
-      "error"
-    );
-
-    return false;
-  }
-
-  if (amount > balance) {
-
-    showMessage(
-      messageElement,
-      "Insufficient demo balance.",
-      "error"
-    );
-
-    return false;
-  }
-
-
-  const history = getStorage(
-    STORAGE.withdrawals,
-    []
-  );
-
-
-  const today = new Date().toDateString();
-
-  const todayCount =
-    history.filter(function (item) {
-
-      return new Date(item.createdAt)
-        .toDateString() === today;
-
-    }).length;
-
-
-  if (todayCount >= 3) {
-
-    showMessage(
-      messageElement,
-      "Maximum 3 withdrawal requests per day.",
-      "error"
-    );
-
-    return false;
-  }
-
-
-  const now = new Date();
-
-  const minutes =
-    now.getHours() * 60 +
-    now.getMinutes();
-
-  const opening =
-    10 * 60 + 30;
-
-  const closing =
-    17 * 60;
-
-
-  if (
-    minutes < opening ||
-    minutes > closing
-  ) {
-
-    showMessage(
-      messageElement,
-      "Withdrawal requests are available from 10:30 AM to 5:00 PM.",
-      "error"
-    );
-
-    return false;
-  }
-
-
-  const request = {
-
-    id:
-      "WDR-" +
-      Date.now(),
-
-    userId:
-      getUser().id,
-
-    amount:
-      amount,
-
-    status:
-      "Pending Verification",
-
-    createdAt:
-      new Date().toISOString()
+    appId:
+      "1:691683594489:web:96252fee18748e54ad9228"
 
   };
 
 
-  history.unshift(request);
+  /* =======================================================
+     GLOBAL FIREBASE VARIABLES
+  ======================================================= */
 
-  setStorage(
-    STORAGE.withdrawals,
-    history.slice(0, 100)
-  );
+  let firebaseApp = null;
 
+  let firebaseAuth = null;
 
-  setBalance(balance - amount);
+  let firestoreDB = null;
 
-  saveFirebaseBalance(
-    getBalance()
-  );
+  let firebaseUser = null;
 
+  let firebaseBalance = 0;
 
-  addTransaction({
+  let firebaseReady = false;
 
-    type:
-      "Withdrawal Request",
 
-    amount:
-      amount,
+  /* =======================================================
+     BASIC HELPERS
+  ======================================================= */
 
-    status:
-      "Pending Verification",
+  function byId(id) {
 
-    reference:
-      request.id
+    return document.getElementById(id);
 
-  });
-
-
-  showMessage(
-    messageElement,
-    "Withdrawal request submitted.",
-    "success"
-  );
-
-
-  return true;
-}
-
-
-/* OLD INFO WITHDRAW */
-
-if ($("withdrawSubmit")) {
-
-  $("withdrawSubmit").addEventListener(
-    "click",
-    function () {
-
-      const amount = Number(
-        $("withdrawAmount")
-          ? $("withdrawAmount").value
-          : 0
-      );
-
-      const success = createWithdrawal(
-        amount,
-        $("withdrawMessage")
-      );
-
-      if (success && $("withdrawAmount")) {
-        $("withdrawAmount").value = "";
-      }
-
-    }
-  );
-
-}
-
-
-/* SEPARATE WITHDRAW PAGE */
-
-if ($("withdrawPageSubmit")) {
-
-  $("withdrawPageSubmit").addEventListener(
-    "click",
-    function () {
-
-      const amount = Number(
-        $("withdrawPageAmount")
-          ? $("withdrawPageAmount").value
-          : 0
-      );
-
-      const success = createWithdrawal(
-        amount,
-        $("withdrawPageMessage")
-      );
-
-      if (success && $("withdrawPageAmount")) {
-        $("withdrawPageAmount").value = "";
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   TRANSACTIONS
-   ========================================================= */
-
-function addTransaction(transaction) {
-
-  const transactions =
-    getStorage(
-      STORAGE.transactions,
-      []
-    );
-
-  transactions.unshift({
-
-    id:
-      transaction.reference ||
-      ("TX-" + Date.now()),
-
-    type:
-      transaction.type || "Transaction",
-
-    amount:
-      Number(transaction.amount) || 0,
-
-    status:
-      transaction.status || "Pending",
-
-    createdAt:
-      new Date().toISOString()
-
-  });
-
-  setStorage(
-    STORAGE.transactions,
-    transactions.slice(0, 200)
-  );
-
-}
-
-
-/* =========================================================
-   HISTORY RENDER
-   ========================================================= */
-
-function emptyHistoryHTML(title, text) {
-
-  return `
-    <div class="history-empty">
-      <strong>${title}</strong>
-      <span>${text}</span>
-    </div>
-  `;
-
-}
-
-
-function historyItemHTML(item, type) {
-
-  const title =
-    type === "deposit"
-      ? "Deposit Request"
-      : "Withdrawal Request";
-
-  const amount =
-    money(item.amount);
-
-  const status =
-    String(item.status || "Pending")
-      .toLowerCase()
-      .replace(/\s+/g, "-");
-
-  const date =
-    item.createdAt
-      ? new Date(item.createdAt)
-          .toLocaleString("en-IN")
-      : "-";
-
-
-  return `
-    <div class="history-item">
-
-      <div class="history-item-top">
-
-        <div>
-          <div class="history-item-title">
-            ${title}
-          </div>
-
-          <div class="history-item-meta">
-            ${date}
-          </div>
-        </div>
-
-        <div class="history-item-amount">
-          ₹${amount}
-        </div>
-
-      </div>
-
-      <div class="history-item-meta">
-
-        <span>
-          ${item.id || "-"}
-        </span>
-
-        <span class="status ${status}">
-          ${item.status || "Pending"}
-        </span>
-
-      </div>
-
-    </div>
-  `;
-
-}
-
-
-function renderDepositHistory() {
-
-  const container =
-    $("depositHistoryList");
-
-  if (!container) return;
-
-  const history =
-    getStorage(
-      STORAGE.deposits,
-      []
-    );
-
-  if (!history.length) {
-
-    container.innerHTML =
-      emptyHistoryHTML(
-        "No deposit requests",
-        "Your deposit requests will appear here."
-      );
-
-    return;
   }
 
-  container.innerHTML =
-    history
-      .map(function (item) {
-        return historyItemHTML(
-          item,
-          "deposit"
+
+  function safeJSONParse(value, fallback) {
+
+    try {
+
+      const parsed =
+        JSON.parse(value);
+
+      return parsed;
+
+    } catch (error) {
+
+      return fallback;
+
+    }
+
+  }
+
+
+  function readLocalArray(key) {
+
+    const value =
+      localStorage.getItem(key);
+
+    if (!value) {
+
+      return [];
+
+    }
+
+    const parsed =
+      safeJSONParse(value, []);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+
+  }
+
+
+  function saveLocalArray(key, value) {
+
+    localStorage.setItem(
+      key,
+      JSON.stringify(value)
+    );
+
+  }
+
+
+  /* =======================================================
+     USER ID
+  ======================================================= */
+
+  function createUserId() {
+
+    let userId =
+      localStorage.getItem(
+        "bm_user_id"
+      );
+
+
+    if (!userId) {
+
+      const number =
+        Math.floor(
+          1000000 +
+          Math.random() * 9000000
         );
-      })
-      .join("");
-
-}
 
 
-function renderWithdrawalHistory() {
+      userId =
+        "You-" + number;
 
-  const container =
-    $("withdrawalHistoryList");
 
-  if (!container) return;
-
-  const history =
-    getStorage(
-      STORAGE.withdrawals,
-      []
-    );
-
-  if (!history.length) {
-
-    container.innerHTML =
-      emptyHistoryHTML(
-        "No withdrawal requests",
-        "Your withdrawal requests will appear here."
+      localStorage.setItem(
+        "bm_user_id",
+        userId
       );
 
-    return;
+    }
+
+
+    const profileUserId =
+      byId("profileUserId");
+
+
+    if (profileUserId) {
+
+      profileUserId.textContent =
+        userId;
+
+    }
+
+
+    return userId;
+
   }
 
-  container.innerHTML =
-    history
-      .map(function (item) {
-        return historyItemHTML(
-          item,
-          "withdrawal"
+
+  function getUserId() {
+
+    return (
+      localStorage.getItem(
+        "bm_user_id"
+      ) ||
+      createUserId()
+    );
+
+  }
+
+
+  /* =======================================================
+     PAGE NAVIGATION
+  ======================================================= */
+
+  function getPages() {
+
+    return document.querySelectorAll(
+      ".page"
+    );
+
+  }
+
+
+  function getNavButtons() {
+
+    return document.querySelectorAll(
+      ".nav"
+    );
+
+  }
+
+
+  function showPage(pageId) {
+
+    const pages =
+      getPages();
+
+
+    pages.forEach(
+      function (page) {
+
+        page.classList.remove(
+          "active"
         );
-      })
-      .join("");
 
-}
-
-
-function renderTransactions() {
-
-  const container =
-    $("historyList");
-
-  if (!container) return;
-
-  const transactions =
-    getStorage(
-      STORAGE.transactions,
-      []
+      }
     );
 
-  if (!transactions.length) {
 
-    container.innerHTML =
-      emptyHistoryHTML(
-        "No transactions",
-        "Your demo transactions will appear here."
+    const page =
+      byId(pageId);
+
+
+    if (page) {
+
+      page.classList.add(
+        "active"
       );
 
-    return;
+    }
+
+
+    getNavButtons().forEach(
+      function (button) {
+
+        button.classList.remove(
+          "active"
+        );
+
+
+        if (
+          button.dataset.page ===
+          pageId
+        ) {
+
+          button.classList.add(
+            "active"
+          );
+
+        }
+
+      }
+    );
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
   }
 
 
-  container.innerHTML =
-    transactions
-      .map(function (item) {
+  function setupNavigation() {
 
-        const status =
-          String(item.status || "Pending")
-            .toLowerCase()
-            .replace(/\s+/g, "-");
+    document
+      .querySelectorAll(
+        "[data-page]"
+      )
+      .forEach(
+        function (button) {
 
-        const date =
-          item.createdAt
-            ? new Date(item.createdAt)
-                .toLocaleString("en-IN")
-            : "-";
+          button.addEventListener(
+            "click",
+            function () {
 
-        return `
-          <div class="history-item">
-
-            <div class="history-item-top">
-
-              <div>
-
-                <div class="history-item-title">
-                  ${item.type}
-                </div>
-
-                <div class="history-item-meta">
-                  ${date}
-                </div>
-
-              </div>
-
-              <div class="history-item-amount">
-                ₹${money(item.amount)}
-              </div>
-
-            </div>
-
-            <div class="history-item-meta">
-
-              <span>
-                ${item.id || "-"}
-              </span>
-
-              <span class="status ${status}">
-                ${item.status || "Pending"}
-              </span>
-
-            </div>
-
-          </div>
-        `;
-
-      })
-      .join("");
-
-}
+              const pageId =
+                button.dataset.page;
 
 
-/* =========================================================
-   HISTORY BUTTONS
-   ========================================================= */
+              if (pageId) {
 
-if ($("depositHistoryBtn")) {
+                showPage(
+                  pageId
+                );
 
-  $("depositHistoryBtn").addEventListener(
-    "click",
-    function () {
+              }
 
-      showPage("depositHistoryPage");
+            }
+          );
 
-    }
-  );
-
-}
+        }
+      );
 
 
-if ($("withdrawalHistoryBtn")) {
+    document
+      .querySelectorAll(
+        "[data-back]"
+      )
+      .forEach(
+        function (button) {
 
-  $("withdrawalHistoryBtn").addEventListener(
-    "click",
-    function () {
+          button.addEventListener(
+            "click",
+            function () {
 
-      showPage("withdrawalHistoryPage");
-
-    }
-  );
-
-}
-
-
-if ($("transactionHistoryBtn")) {
-
-  $("transactionHistoryBtn").addEventListener(
-    "click",
-    function () {
-
-      showPage("historyPage");
-
-    }
-  );
-
-}
+              const pageId =
+                button.dataset.back;
 
 
-/* BACK BUTTONS */
+              if (pageId) {
 
-if ($("historyBackBtn")) {
+                showPage(
+                  pageId
+                );
 
-  $("historyBackBtn").addEventListener(
-    "click",
-    function () {
-      showPage("infoPage");
-    }
-  );
+              }
 
-}
+            }
+          );
 
+        }
+      );
 
-if ($("withdrawHistoryBackBtn")) {
-
-  $("withdrawHistoryBackBtn").addEventListener(
-    "click",
-    function () {
-      showPage("infoPage");
-    }
-  );
-
-}
-
-
-if ($("transactionHistoryBackBtn")) {
-
-  $("transactionHistoryBackBtn").addEventListener(
-    "click",
-    function () {
-      showPage("infoPage");
-    }
-  );
-
-}
-
-
-/* =========================================================
-   INVITE
-   ========================================================= */
-
-function initializeReferral() {
-
-  const user =
-    getUser();
-
-  const base =
-    window.location.origin +
-    window.location.pathname;
-
-  const referral =
-    base +
-    "?ref=" +
-    encodeURIComponent(user.id);
-
-
-  setStorage(
-    STORAGE.referral,
-    referral
-  );
-
-
-  if ($("referralLink")) {
-    $("referralLink").value =
-      referral;
   }
 
-}
+
+  /* =======================================================
+     BALANCE
+  ======================================================= */
+
+  function getLocalBalance() {
+
+    return Number(
+      localStorage.getItem(
+        "bm_balance"
+      ) || 0
+    );
+
+  }
 
 
-if ($("copyLinkBtn")) {
+  function getBalance() {
 
-  $("copyLinkBtn").addEventListener(
-    "click",
-    async function () {
+    if (firebaseReady) {
 
-      const link =
-        $("referralLink")
-          ? $("referralLink").value
-          : "";
+      return Number(
+        firebaseBalance || 0
+      );
 
-      if (!link) return;
+    }
 
-      try {
+    return getLocalBalance();
 
-        await navigator.clipboard.writeText(link);
+  }
 
-        this.textContent = "Copied";
 
-        const button = this;
+  function updateBalanceDisplay() {
 
-        setTimeout(function () {
-          button.textContent = "Copy";
-        }, 1500);
+    const balance =
+      getBalance();
 
-      } catch (error) {
 
-        alert(link);
+    const formatted =
+      "₹" +
+      balance.toLocaleString(
+        "en-IN"
+      );
+
+
+    const ids = [
+
+      "homeBalance",
+
+      "infoBalance",
+
+      "withdrawBalance"
+
+    ];
+
+
+    ids.forEach(
+      function (id) {
+
+        const element =
+          byId(id);
+
+
+        if (element) {
+
+          element.textContent =
+            formatted;
+
+        }
+
+      }
+    );
+
+  }
+
+
+  function updateBalance() {
+
+    updateBalanceDisplay();
+
+  }
+
+
+  /* =======================================================
+     FIREBASE SDK LOADER
+  ======================================================= */
+
+  function loadFirebaseScript(src) {
+
+    return new Promise(
+      function (resolve, reject) {
+
+        const existing =
+          document.querySelector(
+            'script[src="' +
+            src +
+            '"]'
+          );
+
+
+        if (existing) {
+
+          if (
+            typeof firebase !==
+            "undefined"
+          ) {
+
+            resolve();
+
+            return;
+
+          }
+
+        }
+
+
+        const script =
+          document.createElement(
+            "script"
+          );
+
+
+        script.src = src;
+
+        script.async = true;
+
+
+        script.onload =
+          function () {
+
+            resolve();
+
+          };
+
+
+        script.onerror =
+          function () {
+
+            reject(
+              new Error(
+                "Failed to load Firebase"
+              )
+            );
+
+          };
+
+
+        document.head.appendChild(
+          script
+        );
+
+      }
+    );
+
+  }
+
+
+  async function loadFirebaseSDK() {
+
+    try {
+
+      await loadFirebaseScript(
+        "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"
+      );
+
+
+      await loadFirebaseScript(
+        "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"
+      );
+
+
+      await loadFirebaseScript(
+        "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"
+      );
+
+
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "Firebase SDK error:",
+        error
+      );
+
+
+      return false;
+
+    }
+
+  }
+
+
+  /* =======================================================
+     FIREBASE INITIALIZATION
+  ======================================================= */
+
+  async function initializeFirebase() {
+
+    const loaded =
+      await loadFirebaseSDK();
+
+
+    if (!loaded) {
+
+      return;
+
+    }
+
+
+    if (
+      typeof firebase ===
+      "undefined"
+    ) {
+
+      console.error(
+        "Firebase is unavailable."
+      );
+
+      return;
+
+    }
+
+
+    try {
+
+      firebaseApp =
+        firebase.apps.length
+          ? firebase.app()
+          : firebase.initializeApp(
+              FIREBASE_CONFIG
+            );
+
+
+      firebaseAuth =
+        firebase.auth();
+
+
+      firestoreDB =
+        firebase.firestore();
+
+
+      firebaseReady =
+        true;
+
+
+      console.log(
+        "Firebase initialized."
+      );
+
+
+      firebaseAuth.onAuthStateChanged(
+        async function (user) {
+
+          if (!user) {
+
+            try {
+
+              await firebaseAuth
+                .signInAnonymously();
+
+            } catch (error) {
+
+              console.error(
+                "Anonymous sign-in failed:",
+                error
+              );
+
+            }
+
+            return;
+
+          }
+
+
+          firebaseUser =
+            user;
+
+
+          console.log(
+            "Firebase user:",
+            user.uid
+          );
+
+
+          await createOrLoadFirebaseBalance();
+
+        }
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Firebase initialization failed:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     CREATE / LOAD TEST BALANCE
+  ======================================================= */
+
+  async function createOrLoadFirebaseBalance() {
+
+    if (
+      !firebaseReady ||
+      !firebaseUser ||
+      !firestoreDB
+    ) {
+
+      return;
+
+    }
+
+
+    const publicUserId =
+      getUserId();
+
+
+    const balanceRef =
+      firestoreDB
+        .collection(
+          "testBalances"
+        )
+        .doc(
+          firebaseUser.uid
+        );
+
+
+    try {
+
+      const snapshot =
+        await balanceRef.get();
+
+
+      if (snapshot.exists) {
+
+        const data =
+          snapshot.data() || {};
+
+
+        firebaseBalance =
+          Number(
+            data.balance || 0
+          );
+
+
+        /*
+          If the document already exists
+          but userId is missing, update
+          the public User ID.
+        */
+
+        if (
+          data.userId !==
+          publicUserId
+        ) {
+
+          await balanceRef.update({
+
+            userId:
+              publicUserId,
+
+            updatedAt:
+              firebase.firestore
+                .FieldValue
+                .serverTimestamp()
+
+          });
+
+        }
+
+
+      } else {
+
+        /*
+          New user document
+        */
+
+        firebaseBalance = 0;
+
+
+        await balanceRef.set({
+
+          uid:
+            firebaseUser.uid,
+
+          userId:
+            publicUserId,
+
+          balance:
+            0,
+
+          createdAt:
+            firebase.firestore
+              .FieldValue
+              .serverTimestamp(),
+
+          updatedAt:
+            firebase.firestore
+              .FieldValue
+              .serverTimestamp()
+
+        });
+
+
+        console.log(
+          "New test balance user created:",
+          publicUserId
+        );
 
       }
 
-    }
-  );
 
-}
+      localStorage.setItem(
+        "bm_balance",
+        String(
+          firebaseBalance
+        )
+      );
 
 
-if ($("whatsappBtn")) {
+      updateBalanceDisplay();
 
-  $("whatsappBtn").addEventListener(
-    "click",
-    function () {
 
-      const link =
-        $("referralLink")
-          ? $("referralLink").value
-          : window.location.href;
+    } catch (error) {
 
-      const message =
-        "Check this website: " +
-        link;
-
-      const url =
-        "https://wa.me/?text=" +
-        encodeURIComponent(message);
-
-      window.open(
-        url,
-        "_blank"
+      console.error(
+        "Firebase balance error:",
+        error
       );
 
     }
-  );
 
-}
+  }
 
 
-/* =========================================================
-   CUSTOMER SERVICE
-   ========================================================= */
+  /* =======================================================
+     REFRESH FIREBASE BALANCE
+  ======================================================= */
 
-if ($("customerServiceBtn")) {
+  async function refreshFirebaseBalance() {
 
-  $("customerServiceBtn").addEventListener(
-    "click",
-    function () {
+    if (
+      !firebaseReady ||
+      !firebaseUser
+    ) {
 
-      window.open(
-        CUSTOMER_SERVICE,
-        "_blank"
+      return;
+
+    }
+
+
+    try {
+
+      const ref =
+        firestoreDB
+          .collection(
+            "testBalances"
+          )
+          .doc(
+            firebaseUser.uid
+          );
+
+
+      const snapshot =
+        await ref.get();
+
+
+      if (
+        snapshot.exists
+      ) {
+
+        const data =
+          snapshot.data() || {};
+
+
+        firebaseBalance =
+          Number(
+            data.balance || 0
+          );
+
+
+        localStorage.setItem(
+          "bm_balance",
+          String(
+            firebaseBalance
+          )
+        );
+
+
+        updateBalanceDisplay();
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Balance refresh failed:",
+        error
       );
 
     }
-  );
 
-}
-
-
-/* =========================================================
-   PLAN MODAL
-   ========================================================= */
-
-function openPlanModal(amount) {
-
-  if (!$("planModal")) return;
-
-  if ($("modalTitle")) {
-    $("modalTitle").textContent =
-      "₹" + money(amount) + " Mining Plan";
   }
 
-  if ($("modalText")) {
-    $("modalText").textContent =
-      "This is a demo mining plan. " +
-      "No guaranteed return or automatic real-money transaction is performed.";
+
+  /* =======================================================
+     GREETING
+  ======================================================= */
+
+  function updateGreeting() {
+
+    const greeting =
+      byId("greeting");
+
+
+    if (!greeting) {
+
+      return;
+
+    }
+
+
+    const now =
+      new Date();
+
+
+    const hour =
+      Number(
+        new Intl.DateTimeFormat(
+          "en-IN",
+          {
+            timeZone:
+              "Asia/Kolkata",
+
+            hour:
+              "2-digit",
+
+            hour12:
+              false
+          }
+        ).format(now)
+      );
+
+
+    if (
+      hour >= 5 &&
+      hour < 12
+    ) {
+
+      greeting.textContent =
+        "Good Morning";
+
+    }
+
+    else if (
+      hour >= 12 &&
+      hour < 17
+    ) {
+
+      greeting.textContent =
+        "Good Afternoon";
+
+    }
+
+    else if (
+      hour >= 17 &&
+      hour < 21
+    ) {
+
+      greeting.textContent =
+        "Good Evening";
+
+    }
+
+    else {
+
+      greeting.textContent =
+        "Good Night";
+
+    }
+
   }
 
-  $("planModal").classList.add("show");
 
-  $("planModal").setAttribute(
-    "aria-hidden",
-    "false"
-  );
+  /* =======================================================
+     PRODUCT MODAL
+  ======================================================= */
 
-  $("planModal").dataset.amount =
-    String(amount);
+  function setupProductModal() {
 
-}
+    const modal =
+      byId("productModal") ||
+      byId("planModal");
 
 
-document
-  .querySelectorAll(".plan-open, .product-select")
-  .forEach(function (button) {
+    const closeButton =
+      byId("modalClose");
+
+
+    const title =
+      byId("modalTitle");
+
+
+    const text =
+      byId("modalText");
+
+
+    document
+      .querySelectorAll(
+        "[data-product]"
+      )
+      .forEach(
+        function (button) {
+
+          button.addEventListener(
+            "click",
+            function () {
+
+              const product =
+                button.dataset.product ||
+                "Selected";
+
+
+              if (title) {
+
+                title.textContent =
+                  product +
+                  " Mining Plan";
+
+              }
+
+
+              if (text) {
+
+                text.textContent =
+                  "This is informational/demo content. This GitHub Pages version does not guarantee investment returns or process real-money investments.";
+
+              }
+
+
+              if (modal) {
+
+                modal.classList.add(
+                  "show"
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+    if (closeButton) {
+
+      closeButton.addEventListener(
+        "click",
+        function () {
+
+          if (modal) {
+
+            modal.classList.remove(
+              "show"
+            );
+
+          }
+
+        }
+      );
+
+    }
+
+
+    if (modal) {
+
+      modal.addEventListener(
+        "click",
+        function (event) {
+
+          if (
+            event.target ===
+            modal
+          ) {
+
+            modal.classList.remove(
+              "show"
+            );
+
+          }
+
+        }
+      );
+
+    }
+
+
+    const modalDepositBtn =
+      byId(
+        "modalDepositBtn"
+      );
+
+
+    if (modalDepositBtn) {
+
+      modalDepositBtn.addEventListener(
+        "click",
+        function () {
+
+          if (modal) {
+
+            modal.classList.remove(
+              "show"
+            );
+
+          }
+
+
+          showPage(
+            "depositPage"
+          );
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     PROFILE IMAGE
+  ======================================================= */
+
+  function loadProfileImage() {
+
+    const saved =
+      localStorage.getItem(
+        "bm_profile_image"
+      );
+
+
+    if (!saved) {
+
+      return;
+
+    }
+
+
+    const image =
+      byId("profileImage");
+
+
+    const letter =
+      byId("profileLetter");
+
+
+    const topImage =
+      byId("topProfileImg");
+
+
+    const topLetter =
+      byId("topProfileLetter");
+
+
+    if (image) {
+
+      image.src =
+        saved;
+
+      image.classList.add(
+        "show"
+      );
+
+    }
+
+
+    if (letter) {
+
+      letter.style.display =
+        "none";
+
+    }
+
+
+    if (topImage) {
+
+      topImage.src =
+        saved;
+
+      topImage.classList.add(
+        "show"
+      );
+
+    }
+
+
+    if (topLetter) {
+
+      topLetter.style.display =
+        "none";
+
+    }
+
+  }
+
+
+  function setupProfileUpload() {
+
+    const button =
+      byId(
+        "profileUploadBtn"
+      );
+
+
+    const input =
+      byId(
+        "profileGallery"
+      );
+
+
+    if (
+      !button ||
+      !input
+    ) {
+
+      return;
+
+    }
+
 
     button.addEventListener(
       "click",
       function () {
 
-        const amount =
-          Number(this.dataset.plan);
+        input.click();
 
-        if (amount) {
-          openPlanModal(amount);
+      }
+    );
+
+
+    input.addEventListener(
+      "change",
+      function () {
+
+        const file =
+          input.files[0];
+
+
+        if (!file) {
+
+          return;
+
+        }
+
+
+        if (
+          !file.type.startsWith(
+            "image/"
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload =
+          function (event) {
+
+            const imageData =
+              event.target.result;
+
+
+            localStorage.setItem(
+              "bm_profile_image",
+              imageData
+            );
+
+
+            loadProfileImage();
+
+          };
+
+
+        reader.readAsDataURL(
+          file
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     BANK DETAILS
+     LOCAL ONLY
+  ======================================================= */
+
+  function loadBankDetails() {
+
+    const data =
+      safeJSONParse(
+        localStorage.getItem(
+          "bm_bank_details"
+        ),
+        null
+      );
+
+
+    if (!data) {
+
+      return;
+
+    }
+
+
+    const name =
+      byId("bankName");
+
+
+    const ifsc =
+      byId("bankIfsc");
+
+
+    const bank =
+      byId("bankBankName");
+
+
+    const account =
+      byId("bankAccount");
+
+
+    const repeat =
+      byId(
+        "bankAccountRepeat"
+      );
+
+
+    if (name) {
+
+      name.value =
+        data.name || "";
+
+    }
+
+
+    if (ifsc) {
+
+      ifsc.value =
+        data.ifsc || "";
+
+    }
+
+
+    if (bank) {
+
+      bank.value =
+        data.bankName || "";
+
+    }
+
+
+    if (account) {
+
+      account.value =
+        data.account || "";
+
+    }
+
+
+    if (repeat) {
+
+      repeat.value =
+        data.account || "";
+
+    }
+
+  }
+
+
+  function setupBankDetails() {
+
+    const button =
+      byId(
+        "saveBankBtn"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.addEventListener(
+      "click",
+      function () {
+
+        const name =
+          (
+            byId("bankName")?.value ||
+            ""
+          ).trim();
+
+
+        const ifsc =
+          (
+            byId("bankIfsc")?.value ||
+            ""
+          ).trim();
+
+
+        const bank =
+          (
+            byId("bankBankName")?.value ||
+            ""
+          ).trim();
+
+
+        const account =
+          (
+            byId("bankAccount")?.value ||
+            ""
+          ).trim();
+
+
+        const repeat =
+          (
+            byId(
+              "bankAccountRepeat"
+            )?.value ||
+            ""
+          ).trim();
+
+
+        const message =
+          byId(
+            "bankMessage"
+          );
+
+
+        if (
+          !name ||
+          !ifsc ||
+          !bank ||
+          !account ||
+          !repeat
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Please fill all bank details.";
+
+          }
+
+          return;
+
+        }
+
+
+        if (
+          account !==
+          repeat
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Account numbers do not match.";
+
+          }
+
+          return;
+
+        }
+
+
+        const data = {
+
+          name:
+            name,
+
+          ifsc:
+            ifsc,
+
+          bankName:
+            bank,
+
+          account:
+            account
+
+        };
+
+
+        /*
+          Stored only on this device.
+        */
+
+        localStorage.setItem(
+          "bm_bank_details",
+          JSON.stringify(
+            data
+          )
+        );
+
+
+        if (message) {
+
+          message.textContent =
+            "✓ Bank details saved locally.";
+
         }
 
       }
     );
 
-  });
+  }
 
 
-if ($("modalClose")) {
+  /* =======================================================
+     IST DATE
+  ======================================================= */
 
-  $("modalClose").addEventListener(
-    "click",
-    function () {
+  function getISTDate() {
 
-      $("planModal").classList.remove("show");
+    return new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "Asia/Kolkata"
+      }
+    ).format(
+      new Date()
+    );
 
-      $("planModal").setAttribute(
-        "aria-hidden",
-        "true"
+  }
+
+
+  function getISTHourMinute() {
+
+    const parts =
+      new Intl.DateTimeFormat(
+        "en-IN",
+        {
+          timeZone:
+            "Asia/Kolkata",
+
+          hour:
+            "2-digit",
+
+          minute:
+            "2-digit",
+
+          hour12:
+            false
+        }
+      ).formatToParts(
+        new Date()
+      );
+
+
+    let hour = 0;
+
+    let minute = 0;
+
+
+    parts.forEach(
+      function (part) {
+
+        if (
+          part.type ===
+          "hour"
+        ) {
+
+          hour =
+            Number(
+              part.value
+            );
+
+        }
+
+
+        if (
+          part.type ===
+          "minute"
+        ) {
+
+          minute =
+            Number(
+              part.value
+            );
+
+        }
+
+      }
+    );
+
+
+    return {
+      hour:
+        hour,
+
+      minute:
+        minute
+    };
+
+  }
+
+
+  /* =======================================================
+     WITHDRAWAL
+     DEMO / LOCAL RECORD
+  ======================================================= */
+
+  function setupWithdrawal() {
+
+    const submit =
+      byId(
+        "withdrawSubmit"
+      );
+
+
+    const amountInput =
+      byId(
+        "withdrawAmount"
+      );
+
+
+    const message =
+      byId(
+        "withdrawMessage"
+      );
+
+
+    if (
+      !submit ||
+      !amountInput
+    ) {
+
+      return;
+
+    }
+
+
+    submit.addEventListener(
+      "click",
+      async function () {
+
+        await refreshFirebaseBalance();
+
+
+        const amount =
+          Number(
+            amountInput.value
+          );
+
+
+        if (
+          !amount ||
+          amount < 500 ||
+          amount > 20000
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Withdrawal amount must be ₹500 - ₹20,000.";
+
+          }
+
+          return;
+
+        }
+
+
+        const time =
+          getISTHourMinute();
+
+
+        const totalMinutes =
+          time.hour * 60 +
+          time.minute;
+
+
+        const start =
+          10 * 60 + 30;
+
+
+        const end =
+          17 * 60 + 30;
+
+
+        if (
+          totalMinutes <
+            start ||
+          totalMinutes >
+            end
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Withdrawal time is 10:30 AM - 5:30 PM IST.";
+
+          }
+
+          return;
+
+        }
+
+
+        const today =
+          getISTDate();
+
+
+        let daily =
+          readLocalArray(
+            "bm_withdrawals"
+          );
+
+
+        daily =
+          daily.filter(
+            function (item) {
+
+              return (
+                item.date ===
+                today
+              );
+
+            }
+          );
+
+
+        if (
+          daily.length >= 3
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Maximum 3 withdrawal requests per day.";
+
+          }
+
+          return;
+
+        }
+
+
+        const balance =
+          getBalance();
+
+
+        if (
+          amount >
+          balance
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Insufficient available demo balance.";
+
+          }
+
+          return;
+
+        }
+
+
+        const now =
+          new Date();
+
+
+        daily.push({
+
+          amount:
+            amount,
+
+          date:
+            today
+
+        });
+
+
+        saveLocalArray(
+          "bm_withdrawals",
+          daily
+        );
+
+
+        const history =
+          readLocalArray(
+            "bm_withdrawal_history"
+          );
+
+
+        history.push({
+
+          amount:
+            amount,
+
+          date:
+            today,
+
+          dateTime:
+            now.toISOString(),
+
+          status:
+            "Request Recorded"
+
+        });
+
+
+        saveLocalArray(
+          "bm_withdrawal_history",
+          history
+        );
+
+
+        if (message) {
+
+          message.textContent =
+            "✓ Demo withdrawal request recorded locally.";
+
+        }
+
+
+        amountInput.value =
+          "";
+
+
+        /*
+          Important:
+          Client cannot directly change
+          Firebase admin-controlled balance.
+          Admin can update the demo balance.
+        */
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     SECOND WITHDRAW PAGE SUPPORT
+  ======================================================= */
+
+  function setupSecondWithdrawPage() {
+
+    const submit =
+      byId(
+        "withdrawPageSubmit"
+      );
+
+
+    const amountInput =
+      byId(
+        "withdrawPageAmount"
+      );
+
+
+    const message =
+      byId(
+        "withdrawPageMessage"
+      );
+
+
+    if (
+      !submit ||
+      !amountInput
+    ) {
+
+      return;
+
+    }
+
+
+    submit.addEventListener(
+      "click",
+      function () {
+
+        const amount =
+          Number(
+            amountInput.value
+          );
+
+
+        if (
+          !amount ||
+          amount < 500 ||
+          amount > 20000
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Withdrawal amount must be ₹500 - ₹20,000.";
+
+          }
+
+          return;
+
+        }
+
+
+        const balance =
+          getBalance();
+
+
+        if (
+          amount >
+          balance
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Insufficient available demo balance.";
+
+          }
+
+          return;
+
+        }
+
+
+        const today =
+          getISTDate();
+
+
+        const records =
+          readLocalArray(
+            "bm_withdrawal_history"
+          );
+
+
+        records.push({
+
+          amount:
+            amount,
+
+          date:
+            today,
+
+          dateTime:
+            new Date()
+              .toISOString(),
+
+          status:
+            "Request Recorded"
+
+        });
+
+
+        saveLocalArray(
+          "bm_withdrawal_history",
+          records
+        );
+
+
+        if (message) {
+
+          message.textContent =
+            "✓ Demo withdrawal request recorded locally.";
+
+        }
+
+
+        amountInput.value =
+          "";
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     PAYMENT SCREENSHOT PREVIEW
+     LOCAL ONLY
+  ======================================================= */
+
+  function setupScreenshotPreview() {
+
+    const input =
+      byId(
+        "paymentScreenshot"
+      );
+
+
+    const preview =
+      byId(
+        "paymentScreenshotPreview"
+      );
+
+
+    if (
+      !input ||
+      !preview
+    ) {
+
+      return;
+
+    }
+
+
+    input.addEventListener(
+      "change",
+      function () {
+
+        const file =
+          input.files[0];
+
+
+        preview.innerHTML =
+          "";
+
+
+        preview.classList.remove(
+          "show"
+        );
+
+
+        if (!file) {
+
+          return;
+
+        }
+
+
+        if (
+          !file.type.startsWith(
+            "image/"
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload =
+          function (event) {
+
+            const img =
+              document.createElement(
+                "img"
+              );
+
+
+            img.src =
+              event.target.result;
+
+
+            preview.appendChild(
+              img
+            );
+
+
+            preview.classList.add(
+              "show"
+            );
+
+          };
+
+
+        reader.readAsDataURL(
+          file
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     COPY UPI
+  ======================================================= */
+
+  function setupCopyUPI() {
+
+    const button =
+      byId(
+        "copyUpiBtn"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.addEventListener(
+      "click",
+      async function () {
+
+        try {
+
+          await navigator
+            .clipboard
+            .writeText(
+              UPI_ID
+            );
+
+
+          button.textContent =
+            "Copied";
+
+
+          setTimeout(
+            function () {
+
+              button.textContent =
+                "Copy";
+
+            },
+            1500
+          );
+
+
+        } catch (error) {
+
+          alert(
+            "UPI ID: " +
+            UPI_ID
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     DEPOSIT
+     LOCAL RECORD ONLY
+  ======================================================= */
+
+  function setupDeposit() {
+
+    const submit =
+      byId(
+        "paymentSubmit"
+      );
+
+
+    if (!submit) {
+
+      return;
+
+    }
+
+
+    submit.addEventListener(
+      "click",
+      function () {
+
+        const amount =
+          Number(
+            byId(
+              "depositAmount"
+            )?.value || 0
+          );
+
+
+        const utr =
+          (
+            byId(
+              "utr"
+            )?.value ||
+            ""
+          ).trim();
+
+
+        const screenshot =
+          byId(
+            "paymentScreenshot"
+          )?.files?.[0];
+
+
+        const message =
+          byId(
+            "paymentMessage"
+          );
+
+
+        if (
+          !amount ||
+          amount < 200 ||
+          amount > 50000
+        ) {
+
+          if (message) {
+
+            message.textContent =
+              "Amount must be ₹200 - ₹50,000.";
+
+          }
+
+          return;
+
+        }
+
+
+        if (!utr) {
+
+          if (message) {
+
+            message.textContent =
+              "Please enter UTR / transaction reference.";
+
+          }
+
+          return;
+
+        }
+
+
+        if (!screenshot) {
+
+          if (message) {
+
+            message.textContent =
+              "Please attach the payment screenshot.";
+
+          }
+
+          return;
+
+        }
+
+
+        const record = {
+
+          id:
+            "DEP-" +
+            Date.now(),
+
+          amount:
+            amount,
+
+          utr:
+            utr,
+
+          submittedAt:
+            new Date()
+              .toISOString(),
+
+          status:
+            "Pending Verification"
+
+        };
+
+
+        localStorage.setItem(
+          "bm_last_deposit_request",
+          JSON.stringify(
+            record
+          )
+        );
+
+
+        const history =
+          readLocalArray(
+            "bm_deposit_history"
+          );
+
+
+        history.push({
+
+          amount:
+            amount,
+
+          utr:
+            utr,
+
+          date:
+            new Date()
+              .toISOString(),
+
+          status:
+            "Pending Verification"
+
+        });
+
+
+        saveLocalArray(
+          "bm_deposit_history",
+          history
+        );
+
+
+        if (message) {
+
+          message.textContent =
+            "✓ Request recorded locally. Status: Pending Verification.";
+
+        }
+
+
+        const amountField =
+          byId(
+            "depositAmount"
+          );
+
+
+        const utrField =
+          byId(
+            "utr"
+          );
+
+
+        const screenshotField =
+          byId(
+            "paymentScreenshot"
+          );
+
+
+        if (amountField) {
+
+          amountField.value =
+            "";
+
+        }
+
+
+        if (utrField) {
+
+          utrField.value =
+            "";
+
+        }
+
+
+        if (screenshotField) {
+
+          screenshotField.value =
+            "";
+
+        }
+
+
+        const preview =
+          byId(
+            "paymentScreenshotPreview"
+          );
+
+
+        if (preview) {
+
+          preview.innerHTML =
+            "";
+
+          preview.classList.remove(
+            "show"
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     HISTORY HELPERS
+  ======================================================= */
+
+  function escapeHTML(value) {
+
+    return String(
+      value ?? ""
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  function formatHistoryDate(value) {
+
+    if (!value) {
+
+      return "-";
+
+    }
+
+
+    const date =
+      new Date(
+        value
+      );
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      return String(
+        value
       );
 
     }
-  );
-
-}
 
 
-if ($("planModal")) {
+    return new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone:
+          "Asia/Kolkata",
 
-  $("planModal").addEventListener(
-    "click",
-    function (event) {
+        day:
+          "2-digit",
 
-      if (event.target === this) {
+        month:
+          "2-digit",
 
-        this.classList.remove("show");
+        year:
+          "numeric",
 
-        this.setAttribute(
-          "aria-hidden",
-          "true"
-        );
+        hour:
+          "2-digit",
 
+        minute:
+          "2-digit",
+
+        second:
+          "2-digit",
+
+        hour12:
+          true
       }
-
-    }
-  );
-
-}
-
-
-if ($("modalDepositBtn")) {
-
-  $("modalDepositBtn").addEventListener(
-    "click",
-    function () {
-
-      if ($("planModal")) {
-
-        $("planModal").classList.remove("show");
-
-        $("planModal").setAttribute(
-          "aria-hidden",
-          "true"
-        );
-
-      }
-
-      showPage("depositPage");
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   INITIALIZATION
-   ========================================================= */
-
-function initializeApp() {
-
-  initializeUser();
-
-  initializeReferral();
-
-  loadProfile();
-
-  loadBankDetails();
-
-  updateBalanceUI();
-
-  renderDepositHistory();
-
-  renderWithdrawalHistory();
-
-  renderTransactions();
-
-  initializeFirebase();
-
-}
-
-
-/* =========================================================
-   START
-   ========================================================= */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
-
-    initializeApp();
+    ).format(
+      date
+    );
 
   }
-);
+
+
+  function normalizeDepositHistory() {
+
+    return readLocalArray(
+      "bm_deposit_history"
+    ).map(
+      function (item) {
+
+        return {
+
+          type:
+            "deposit",
+
+          amount:
+            Number(
+              item.amount || 0
+            ),
+
+          utr:
+            item.utr || "",
+
+          date:
+            item.date ||
+            item.submittedAt ||
+            "",
+
+          status:
+            item.status ||
+            "Pending Verification"
+
+        };
+
+      }
+    );
+
+  }
+
+
+  function normalizeWithdrawalHistory() {
+
+    return readLocalArray(
+      "bm_withdrawal_history"
+    ).map(
+      function (item) {
+
+        return {
+
+          type:
+            "withdrawal",
+
+          amount:
+            Number(
+              item.amount || 0
+            ),
+
+          date:
+            item.dateTime ||
+            item.date ||
+            "",
+
+          status:
+            item.status ||
+            "Request Recorded"
+
+        };
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     SHOW HISTORY
+  ======================================================= */
+
+  function showHistory(type) {
+
+    const list =
+      byId(
+        "historyList"
+      );
+
+
+    const title =
+      byId(
+        "historyPageTitle"
+      );
+
+
+    const subtitle =
+      byId(
+        "historyPageSubtitle"
+      );
+
+
+    if (
+      !list ||
+      !title ||
+      !subtitle
+    ) {
+
+      return;
+
+    }
+
+
+    let records = [];
+
+
+    if (
+      type ===
+      "deposit"
+    ) {
+
+      title.textContent =
+        "Deposit History";
+
+
+      subtitle.textContent =
+        "All deposit records";
+
+
+      records =
+        normalizeDepositHistory();
+
+    }
+
+
+    else if (
+      type ===
+      "withdrawal"
+    ) {
+
+      title.textContent =
+        "Withdrawal History";
+
+
+      subtitle.textContent =
+        "All withdrawal records";
+
+
+      records =
+        normalizeWithdrawalHistory();
+
+    }
+
+
+    else {
+
+      title.textContent =
+        "Transaction History";
+
+
+      subtitle.textContent =
+        "Deposits & withdrawals";
+
+
+      records =
+        normalizeDepositHistory()
+          .concat(
+            normalizeWithdrawalHistory()
+          );
+
+    }
+
+
+    records.sort(
+      function (a, b) {
+
+        return (
+          new Date(
+            b.date || 0
+          ) -
+          new Date(
+            a.date || 0
+          )
+        );
+
+      }
+    );
+
+
+    if (
+      !records.length
+    ) {
+
+      list.innerHTML = `
+
+        <div class="history-empty">
+
+          <div class="history-empty-icon">
+            📋
+          </div>
+
+          <h3>
+            No History Yet
+          </h3>
+
+          <p>
+            Your recorded transactions
+            will appear here.
+          </p>
+
+        </div>
+
+      `;
+
+    }
+
+    else {
+
+      list.innerHTML =
+        records
+          .map(
+            function (item) {
+
+              const deposit =
+                item.type ===
+                "deposit";
+
+
+              const typeTitle =
+                deposit
+                  ? "Deposit"
+                  : "Withdrawal";
+
+
+              const icon =
+                deposit
+                  ? "↓"
+                  : "↑";
+
+
+              const amountClass =
+                deposit
+                  ? "deposit-amount"
+                  : "withdraw-amount";
+
+
+              const utrRow =
+                deposit &&
+                item.utr
+                  ? `
+
+                    <p>
+                      UTR:
+                      <strong>
+                        ${escapeHTML(
+                          item.utr
+                        )}
+                      </strong>
+                    </p>
+
+                  `
+                  : "";
+
+
+              return `
+
+                <div class="history-card">
+
+                  <div class="history-card-top">
+
+                    <div class="
+                      history-type-icon
+                      ${
+                        deposit
+                          ? "deposit-type"
+                          : "withdraw-type"
+                      }
+                    ">
+
+                      ${icon}
+
+                    </div>
+
+
+                    <div class="history-main">
+
+                      <b>
+                        ${typeTitle}
+                      </b>
+
+                      <small>
+                        ${escapeHTML(
+                          formatHistoryDate(
+                            item.date
+                          )
+                        )}
+                      </small>
+
+                    </div>
+
+
+                    <div class="
+                      history-amount
+                      ${amountClass}
+                    ">
+
+                      ₹${Number(
+                        item.amount || 0
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
+
+                    </div>
+
+                  </div>
+
+
+                  <div class="history-details">
+
+                    <p>
+                      Date & Time:
+                      <strong>
+                        ${escapeHTML(
+                          formatHistoryDate(
+                            item.date
+                          )
+                        )}
+                      </strong>
+                    </p>
+
+
+                    <p>
+                      Status:
+                      <strong>
+                        ${escapeHTML(
+                          item.status
+                        )}
+                      </strong>
+                    </p>
+
+
+                    ${utrRow}
+
+                  </div>
+
+                </div>
+
+              `;
+
+            }
+          )
+          .join("");
+
+    }
+
+
+    showPage(
+      "historyPage"
+    );
+
+  }
+
+
+  /* =======================================================
+     HISTORY BUTTONS
+  ======================================================= */
+
+  function setupHistoryButtons() {
+
+    const all =
+      byId(
+        "transactionHistoryBtn"
+      );
+
+
+    const deposit =
+      byId(
+        "depositHistoryBtn"
+      );
+
+
+    const withdrawal =
+      byId(
+        "withdrawalHistoryBtn"
+      );
+
+
+    if (all) {
+
+      all.addEventListener(
+        "click",
+        function () {
+
+          showHistory(
+            "all"
+          );
+
+        }
+      );
+
+    }
+
+
+    if (deposit) {
+
+      deposit.addEventListener(
+        "click",
+        function () {
+
+          showHistory(
+            "deposit"
+          );
+
+        }
+      );
+
+    }
+
+
+    if (withdrawal) {
+
+      withdrawal.addEventListener(
+        "click",
+        function () {
+
+          showHistory(
+            "withdrawal"
+          );
+
+        }
+      );
+
+    }
+
+
+    const historyBack =
+      byId(
+        "historyBackBtn"
+      );
+
+
+    if (historyBack) {
+
+      historyBack.addEventListener(
+        "click",
+        function () {
+
+          showPage(
+            "infoPage"
+          );
+
+        }
+      );
+
+    }
+
+
+    const withdrawalBack =
+      byId(
+        "withdrawHistoryBackBtn"
+      );
+
+
+    if (withdrawalBack) {
+
+      withdrawalBack.addEventListener(
+        "click",
+        function () {
+
+          showPage(
+            "infoPage"
+          );
+
+        }
+      );
+
+    }
+
+
+    const transactionBack =
+      byId(
+        "transactionHistoryBackBtn"
+      );
+
+
+    if (transactionBack) {
+
+      transactionBack.addEventListener(
+        "click",
+        function () {
+
+          showPage(
+            "infoPage"
+          );
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     WHATSAPP INVITE
+  ======================================================= */
+
+  function setupWhatsApp() {
+
+    const button =
+      byId(
+        "whatsappBtn"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.addEventListener(
+      "click",
+      function () {
+
+        const text =
+          "Check out Bitcoin Minning";
+
+
+        const url =
+          window.location.href;
+
+
+        const shareUrl =
+          "https://wa.me/?text=" +
+          encodeURIComponent(
+            text +
+            "\n" +
+            url
+          );
+
+
+        window.open(
+          shareUrl,
+          "_blank"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     COPY APP LINK
+  ======================================================= */
+
+  function setupCopyLink() {
+
+    const button =
+      byId(
+        "copyLinkBtn"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.addEventListener(
+      "click",
+      async function () {
+
+        const link =
+          window.location.href;
+
+
+        try {
+
+          await navigator
+            .clipboard
+            .writeText(
+              link
+            );
+
+
+          button.textContent =
+            "Copied";
+
+
+          setTimeout(
+            function () {
+
+              button.textContent =
+                "Copy App Link";
+
+            },
+            1500
+          );
+
+
+        } catch (error) {
+
+          alert(
+            link
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     REFERRAL LINK
+  ======================================================= */
+
+  function setupReferral() {
+
+    const referral =
+      byId(
+        "referralLink"
+      );
+
+
+    if (referral) {
+
+      referral.textContent =
+        window.location.href;
+
+    }
+
+  }
+
+
+  /* =======================================================
+     CUSTOMER SERVICE
+  ======================================================= */
+
+  function setupCustomerService() {
+
+    const button =
+      byId(
+        "customerServiceBtn"
+      );
+
+
+    if (!button) {
+
+      return;
+
+    }
+
+
+    button.addEventListener(
+      "click",
+      function () {
+
+        window.open(
+          CUSTOMER_SERVICE,
+          "_blank"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     HOME BUTTONS
+  ======================================================= */
+
+  function setupHomeButtons() {
+
+    const deposit =
+      byId(
+        "depositBtn"
+      );
+
+
+    const withdraw =
+      byId(
+        "withdrawBtn"
+      );
+
+
+    const info =
+      byId(
+        "myInfoBtn"
+      );
+
+
+    const invite =
+      byId(
+        "inviteBtn"
+      );
+
+
+    const products =
+      byId(
+        "productsBtn"
+      );
+
+
+    if (deposit) {
+
+      deposit.addEventListener(
+        "click",
+        function () {
+
+          showPage(
+            "depositPage"
+          );
+
+        }
+      );
+
+    }
+
+
+    if (withdraw) {
+
+      withdraw.addEventListener(
+        "click",
+        function () {
+
+          /*
+            Main withdrawal form is
+            inside infoPage.
+          */
+
+          showPage(
+            "infoPage"
+          );
+
+
+          setTimeout(
+            function () {
+
+              const input =
+                byId(
+                  "withdrawAmount"
+                );
+
+
+              if (input) {
+
+                input.focus();
+
+              }
+
+            },
+            250
+          );
+
+        }
+      );
+
+    }
+
+
+    if (info) {
+
+      info.addEventListener(
+        "click",
+        function () {
+
+          showPage(
+            "infoPage"
+          );
+
+        }
+      );
+
+    }
+
+
+    if (invite) {
+
+      invite.addEventListener(
+        "click",
+        function () {
+
+          showPage(
+            "invitePage"
+          );
+
+        }
+      );
+
+    }
+
+
+    if (products) {
+
+      products.addEventListener(
+        "click",
+        function () {
+
+          showPage(
+            "productPage"
+          );
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     TOP PROFILE
+  ======================================================= */
+
+  function setupTopProfile() {
+
+    const profile =
+      byId(
+        "topProfile"
+      );
+
+
+    if (!profile) {
+
+      return;
+
+    }
+
+
+    profile.addEventListener(
+      "click",
+      function () {
+
+        showPage(
+          "infoPage"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     INITIAL APP
+  ======================================================= */
+
+  async function startApp() {
+
+    createUserId();
+
+    updateBalance();
+
+    updateGreeting();
+
+    loadProfileImage();
+
+    loadBankDetails();
+
+    setupNavigation();
+
+    setupProductModal();
+
+    setupProfileUpload();
+
+    setupBankDetails();
+
+    setupWithdrawal();
+
+    setupSecondWithdrawPage();
+
+    setupScreenshotPreview();
+
+    setupCopyUPI();
+
+    setupDeposit();
+
+    setupHistoryButtons();
+
+    setupWhatsApp();
+
+    setupCopyLink();
+
+    setupReferral();
+
+    setupCustomerService();
+
+    setupHomeButtons();
+
+    setupTopProfile();
+
+
+    showPage(
+      "homePage"
+    );
+
+
+    /*
+      Start Firebase after the
+      normal website has loaded.
+    */
+
+    await initializeFirebase();
+
+  }
+
+
+  /* =======================================================
+     START
+  ======================================================= */
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      startApp
+    );
+
+  } else {
+
+    startApp();
+
+  }
+
+
+})();
