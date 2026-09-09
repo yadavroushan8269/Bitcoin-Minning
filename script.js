@@ -1,324 +1,253 @@
-/* =========================================================
-   BITCOIN MINNING - MAIN SCRIPT
-   Demo / Test Version
-   ========================================================= */
-
 "use strict";
 
 /* =========================================================
-   CONFIG
-========================================================= */
-
-const APP_NAME = "Bitcoin Minning";
+   BITCOIN MINNING - DEMO / TEST JAVASCRIPT
+   ========================================================= */
 
 const UPI_ID = "yadav-rishab@fam";
+const CUSTOMER_SERVICE = "https://t.me/Hammerff7gcz";
 
-const CUSTOMER_SERVICE_URL = "https://t.me/Hammerff7gcz";
-
-const ADMIN_EMAIL = "yadavroushan8269@gmail.com";
-
-const MIN_DEPOSIT = 200;
-const MAX_DEPOSIT = 50000;
-
-const MIN_WITHDRAW = 500;
-const MAX_WITHDRAW = 20000;
-
-const MAX_WITHDRAWALS_PER_DAY = 3;
-
-
-/* =========================================================
-   PRODUCT DATA
-========================================================= */
-
-const PRODUCTS = {
-  500: {
-    id: "plan500",
-    name: "Starter Mining Plan",
-    price: 500,
-    duration: "30 Days",
-    daily: "Demo reward",
-    description:
-      "Starter level mining plan for testing the website's demo purchase flow.",
-    features: [
-      "30-day demo plan",
-      "Demo mining dashboard",
-      "Transaction history",
-      "Test balance support"
-    ]
-  },
-
-  1500: {
-    id: "plan1500",
-    name: "Pro Mining Plan",
-    price: 1500,
-    duration: "60 Days",
-    daily: "Demo reward",
-    description:
-      "Pro level demo mining plan with a larger test amount.",
-    features: [
-      "60-day demo plan",
-      "Demo mining dashboard",
-      "Transaction history",
-      "Test balance support"
-    ]
-  },
-
-  3600: {
-    id: "plan3600",
-    name: "Premium Mining Plan",
-    price: 3600,
-    duration: "90 Days",
-    daily: "Demo reward",
-    description:
-      "Premium demo plan for testing product selection and purchase flow.",
-    features: [
-      "90-day demo plan",
-      "Demo mining dashboard",
-      "Transaction history",
-      "Test balance support"
-    ]
-  }
+const KEYS = {
+  user: "bm_user",
+  balance: "bm_balance",
+  bank: "bm_bank",
+  deposits: "bm_deposits",
+  withdrawals: "bm_withdrawals",
+  transactions: "bm_transactions",
+  profile: "bm_profile",
+  referral: "bm_referral"
 };
-
-
-/* =========================================================
-   STORAGE KEYS
-========================================================= */
-
-const STORAGE = {
-  USER: "bm_user",
-  BALANCE: "bm_demo_balance",
-  PROFILE: "bm_profile_image",
-  BANK: "bm_bank_details",
-
-  DEPOSITS: "bm_deposit_history",
-  WITHDRAWALS: "bm_withdrawal_history",
-  TRANSACTIONS: "bm_transactions",
-
-  PURCHASES: "bm_demo_purchases",
-
-  REFERRAL: "bm_referral_code",
-  LAST_DEPOSIT: "bm_last_deposit_request"
-};
-
-
-/* =========================================================
-   GLOBAL STATE
-========================================================= */
-
-let currentPage = "homePage";
-
-let firebaseReady = false;
-let firebaseUser = null;
-let firebaseAuth = null;
-let firebaseDb = null;
-
-let selectedProduct = null;
 
 
 /* =========================================================
    BASIC HELPERS
-========================================================= */
+   ========================================================= */
 
 function $(id) {
   return document.getElementById(id);
 }
 
-
-function showElement(id) {
-  const el = $(id);
-
-  if (el) {
-    el.classList.remove("hidden");
-  }
-}
-
-
-function hideElement(id) {
-  const el = $(id);
-
-  if (el) {
-    el.classList.add("hidden");
-  }
-}
-
-
-function setText(id, value) {
-  const el = $(id);
-
-  if (el) {
-    el.textContent = value;
-  }
-}
-
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-
-function formatRupee(amount) {
-  const number = Number(amount) || 0;
-
-  return "₹" + number.toLocaleString("en-IN");
-}
-
-
-function formatDate(dateValue) {
-  const date = dateValue
-    ? new Date(dateValue)
-    : new Date();
-
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
-
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-
-function getTodayKey() {
-  const now = new Date();
-
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-
-/* =========================================================
-   LOCAL STORAGE HELPERS
-========================================================= */
-
-function readJSON(key, fallback) {
+function getJSON(key, fallback) {
   try {
     const value = localStorage.getItem(key);
-
-    if (!value) {
-      return fallback;
-    }
-
-    return JSON.parse(value);
-  } catch (error) {
-    console.error("Storage read error:", key, error);
+    return value ? JSON.parse(value) : fallback;
+  } catch (e) {
     return fallback;
   }
 }
 
+function setJSON(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
 
-function writeJSON(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (error) {
-    console.error("Storage write error:", key, error);
-    return false;
-  }
+function money(value) {
+  return Number(value || 0).toFixed(2);
+}
+
+function nowText() {
+  return new Date().toLocaleString("en-IN");
+}
+
+function todayKey() {
+  const d = new Date();
+
+  return (
+    d.getFullYear() +
+    "-" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(d.getDate()).padStart(2, "0")
+  );
 }
 
 
 /* =========================================================
    USER
-========================================================= */
+   ========================================================= */
 
-function generateUserId() {
-  const number = Math.floor(
-    1000000 + Math.random() * 9000000
-  );
+function createUserId() {
 
-  return "You-" + number;
-}
+  let user = getJSON(KEYS.user, null);
 
-
-function getUser() {
-  let user = readJSON(STORAGE.USER, null);
-
-  if (!user || !user.id) {
-    user = {
-      id: generateUserId(),
-      createdAt: new Date().toISOString()
-    };
-
-    writeJSON(STORAGE.USER, user);
+  if (user && user.id) {
+    return user;
   }
 
+  const number =
+    Math.floor(1000000 + Math.random() * 9000000);
+
+  user = {
+    id: "You-" + number,
+    createdAt: nowText()
+  };
+
+  setJSON(KEYS.user, user);
+
   return user;
+}
+
+function getUser() {
+  return getJSON(KEYS.user, null);
 }
 
 
 /* =========================================================
    BALANCE
-========================================================= */
+   ========================================================= */
 
-function getLocalBalance() {
-  const value = Number(
-    localStorage.getItem(STORAGE.BALANCE)
-  );
-
-  if (!Number.isFinite(value) || value < 0) {
-    return 0;
-  }
-
-  return value;
+function getBalance() {
+  return Number(localStorage.getItem(KEYS.balance) || "0");
 }
 
+function setBalance(value) {
 
-function setLocalBalance(amount) {
-  let balance = Number(amount);
-
-  if (!Number.isFinite(balance) || balance < 0) {
-    balance = 0;
-  }
+  const amount = Math.max(0, Number(value || 0));
 
   localStorage.setItem(
-    STORAGE.BALANCE,
-    String(Math.round(balance * 100) / 100)
+    KEYS.balance,
+    amount.toFixed(2)
   );
 
   updateBalanceUI();
-
-  return balance;
 }
-
-
-function changeLocalBalance(amount) {
-  const current = getLocalBalance();
-
-  return setLocalBalance(current + Number(amount));
-}
-
 
 function updateBalanceUI() {
-  const balance = getLocalBalance();
 
-  const formatted = formatRupee(balance);
+  const balance = money(getBalance());
 
-  setText("homeBalance", formatted);
-  setText("infoBalance", formatted);
-  setText("withdrawBalance", formatted);
+  if ($("homeBalance")) {
+    $("homeBalance").textContent = balance;
+  }
 
-  setText("withdrawPageBalance", formatted);
+  if ($("infoBalance")) {
+    $("infoBalance").textContent = balance;
+  }
+
+  if ($("withdrawBalance")) {
+    $("withdrawBalance").textContent = balance;
+  }
+}
+
+
+/* =========================================================
+   AUTH
+   ========================================================= */
+
+function showLogin() {
+
+  if ($("loginBox")) {
+    $("loginBox").classList.remove("hidden");
+  }
+
+  if ($("registerBox")) {
+    $("registerBox").classList.add("hidden");
+  }
+}
+
+function showRegister() {
+
+  if ($("loginBox")) {
+    $("loginBox").classList.add("hidden");
+  }
+
+  if ($("registerBox")) {
+    $("registerBox").classList.remove("hidden");
+  }
+}
+
+
+function registerUser() {
+
+  const input = $("registerMobile");
+
+  const mobile = input
+    ? input.value.trim()
+    : "";
+
+  if (!/^[0-9]{10}$/.test(mobile)) {
+
+    if ($("registerMessage")) {
+      $("registerMessage").textContent =
+        "Enter a valid 10 digit mobile number.";
+    }
+
+    return;
+  }
+
+  const user = createUserId();
+
+  user.mobile = mobile;
+
+  setJSON(KEYS.user, user);
+
+  if (!localStorage.getItem(KEYS.balance)) {
+    setBalance(0);
+  }
+
+  initializeReferral();
+
+  showApp();
+
+  alert(
+    "Permanent Demo ID created:\n" +
+    user.id
+  );
+}
+
+
+function loginUser() {
+
+  const input = $("loginMobile");
+
+  const mobile = input
+    ? input.value.trim()
+    : "";
+
+  if (!/^[0-9]{10}$/.test(mobile)) {
+
+    if ($("loginMessage")) {
+      $("loginMessage").textContent =
+        "Enter a valid 10 digit mobile number.";
+    }
+
+    return;
+  }
+
+  let user = getUser();
+
+  if (!user) {
+
+    user = createUserId();
+
+    user.mobile = mobile;
+
+    setJSON(KEYS.user, user);
+  }
+
+  showApp();
+}
+
+
+function showApp() {
+
+  if ($("authScreen")) {
+    $("authScreen").classList.add("hidden");
+  }
+
+  if ($("app")) {
+    $("app").classList.remove("hidden");
+  }
+
+  initializeApp();
 }
 
 
 /* =========================================================
    NAVIGATION
-========================================================= */
+   ========================================================= */
 
-function showPage(pageId) {
+function openPage(pageId) {
+
   const pages = document.querySelectorAll(".page");
 
   pages.forEach(function(page) {
@@ -329,487 +258,186 @@ function showPage(pageId) {
 
   if (target) {
     target.classList.add("active");
-    currentPage = pageId;
   }
 
-  updateBottomNavigation(pageId);
+  const navs = document.querySelectorAll(
+    ".bottom-nav .nav"
+  );
+
+  navs.forEach(function(nav) {
+
+    nav.classList.remove("active");
+
+    if (nav.dataset.page === pageId) {
+      nav.classList.add("active");
+    }
+
+  });
 
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
 
-  if (pageId === "depositHistoryPage") {
+  if (pageId === "depositHistory") {
     renderDepositHistory();
   }
 
-  if (pageId === "withdrawalHistoryPage") {
+  if (pageId === "withdrawHistory") {
     renderWithdrawalHistory();
   }
 
-  if (pageId === "historyPage") {
-    renderTransactionHistory();
-  }
-
-  if (pageId === "homePage") {
-    updateBalanceUI();
+  if (pageId === "transactions") {
+    renderTransactions();
   }
 }
 
 
-function updateBottomNavigation(pageId) {
-  const navButtons = document.querySelectorAll(".nav-item");
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
 
-  navButtons.forEach(function(button) {
-    button.classList.remove("active");
-  });
+function showDeposit() {
+  openPage("deposit");
+}
 
-  let targetButton = null;
+function showWithdrawal() {
+  openPage("withdraw");
+}
 
-  if (pageId === "homePage") {
-    targetButton = document.querySelector(
-      '.nav-item[data-page="homePage"]'
-    );
-  }
+function inviteNow() {
 
-  if (pageId === "productPage") {
-    targetButton = document.querySelector(
-      '.nav-item[data-page="productPage"]'
-    );
-  }
+  initializeReferral();
 
-  if (pageId === "infoPage") {
-    targetButton = document.querySelector(
-      '.nav-item[data-page="infoPage"]'
-    );
-  }
+  const link =
+    localStorage.getItem(KEYS.referral) ||
+    window.location.href;
 
-  if (pageId === "invitePage") {
-    targetButton = document.querySelector(
-      '.nav-item[data-page="invitePage"]'
-    );
-  }
+  const text =
+    "Check Bitcoin Minning demo website:\n" +
+    link;
 
-  if (targetButton) {
-    targetButton.classList.add("active");
-  }
+  const whatsapp =
+    "https://wa.me/?text=" +
+    encodeURIComponent(text);
+
+  window.open(
+    whatsapp,
+    "_blank"
+  );
+}
+
+
+function customerService() {
+  window.open(
+    CUSTOMER_SERVICE,
+    "_blank"
+  );
 }
 
 
 /* =========================================================
    PROFILE
-========================================================= */
+   ========================================================= */
 
-function updateProfileUI() {
+function initializeProfile() {
+
   const user = getUser();
 
-  setText("profileUserId", user.id);
+  if (!user) return;
 
-  const letter = user.id
-    ? user.id.charAt(0).toUpperCase()
-    : "U";
+  const letter =
+    (user.id || "U")
+      .replace("You-", "")
+      .charAt(0)
+      .toUpperCase();
 
-  setText("profileLetter", letter);
-  setText("topProfileLetter", letter);
+  if ($("profileUserId")) {
+    $("profileUserId").textContent =
+      user.id;
+  }
 
-  const savedImage = localStorage.getItem(
-    STORAGE.PROFILE
-  );
+  if ($("profileIdHome")) {
+    $("profileIdHome").textContent =
+      "User ID: " + user.id;
+  }
 
-  const profileImage = $("profileImage");
-  const topProfileImg = $("topProfileImg");
+  if ($("profileLetter")) {
+    $("profileLetter").textContent =
+      letter;
+  }
+
+  if ($("topProfileLetter")) {
+    $("topProfileLetter").textContent =
+      letter;
+  }
+
+  const savedImage =
+    localStorage.getItem(KEYS.profile);
 
   if (savedImage) {
 
-    if (profileImage) {
-      profileImage.src = savedImage;
-      profileImage.style.display = "block";
+    if ($("profileImage")) {
+      $("profileImage").src = savedImage;
+      $("profileImage").classList.remove("hidden");
     }
 
-    if (topProfileImg) {
-      topProfileImg.src = savedImage;
-      topProfileImg.style.display = "block";
+    if ($("profileLetter")) {
+      $("profileLetter").classList.add("hidden");
     }
 
-    hideElement("profileLetter");
-    hideElement("topProfileLetter");
-
-  } else {
-
-    if (profileImage) {
-      profileImage.style.display = "none";
+    if ($("topProfileImg")) {
+      $("topProfileImg").src = savedImage;
+      $("topProfileImg").classList.remove("hidden");
     }
 
-    if (topProfileImg) {
-      topProfileImg.style.display = "none";
+    if ($("topProfileLetter")) {
+      $("topProfileLetter").classList.add("hidden");
     }
-
-    showElement("profileLetter");
-    showElement("topProfileLetter");
   }
 }
 
 
-function handleProfileImage(file) {
+function setupProfileUpload() {
 
-  if (!file) {
-    return;
-  }
+  const button = $("profileUploadBtn");
+  const input = $("profileUpload");
 
-  if (!file.type.startsWith("image/")) {
-    alert("Please select an image.");
-    return;
-  }
+  if (!button || !input) return;
 
-  if (file.size > 5 * 1024 * 1024) {
-    alert("Image size should be below 5 MB.");
-    return;
-  }
-
-  const reader = new FileReader();
-
-  reader.onload = function(event) {
-
-    const dataUrl = event.target.result;
-
-    try {
-      localStorage.setItem(
-        STORAGE.PROFILE,
-        dataUrl
-      );
-
-      updateProfileUI();
-
-    } catch (error) {
-
-      alert(
-        "Image could not be saved. Please use a smaller image."
-      );
-
-      console.error(error);
-    }
+  button.onclick = function() {
+    input.click();
   };
 
-  reader.readAsDataURL(file);
-}
+  input.onchange = function() {
 
+    const file = input.files &&
+                 input.files[0];
 
-/* =========================================================
-   GREETING
-========================================================= */
+    if (!file) return;
 
-function updateGreeting() {
-
-  const hour = new Date().getHours();
-
-  let greeting = "Good Evening";
-
-  if (hour < 12) {
-    greeting = "Good Morning";
-  } else if (hour < 17) {
-    greeting = "Good Afternoon";
-  }
-
-  setText("greeting", greeting);
-}
-
-
-/* =========================================================
-   REFERRAL
-========================================================= */
-
-function getReferralCode() {
-
-  let code = localStorage.getItem(
-    STORAGE.REFERRAL
-  );
-
-  if (!code) {
-
-    const user = getUser();
-
-    code = user.id;
-
-    localStorage.setItem(
-      STORAGE.REFERRAL,
-      code
-    );
-  }
-
-  return code;
-}
-
-
-function updateReferralLink() {
-
-  const baseUrl =
-    window.location.origin +
-    window.location.pathname;
-
-  const link =
-    baseUrl +
-    "?ref=" +
-    encodeURIComponent(getReferralCode());
-
-  const input = $("referralLink");
-
-  if (input) {
-    input.value = link;
-  }
-}
-
-
-/* =========================================================
-   COPY
-========================================================= */
-
-async function copyText(text) {
-
-  try {
-
-    if (navigator.clipboard) {
-
-      await navigator.clipboard.writeText(text);
-
-      return true;
-    }
-
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-
-    const textarea =
-      document.createElement("textarea");
-
-    textarea.value = text;
-
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-
-    document.body.appendChild(textarea);
-
-    textarea.select();
-
-    document.execCommand("copy");
-
-    document.body.removeChild(textarea);
-
-    return true;
-
-  } catch (error) {
-
-    console.error(error);
-
-    return false;
-  }
-}
-
-
-async function copyUPI() {
-
-  const success = await copyText(UPI_ID);
-
-  if (success) {
-    alert("UPI ID copied.");
-  } else {
-    alert("Could not copy UPI ID.");
-  }
-}
-
-
-async function copyReferral() {
-
-  const input = $("referralLink");
-
-  if (!input) {
-    return;
-  }
-
-  const success =
-    await copyText(input.value);
-
-  if (success) {
-    alert("Referral link copied.");
-  } else {
-    alert("Could not copy referral link.");
-  }
-}
-
-
-/* =========================================================
-   FIREBASE INITIALIZATION
-========================================================= */
-
-async function initializeFirebase() {
-
-  try {
-
-    if (typeof firebase === "undefined") {
-
-      console.warn(
-        "Firebase SDK is not loaded."
-      );
-
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image.");
       return;
     }
 
-    firebaseAuth = firebase.auth();
-    firebaseDb = firebase.firestore();
+    const reader = new FileReader();
 
-    firebaseReady = true;
+    reader.onload = function(event) {
 
-    firebaseAuth.onAuthStateChanged(
-      async function(user) {
-
-        firebaseUser = user || null;
-
-        if (user) {
-
-          await loadFirebaseBalance();
-
-        } else {
-
-          try {
-
-            await firebaseAuth.signInAnonymously();
-
-          } catch (error) {
-
-            console.error(
-              "Anonymous Firebase login failed:",
-              error
-            );
-          }
-        }
-      }
-    );
-
-    if (!firebaseAuth.currentUser) {
-
-      await firebaseAuth.signInAnonymously();
-    }
-
-  } catch (error) {
-
-    firebaseReady = false;
-
-    console.error(
-      "Firebase initialization failed:",
-      error
-    );
-  }
-}
-
-
-/* =========================================================
-   FIREBASE TEST BALANCE
-========================================================= */
-
-async function loadFirebaseBalance() {
-
-  if (
-    !firebaseReady ||
-    !firebaseDb ||
-    !firebaseUser
-  ) {
-    return;
-  }
-
-  try {
-
-    const ref = firebaseDb
-      .collection("testBalances")
-      .doc(firebaseUser.uid);
-
-    const snapshot =
-      await ref.get();
-
-    if (snapshot.exists) {
-
-      const data = snapshot.data();
-
-      const balance =
-        Number(data.balance) || 0;
+      const data =
+        event.target.result;
 
       localStorage.setItem(
-        STORAGE.BALANCE,
-        String(balance)
+        KEYS.profile,
+        data
       );
 
-      updateBalanceUI();
+      initializeProfile();
+    };
 
-    } else {
-
-      await ref.set({
-        uid: firebaseUser.uid,
-        userId: getUser().id,
-        balance: 0,
-        createdAt:
-          firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt:
-          firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      setLocalBalance(0);
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Firebase balance load error:",
-      error
-    );
-
-    /*
-      Local demo balance is kept working even if
-      Firebase rules/config are temporarily wrong.
-    */
-  }
-}
-
-
-async function saveFirebaseBalance(balance) {
-
-  if (
-    !firebaseReady ||
-    !firebaseDb ||
-    !firebaseUser
-  ) {
-    return false;
-  }
-
-  try {
-
-    const ref = firebaseDb
-      .collection("testBalances")
-      .doc(firebaseUser.uid);
-
-    await ref.set(
-      {
-        uid: firebaseUser.uid,
-        userId: getUser().id,
-        balance: Number(balance),
-        updatedAt:
-          firebase.firestore.FieldValue.serverTimestamp()
-      },
-      {
-        merge: true
-      }
-    );
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "Firebase balance save error:",
-      error
-    );
-
-    return false;
-  }
+    reader.readAsDataURL(file);
+  };
 }
 
 
@@ -817,134 +445,169 @@ async function saveFirebaseBalance(balance) {
    BANK DETAILS
    ========================================================= */
 
+function saveBankDetails() {
+
+  const name =
+    $("bankName")
+      ? $("bankName").value.trim()
+      : "";
+
+  const ifsc =
+    $("ifsc")
+      ? $("ifsc").value.trim().toUpperCase()
+      : "";
+
+  const bank =
+    $("bank")
+      ? $("bank").value.trim()
+      : "";
+
+  const account =
+    $("accountNumber")
+      ? $("accountNumber").value.trim()
+      : "";
+
+  const confirm =
+    $("confirmAccount")
+      ? $("confirmAccount").value.trim()
+      : "";
+
+
+  if (!name ||
+      !ifsc ||
+      !bank ||
+      !account ||
+      !confirm) {
+
+    showMessage(
+      "bankMessage",
+      "Please fill all bank details."
+    );
+
+    return;
+  }
+
+
+  if (account !== confirm) {
+
+    showMessage(
+      "bankMessage",
+      "Account numbers do not match."
+    );
+
+    return;
+  }
+
+
+  setJSON(KEYS.bank, {
+    name: name,
+    ifsc: ifsc,
+    bank: bank,
+    account: account,
+    updatedAt: nowText()
+  });
+
+
+  showMessage(
+    "bankMessage",
+    "Bank details saved locally."
+  );
+}
+
+
 function loadBankDetails() {
 
   const bank =
-    readJSON(STORAGE.BANK, {});
+    getJSON(KEYS.bank, null);
+
+  if (!bank) return;
 
   if ($("bankName")) {
     $("bankName").value =
       bank.name || "";
   }
 
-  if ($("bankIfsc")) {
-    $("bankIfsc").value =
+  if ($("ifsc")) {
+    $("ifsc").value =
       bank.ifsc || "";
   }
 
-  if ($("bankBankName")) {
-    $("bankBankName").value =
-      bank.bankName || "";
+  if ($("bank")) {
+    $("bank").value =
+      bank.bank || "";
   }
 
-  if ($("bankAccount")) {
-    $("bankAccount").value =
+  if ($("accountNumber")) {
+    $("accountNumber").value =
       bank.account || "";
   }
 
-  if ($("bankAccountRepeat")) {
-    $("bankAccountRepeat").value =
-      bank.accountRepeat || "";
-  }
-}
-
-
-function saveBankDetails() {
-
-  const name =
-    $("bankName")?.value.trim() || "";
-
-  const ifsc =
-    $("bankIfsc")?.value.trim().toUpperCase() || "";
-
-  const bankName =
-    $("bankBankName")?.value.trim() || "";
-
-  const account =
-    $("bankAccount")?.value.trim() || "";
-
-  const accountRepeat =
-    $("bankAccountRepeat")?.value.trim() || "";
-
-  const message =
-    $("bankMessage");
-
-
-  if (!name ||
-      !ifsc ||
-      !bankName ||
-      !account ||
-      !accountRepeat) {
-
-    if (message) {
-      message.textContent =
-        "Please fill all bank details.";
-      message.className = "message";
-    }
-
-    return;
-  }
-
-
-  if (account !== accountRepeat) {
-
-    if (message) {
-      message.textContent =
-        "Account numbers do not match.";
-      message.className = "message";
-    }
-
-    return;
-  }
-
-
-  if (account.length < 6) {
-
-    if (message) {
-      message.textContent =
-        "Please enter a valid account number.";
-      message.className = "message";
-    }
-
-    return;
-  }
-
-
-  const bank = {
-    name: name,
-    ifsc: ifsc,
-    bankName: bankName,
-    account: account,
-    accountRepeat: accountRepeat,
-    savedAt: new Date().toISOString()
-  };
-
-
-  /*
-    Bank information is kept locally in this demo.
-    It is not uploaded to Telegram or a third-party server.
-  */
-
-  writeJSON(
-    STORAGE.BANK,
-    bank
-  );
-
-
-  if (message) {
-
-    message.textContent =
-      "Bank details saved on this device.";
-
-    message.className =
-      "message success";
+  if ($("confirmAccount")) {
+    $("confirmAccount").value =
+      bank.account || "";
   }
 }
 
 
 /* =========================================================
-   DEPOSIT - SCREENSHOT PREVIEW
-========================================================= */
+   MESSAGE
+   ========================================================= */
+
+function showMessage(id, text) {
+
+  const el = $(id);
+
+  if (!el) return;
+
+  el.textContent = text;
+
+  setTimeout(function() {
+
+    if (el.textContent === text) {
+      el.textContent = "";
+    }
+
+  }, 5000);
+}
+
+
+/* =========================================================
+   DEPOSIT
+   ========================================================= */
+
+function copyUPI() {
+
+  if (navigator.clipboard) {
+
+    navigator.clipboard
+      .writeText(UPI_ID)
+      .then(function() {
+
+        alert(
+          "UPI ID copied:\n" +
+          UPI_ID
+        );
+
+      })
+      .catch(function() {
+
+        prompt(
+          "Copy UPI ID:",
+          UPI_ID
+        );
+
+      });
+
+  } else {
+
+    prompt(
+      "Copy UPI ID:",
+      UPI_ID
+    );
+
+  }
+}
+
 
 function setupScreenshotPreview() {
 
@@ -954,107 +617,77 @@ function setupScreenshotPreview() {
   const preview =
     $("paymentScreenshotPreview");
 
-  if (!input || !preview) {
-    return;
-  }
+  if (!input || !preview) return;
 
-  input.addEventListener(
-    "change",
-    function() {
+  input.onchange = function() {
 
-      preview.innerHTML = "";
+    preview.innerHTML = "";
 
-      const file =
-        input.files &&
-        input.files[0];
+    const file =
+      input.files &&
+      input.files[0];
 
-      if (!file) {
-        return;
-      }
+    if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/")) {
 
-        preview.innerHTML =
-          '<p class="message">Please select an image file.</p>';
+      preview.textContent =
+        "Please select an image.";
 
-        input.value = "";
-
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-
-        preview.innerHTML =
-          '<p class="message">Image must be below 5 MB.</p>';
-
-        input.value = "";
-
-        return;
-      }
-
-      const reader =
-        new FileReader();
-
-      reader.onload =
-        function(event) {
-
-          const img =
-            document.createElement("img");
-
-          img.src =
-            event.target.result;
-
-          img.alt =
-            "Payment screenshot preview";
-
-          preview.appendChild(img);
-        };
-
-      reader.readAsDataURL(file);
+      return;
     }
-  );
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+
+      const img =
+        document.createElement("img");
+
+      img.src =
+        event.target.result;
+
+      img.alt =
+        "Payment screenshot preview";
+
+      preview.appendChild(img);
+    };
+
+    reader.readAsDataURL(file);
+  };
 }
 
 
-/* =========================================================
-   DEPOSIT REQUEST
-========================================================= */
-
-function submitDepositRequest() {
+function submitDeposit() {
 
   const amount =
     Number(
-      $("depositAmount")?.value
+      $("depositAmount")
+        ? $("depositAmount").value
+        : 0
     );
 
   const utr =
-    $("utr")?.value.trim() || "";
+    $("utr")
+      ? $("utr").value.trim()
+      : "";
 
   const screenshot =
-    $("paymentScreenshot")?.files?.[0] || null;
-
-  const message =
-    $("paymentMessage");
-
-
-  function showError(text) {
-
-    if (message) {
-
-      message.textContent = text;
-      message.className = "message";
-    }
-  }
+    $("paymentScreenshot") &&
+    $("paymentScreenshot").files
+      ? $("paymentScreenshot").files[0]
+      : null;
 
 
   if (
     !Number.isFinite(amount) ||
-    amount < MIN_DEPOSIT ||
-    amount > MAX_DEPOSIT
+    amount < 500 ||
+    amount > 20000
   ) {
 
-    showError(
-      `Amount must be between ${formatRupee(MIN_DEPOSIT)} and ${formatRupee(MAX_DEPOSIT)}.`
+    showMessage(
+      "paymentMessage",
+      "Demo deposit amount must be ₹500 - ₹20,000."
     );
 
     return;
@@ -1063,8 +696,9 @@ function submitDepositRequest() {
 
   if (!utr) {
 
-    showError(
-      "Please enter the transaction reference / UTR."
+    showMessage(
+      "paymentMessage",
+      "Enter the transaction reference."
     );
 
     return;
@@ -1073,7 +707,8 @@ function submitDepositRequest() {
 
   if (!screenshot) {
 
-    showError(
+    showMessage(
+      "paymentMessage",
       "Please select a payment screenshot."
     );
 
@@ -1081,16 +716,8 @@ function submitDepositRequest() {
   }
 
 
-  if (
-    !screenshot.type.startsWith("image/")
-  ) {
-
-    showError(
-      "Please select a valid image."
-    );
-
-    return;
-  }
+  const deposits =
+    getJSON(KEYS.deposits, []);
 
 
   const request = {
@@ -1099,195 +726,69 @@ function submitDepositRequest() {
       "DEP-" +
       Date.now(),
 
-    userId:
-      getUser().id,
+    amount: amount,
 
-    amount:
-      amount,
-
-    utr:
-      utr,
+    utr: utr,
 
     screenshotName:
       screenshot.name,
-
-    screenshotSize:
-      screenshot.size,
 
     status:
       "Pending Verification",
 
     createdAt:
-      new Date().toISOString()
+      nowText()
   };
-
-
-  const deposits =
-    readJSON(
-      STORAGE.DEPOSITS,
-      []
-    );
 
 
   deposits.unshift(request);
 
-
-  writeJSON(
-    STORAGE.DEPOSITS,
+  setJSON(
+    KEYS.deposits,
     deposits
   );
-
-
-  localStorage.setItem(
-    STORAGE.LAST_DEPOSIT,
-    JSON.stringify(request)
-  );
-
-
-  /*
-    IMPORTANT:
-    This demo records the request locally.
-    It does NOT automatically send payment screenshots,
-    UTRs or payment information to Telegram.
-  */
 
 
   addTransaction({
     type: "Deposit Request",
     amount: amount,
     status: "Pending Verification",
-    reference: utr
+    ref: request.id
   });
 
 
-  if (message) {
+  showMessage(
+    "paymentMessage",
+    "Deposit request saved locally for demo verification."
+  );
 
-    message.textContent =
-      "Deposit request saved. Status: Pending Verification.";
 
-    message.className =
-      "message success";
+  if ($("depositAmount")) {
+    $("depositAmount").value = "";
+  }
+
+  if ($("utr")) {
+    $("utr").value = "";
+  }
+
+  if ($("paymentScreenshot")) {
+    $("paymentScreenshot").value = "";
+  }
+
+  if ($("paymentScreenshotPreview")) {
+    $("paymentScreenshotPreview").innerHTML = "";
   }
 
 
-  const amountInput =
-    $("depositAmount");
-
-  const utrInput =
-    $("utr");
-
-  const screenshotInput =
-    $("paymentScreenshot");
-
-  const preview =
-    $("paymentScreenshotPreview");
-
-
-  if (amountInput) {
-    amountInput.value = "";
-  }
-
-  if (utrInput) {
-    utrInput.value = "";
-  }
-
-  if (screenshotInput) {
-    screenshotInput.value = "";
-  }
-
-  if (preview) {
-    preview.innerHTML = "";
-  }
-
-
-  renderDepositHistory();
+  setTimeout(function() {
+    renderDepositHistory();
+  }, 300);
 }
 
 
 /* =========================================================
-   DEPOSIT HISTORY
-========================================================= */
-
-function renderDepositHistory() {
-
-  const container =
-    $("depositHistoryList");
-
-  if (!container) {
-    return;
-  }
-
-  const deposits =
-    readJSON(
-      STORAGE.DEPOSITS,
-      []
-    );
-
-
-  if (!deposits.length) {
-
-    container.innerHTML =
-      `
-      <div class="history-item">
-        <div class="history-item-title">
-          No deposit requests yet
-        </div>
-        <div class="history-item-meta">
-          Your demo deposit requests will appear here.
-        </div>
-      </div>
-      `;
-
-    return;
-  }
-
-
-  container.innerHTML =
-    deposits
-      .map(function(item) {
-
-        return `
-          <div class="history-item">
-
-            <div class="history-item-top">
-
-              <div>
-                <div class="history-item-title">
-                  Deposit Request
-                </div>
-
-                <div class="history-item-meta">
-                  ${escapeHtml(item.id)}
-                </div>
-              </div>
-
-              <div class="history-item-amount">
-                ${formatRupee(item.amount)}
-              </div>
-
-            </div>
-
-            <div class="history-item-meta">
-              UTR: ${escapeHtml(item.utr)}
-              <br>
-              ${formatDate(item.createdAt)}
-            </div>
-
-            <span class="history-status">
-              ${escapeHtml(item.status)}
-            </span>
-
-          </div>
-        `;
-
-      })
-      .join("");
-}
-
-
-/* =========================================================
-   WITHDRAWAL TIME
-========================================================= */
+   WITHDRAW
+   ========================================================= */
 
 function isWithdrawalTime() {
 
@@ -1300,7 +801,7 @@ function isWithdrawalTime() {
   const minutes =
     now.getMinutes();
 
-  const currentMinutes =
+  const total =
     hours * 60 + minutes;
 
   const start =
@@ -1309,124 +810,49 @@ function isWithdrawalTime() {
   const end =
     17 * 60;
 
-  return (
-    currentMinutes >= start &&
-    currentMinutes <= end
-  );
+  return total >= start &&
+         total <= end;
 }
 
 
-/* =========================================================
-   TODAY'S WITHDRAWALS
-========================================================= */
+function withdrawalsToday() {
 
-function getTodayWithdrawals() {
-
-  const withdrawals =
-    readJSON(
-      STORAGE.WITHDRAWALS,
+  const list =
+    getJSON(
+      KEYS.withdrawals,
       []
     );
 
   const today =
-    getTodayKey();
+    todayKey();
 
-  return withdrawals.filter(
-    function(item) {
+  return list.filter(function(item) {
 
-      if (!item.createdAt) {
-        return false;
-      }
+    return item.day === today;
 
-      return (
-        getDateKey(item.createdAt) ===
-        today
-      );
-    }
-  );
+  }).length;
 }
 
 
-function getDateKey(dateValue) {
+function submitWithdrawal() {
 
-  const date =
-    new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const year =
-    date.getFullYear();
-
-  const month =
-    String(
-      date.getMonth() + 1
-    ).padStart(2, "0");
-
-  const day =
-    String(
-      date.getDate()
-    ).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-
-/* =========================================================
-   WITHDRAWAL
-========================================================= */
-
-async function processWithdrawal(amount) {
-
-  const message =
-    $("withdrawMessage");
-
-  const pageMessage =
-    $("withdrawPageMessage");
-
-
-  function showError(text) {
-
-    if (message) {
-      message.textContent = text;
-      message.className = "message";
-    }
-
-    if (pageMessage) {
-      pageMessage.textContent = text;
-      pageMessage.className = "message";
-    }
-  }
-
-
-  function showSuccess(text) {
-
-    if (message) {
-      message.textContent = text;
-      message.className = "message success";
-    }
-
-    if (pageMessage) {
-      pageMessage.textContent = text;
-      pageMessage.className =
-        "message success";
-    }
-  }
-
-
-  amount =
-    Number(amount);
+  const amount =
+    Number(
+      $("withdrawAmount")
+        ? $("withdrawAmount").value
+        : 0
+    );
 
 
   if (
     !Number.isFinite(amount) ||
-    amount < MIN_WITHDRAW ||
-    amount > MAX_WITHDRAW
+    amount < 500 ||
+    amount > 20000
   ) {
 
-    showError(
-      `Withdrawal amount must be between ${formatRupee(MIN_WITHDRAW)} and ${formatRupee(MAX_WITHDRAW)}.`
+    showMessage(
+      "withdrawMessage",
+      "Withdrawal must be ₹500 - ₹20,000."
     );
 
     return;
@@ -1435,25 +861,20 @@ async function processWithdrawal(amount) {
 
   if (!isWithdrawalTime()) {
 
-    showError(
-      "Demo withdrawal requests are available from 10:30 AM to 5:00 PM."
+    showMessage(
+      "withdrawMessage",
+      "Demo withdrawal time is 10:30 AM - 5:00 PM."
     );
 
     return;
   }
 
 
-  const todayWithdrawals =
-    getTodayWithdrawals();
+  if (withdrawalsToday() >= 3) {
 
-
-  if (
-    todayWithdrawals.length >=
-    MAX_WITHDRAWALS_PER_DAY
-  ) {
-
-    showError(
-      "Maximum 3 withdrawal requests are allowed per day."
+    showMessage(
+      "withdrawMessage",
+      "Maximum 3 withdrawal requests per day."
     );
 
     return;
@@ -1461,12 +882,13 @@ async function processWithdrawal(amount) {
 
 
   const balance =
-    getLocalBalance();
+    getBalance();
 
 
   if (amount > balance) {
 
-    showError(
+    showMessage(
+      "withdrawMessage",
       "Insufficient demo balance."
     );
 
@@ -1475,96 +897,75 @@ async function processWithdrawal(amount) {
 
 
   const bank =
-    readJSON(
-      STORAGE.BANK,
-      null
-    );
+    getJSON(KEYS.bank, null);
 
 
   if (!bank ||
       !bank.name ||
       !bank.ifsc ||
-      !bank.bankName ||
+      !bank.bank ||
       !bank.account) {
 
-    showError(
+    showMessage(
+      "withdrawMessage",
       "Please save your bank details first."
     );
-
-    showPage("infoPage");
 
     return;
   }
 
 
-  /*
-    DEMO ONLY:
-    Deducts from test balance locally/Firebase.
-    No real bank transfer is made.
-  */
-
-  const newBalance =
-    balance - amount;
+  const withdrawals =
+    getJSON(
+      KEYS.withdrawals,
+      []
+    );
 
 
-  setLocalBalance(
-    newBalance
-  );
-
-
-  await saveFirebaseBalance(
-    newBalance
-  );
-
-
-  const withdrawal = {
+  const request = {
 
     id:
-      "WD-" +
+      "WDR-" +
       Date.now(),
-
-    userId:
-      getUser().id,
 
     amount:
       amount,
 
     status:
-      "Pending Demo Review",
+      "Pending",
+
+    day:
+      todayKey(),
 
     createdAt:
-      new Date().toISOString()
+      nowText()
   };
 
 
-  const withdrawals =
-    readJSON(
-      STORAGE.WITHDRAWALS,
-      []
-    );
+  withdrawals.unshift(request);
 
-
-  withdrawals.unshift(
-    withdrawal
-  );
-
-
-  writeJSON(
-    STORAGE.WITHDRAWALS,
+  setJSON(
+    KEYS.withdrawals,
     withdrawals
   );
 
 
+  setBalance(
+    balance - amount
+  );
+
+
   addTransaction({
-    type: "Withdrawal",
+    type: "Withdrawal Request",
     amount: amount,
-    status: "Pending Demo Review",
-    reference: withdrawal.id
+    status: "Pending",
+    ref: request.id
   });
 
 
-  showSuccess(
-    `Demo withdrawal request submitted for ${formatRupee(amount)}.`
+  showMessage(
+    "withdrawMessage",
+    "Withdrawal request saved as demo request."
   );
 
 
@@ -1572,1383 +973,558 @@ async function processWithdrawal(amount) {
     $("withdrawAmount").value = "";
   }
 
-  if ($("withdrawPageAmount")) {
-    $("withdrawPageAmount").value = "";
+
+  setTimeout(function() {
+    renderWithdrawalHistory();
+  }, 300);
+}
+
+
+/* =========================================================
+   TRANSACTIONS
+   ========================================================= */
+
+function addTransaction(data) {
+
+  const list =
+    getJSON(
+      KEYS.transactions,
+      []
+    );
+
+  list.unshift({
+
+    id:
+      data.ref ||
+      "TX-" + Date.now(),
+
+    type:
+      data.type,
+
+    amount:
+      Number(data.amount || 0),
+
+    status:
+      data.status || "Pending",
+
+    createdAt:
+      nowText()
+  });
+
+
+  setJSON(
+    KEYS.transactions,
+    list
+  );
+}
+
+
+function renderTransactions() {
+
+  const box =
+    $("transactionList");
+
+  if (!box) return;
+
+  const list =
+    getJSON(
+      KEYS.transactions,
+      []
+    );
+
+
+  if (!list.length) {
+
+    box.innerHTML =
+      '<div class="empty-history">' +
+      'No transactions yet.' +
+      '</div>';
+
+    return;
   }
 
 
-  renderWithdrawalHistory();
-  renderTransactionHistory();
-  updateBalanceUI();
+  box.innerHTML =
+    list.map(function(item) {
+
+      const sign =
+        item.type === "Deposit Request"
+          ? "+"
+          : "-";
+
+      return `
+        <div class="history-item">
+
+          <div class="history-top">
+
+            <span class="history-title">
+              ${escapeHTML(item.type)}
+            </span>
+
+            <span class="history-amount">
+              ${sign} ₹${money(item.amount)}
+            </span>
+
+          </div>
+
+          <div class="history-date">
+            ${escapeHTML(item.createdAt)}
+          </div>
+
+          <span class="history-status">
+            ${escapeHTML(item.status)}
+          </span>
+
+        </div>
+      `;
+
+    }).join("");
+}
+
+
+/* =========================================================
+   DEPOSIT HISTORY
+   ========================================================= */
+
+function renderDepositHistory() {
+
+  const box =
+    $("depositHistoryList");
+
+  if (!box) return;
+
+  const list =
+    getJSON(
+      KEYS.deposits,
+      []
+    );
+
+
+  if (!list.length) {
+
+    box.innerHTML =
+      '<div class="empty-history">' +
+      'No deposit requests yet.' +
+      '</div>';
+
+    return;
+  }
+
+
+  box.innerHTML =
+    list.map(function(item) {
+
+      return `
+        <div class="history-item">
+
+          <div class="history-top">
+
+            <span class="history-title">
+              Deposit Request
+            </span>
+
+            <span class="history-amount">
+              ₹${money(item.amount)}
+            </span>
+
+          </div>
+
+          <div class="history-date">
+            ${escapeHTML(item.createdAt)}
+          </div>
+
+          <div class="history-date">
+            UTR: ${escapeHTML(item.utr)}
+          </div>
+
+          <span class="history-status">
+            ${escapeHTML(item.status)}
+          </span>
+
+        </div>
+      `;
+
+    }).join("");
 }
 
 
 /* =========================================================
    WITHDRAWAL HISTORY
-========================================================= */
+   ========================================================= */
 
 function renderWithdrawalHistory() {
 
-  const container =
+  const box =
     $("withdrawalHistoryList");
 
-  if (!container) {
-    return;
-  }
+  if (!box) return;
 
-
-  const withdrawals =
-    readJSON(
-      STORAGE.WITHDRAWALS,
+  const list =
+    getJSON(
+      KEYS.withdrawals,
       []
     );
 
 
-  if (!withdrawals.length) {
+  if (!list.length) {
 
-    container.innerHTML =
-      `
-      <div class="history-item">
-
-        <div class="history-item-title">
-          No withdrawals yet
-        </div>
-
-        <div class="history-item-meta">
-          Your demo withdrawal requests will appear here.
-        </div>
-
-      </div>
-      `;
+    box.innerHTML =
+      '<div class="empty-history">' +
+      'No withdrawal requests yet.' +
+      '</div>';
 
     return;
   }
 
 
-  container.innerHTML =
-    withdrawals
-      .map(function(item) {
+  box.innerHTML =
+    list.map(function(item) {
 
-        return `
-          <div class="history-item">
+      return `
+        <div class="history-item">
 
-            <div class="history-item-top">
+          <div class="history-top">
 
-              <div>
+            <span class="history-title">
+              Withdrawal Request
+            </span>
 
-                <div class="history-item-title">
-                  Withdrawal Request
-                </div>
-
-                <div class="history-item-meta">
-                  ${escapeHtml(item.id)}
-                </div>
-
-              </div>
-
-              <div class="history-item-amount">
-                ${formatRupee(item.amount)}
-              </div>
-
-            </div>
-
-            <div class="history-item-meta">
-              ${formatDate(item.createdAt)}
-            </div>
-
-            <span class="history-status">
-              ${escapeHtml(item.status)}
+            <span class="history-amount">
+              ₹${money(item.amount)}
             </span>
 
           </div>
-        `;
 
-      })
-      .join("");
+          <div class="history-date">
+            ${escapeHTML(item.createdAt)}
+          </div>
+
+          <span class="history-status">
+            ${escapeHTML(item.status)}
+          </span>
+
+        </div>
+      `;
+
+    }).join("");
 }
 
 
 /* =========================================================
-   TRANSACTION HISTORY
-========================================================= */
+   REFERRAL
+   ========================================================= */
 
-function getTransactions() {
+function initializeReferral() {
 
-  return readJSON(
-    STORAGE.TRANSACTIONS,
-    []
-  );
-}
+  const user =
+    getUser();
 
+  if (!user) return;
 
-function addTransaction(data) {
-
-  const transactions =
-    getTransactions();
-
-
-  transactions.unshift({
-
-    id:
-      "TX-" +
-      Date.now() +
-      "-" +
-      Math.floor(
-        Math.random() * 1000
-      ),
-
-    userId:
-      getUser().id,
-
-    type:
-      data.type || "Transaction",
-
-    amount:
-      Number(data.amount) || 0,
-
-    status:
-      data.status || "Pending",
-
-    reference:
-      data.reference || "",
-
-    createdAt:
-      new Date().toISOString()
-  });
-
-
-  writeJSON(
-    STORAGE.TRANSACTIONS,
-    transactions
-  );
-}
-
-
-function renderTransactionHistory() {
-
-  const container =
-    $("historyList");
-
-  if (!container) {
-    return;
-  }
-
-
-  const transactions =
-    getTransactions();
-
-
-  if (!transactions.length) {
-
-    container.innerHTML =
-      `
-      <div class="history-item">
-
-        <div class="history-item-title">
-          No transactions yet
-        </div>
-
-        <div class="history-item-meta">
-          Your demo transactions will appear here.
-        </div>
-
-      </div>
-      `;
-
-    return;
-  }
-
-
-  container.innerHTML =
-    transactions
-      .map(function(item) {
-
-        return `
-          <div class="history-item">
-
-            <div class="history-item-top">
-
-              <div>
-
-                <div class="history-item-title">
-                  ${escapeHtml(item.type)}
-                </div>
-
-                <div class="history-item-meta">
-                  ${escapeHtml(item.id)}
-                </div>
-
-              </div>
-
-              <div class="history-item-amount">
-                ${formatRupee(item.amount)}
-              </div>
-
-            </div>
-
-            <div class="history-item-meta">
-              ${item.reference
-                ? "Reference: " +
-                  escapeHtml(item.reference) +
-                  "<br>"
-                : ""
-              }
-
-              ${formatDate(item.createdAt)}
-            </div>
-
-            <span class="history-status">
-              ${escapeHtml(item.status)}
-            </span>
-
-          </div>
-        `;
-
-      })
-      .join("");
-}
-
-
-/* =========================================================
-   PRODUCT PAGE
-========================================================= */
-
-function renderProducts() {
-
-  const container =
-    document.querySelector(
-      ".product-list"
+  let link =
+    localStorage.getItem(
+      KEYS.referral
     );
 
-  if (!container) {
-    return;
+
+  if (!link) {
+
+    link =
+      window.location.origin +
+      window.location.pathname +
+      "?ref=" +
+      encodeURIComponent(user.id);
+
+    localStorage.setItem(
+      KEYS.referral,
+      link
+    );
   }
 
 
-  const values =
-    Object.values(PRODUCTS);
-
-
-  container.innerHTML =
-    values
-      .map(function(product, index) {
-
-        const popular =
-          index === 1
-            ? " popular"
-            : "";
-
-        return `
-          <article class="product-card${popular}">
-
-            <div class="product-top">
-
-              <div>
-
-                <span class="plan-tag">
-                  ${index === 1
-                    ? "POPULAR"
-                    : "DEMO PLAN"}
-                </span>
-
-                <h3>
-                  ${formatRupee(product.price)}
-                </h3>
-
-              </div>
-
-              <span class="product-number">
-                0${index + 1}
-              </span>
-
-            </div>
-
-            <p class="product-description">
-              ${escapeHtml(product.description)}
-            </p>
-
-            <ul class="product-features">
-
-              ${product.features
-                .map(function(feature) {
-                  return `
-                    <li>
-                      ${escapeHtml(feature)}
-                    </li>
-                  `;
-                })
-                .join("")}
-
-            </ul>
-
-            <button
-              type="button"
-              class="primary product-view-btn"
-              data-product="${product.price}"
-            >
-              View Details
-            </button>
-
-          </article>
-        `;
-      })
-      .join("");
-
-
-  document
-    .querySelectorAll(
-      ".product-view-btn"
-    )
-    .forEach(function(button) {
-
-      button.addEventListener(
-        "click",
-        function() {
-
-          const price =
-            Number(
-              button.dataset.product
-            );
-
-          openProductModal(price);
-        }
-      );
-    });
+  if ($("referralLink")) {
+    $("referralLink").textContent =
+      link;
+  }
 }
 
 
-/* =========================================================
-   HOME PLAN BUTTONS
-========================================================= */
+function copyReferral() {
 
-function setupHomePlanButtons() {
+  initializeReferral();
 
-  document
-    .querySelectorAll(
-      "[data-product]"
-    )
-    .forEach(function(button) {
-
-      if (
-        button.classList.contains(
-          "product-view-btn"
-        )
-      ) {
-        return;
-      }
+  const link =
+    localStorage.getItem(
+      KEYS.referral
+    ) ||
+    window.location.href;
 
 
-      button.addEventListener(
-        "click",
-        function() {
+  if (navigator.clipboard) {
 
-          const price =
-            Number(
-              button.dataset.product
-            );
+    navigator.clipboard
+      .writeText(link)
+      .then(function() {
 
-          if (
-            PRODUCTS[price]
-          ) {
-            openProductModal(price);
-          }
-        }
-      );
-    });
+        alert("Referral link copied.");
+
+      })
+      .catch(function() {
+
+        prompt(
+          "Copy referral link:",
+          link
+        );
+
+      });
+
+  } else {
+
+    prompt(
+      "Copy referral link:",
+      link
+    );
+
+  }
 }
 
 
 /* =========================================================
    PRODUCT MODAL
-========================================================= */
+   ========================================================= */
 
-function openProductModal(price) {
-
-  const product =
-    PRODUCTS[price];
+let selectedPlan = null;
 
 
-  if (!product) {
-    return;
-  }
+function openPlan(name, price, description) {
 
-
-  selectedProduct =
-    product;
-
-
-  setText(
-    "modalTitle",
-    product.name
-  );
-
-
-  setText(
-    "modalPrice",
-    formatRupee(product.price)
-  );
-
-
-  setText(
-    "modalText",
-    product.description
-  );
-
-
-  const modal =
-    $("planModal");
-
-  if (modal) {
-    modal.classList.remove(
-      "hidden"
-    );
-  }
-}
-
-
-function closeProductModal() {
-
-  selectedProduct =
-    null;
-
-  const modal =
-    $("planModal");
-
-  if (modal) {
-    modal.classList.add(
-      "hidden"
-    );
-  }
-}
-
-
-/* =========================================================
-   DEMO PURCHASE
-========================================================= */
-
-async function continueDemoPurchase() {
-
-  if (!selectedProduct) {
-    return;
-  }
-
-
-  const product =
-    selectedProduct;
-
-
-  const balance =
-    getLocalBalance();
-
-
-  /*
-    This is intentionally a DEMO purchase.
-    No real-money investment is processed.
-  */
-
-  if (balance < product.price) {
-
-    closeProductModal();
-
-    alert(
-      `Insufficient demo balance. You need ${formatRupee(product.price)} test balance.`
-    );
-
-    showPage("depositPage");
-
-    return;
-  }
-
-
-  const newBalance =
-    balance - product.price;
-
-
-  setLocalBalance(
-    newBalance
-  );
-
-
-  await saveFirebaseBalance(
-    newBalance
-  );
-
-
-  const purchase = {
-
-    id:
-      "INV-" +
-      Date.now(),
-
-    userId:
-      getUser().id,
-
-    productId:
-      product.id,
-
-    productName:
-      product.name,
-
-    amount:
-      product.price,
-
-    duration:
-      product.duration,
-
-    status:
-      "Active Demo",
-
-    createdAt:
-      new Date().toISOString()
+  selectedPlan = {
+    name: name,
+    price: price,
+    description: description
   };
 
 
-  const purchases =
-    readJSON(
-      STORAGE.PURCHASES,
-      []
-    );
-
-
-  purchases.unshift(
-    purchase
-  );
-
-
-  writeJSON(
-    STORAGE.PURCHASES,
-    purchases
-  );
-
-
-  addTransaction({
-    type:
-      "Demo Plan Purchase",
-
-    amount:
-      product.price,
-
-    status:
-      "Active Demo",
-
-    reference:
-      purchase.id
-  });
-
-
-  closeProductModal();
-
-
-  alert(
-    `${product.name} activated in DEMO mode.`
-  );
-
-
-  updateBalanceUI();
-  renderTransactionHistory();
-
-  showPage("historyPage");
-}
-
-
-/* =========================================================
-   WHATSAPP INVITE
-========================================================= */
-
-function inviteOnWhatsApp() {
-
-  const link =
-    $("referralLink")?.value ||
-    window.location.href;
-
-
-  const text =
-    `Join ${APP_NAME} demo website using my referral link: ${link}`;
-
-
-  const url =
-    "https://wa.me/?text=" +
-    encodeURIComponent(text);
-
-
-  window.open(
-    url,
-    "_blank",
-    "noopener,noreferrer"
-  );
-}
-
-
-/* =========================================================
-   CUSTOMER SERVICE
-========================================================= */
-
-function openCustomerService() {
-
-  window.open(
-    CUSTOMER_SERVICE_URL,
-    "_blank",
-    "noopener,noreferrer"
-  );
-}
-
-
-/* =========================================================
-   PAGE-SPECIFIC WITHDRAW BUTTONS
-========================================================= */
-
-function handleHomeWithdraw() {
-
-  showPage("infoPage");
-
-  setTimeout(
-    function() {
-
-      const input =
-        $("withdrawAmount");
-
-      if (input) {
-
-        input.focus();
-
-        input.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
-      }
-
-    },
-    250
-  );
-}
-
-
-/* =========================================================
-   EVENT LISTENERS
-========================================================= */
-
-function setupNavigation() {
-
-  document
-    .querySelectorAll(
-      ".nav-item[data-page]"
-    )
-    .forEach(function(button) {
-
-      button.addEventListener(
-        "click",
-        function() {
-
-          const page =
-            button.dataset.page;
-
-          if (page) {
-            showPage(page);
-          }
-        }
-      );
-    });
-
-
-  if ($("topProfile")) {
-
-    $("topProfile")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("infoPage");
-        }
-      );
+  if ($("modalPlan")) {
+    $("modalPlan").textContent =
+      name.toUpperCase();
   }
 
-
-  if ($("depositBtn")) {
-
-    $("depositBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("depositPage");
-        }
-      );
+  if ($("modalTitle")) {
+    $("modalTitle").textContent =
+      name;
   }
 
-
-  if ($("withdrawBtn")) {
-
-    $("withdrawBtn")
-      .addEventListener(
-        "click",
-        handleHomeWithdraw
-      );
+  if ($("modalPrice")) {
+    $("modalPrice").textContent =
+      price;
   }
 
-
-  if ($("myInfoBtn")) {
-
-    $("myInfoBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("infoPage");
-        }
-      );
-  }
-
-
-  if ($("inviteBtn")) {
-
-    $("inviteBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("invitePage");
-        }
-      );
-  }
-
-
-  if ($("productsBtn")) {
-
-    $("productsBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("productPage");
-        }
-      );
-  }
-}
-
-
-/* =========================================================
-   BACK BUTTONS
-========================================================= */
-
-function setupBackButtons() {
-
-  if ($("historyBackBtn")) {
-
-    $("historyBackBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("homePage");
-        }
-      );
-  }
-
-
-  if ($("withdrawHistoryBackBtn")) {
-
-    $("withdrawHistoryBackBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("infoPage");
-        }
-      );
-  }
-
-
-  if ($("transactionHistoryBackBtn")) {
-
-    $("transactionHistoryBackBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage("infoPage");
-        }
-      );
-  }
-}
-
-
-/* =========================================================
-   INFO PAGE BUTTONS
-========================================================= */
-
-function setupInfoButtons() {
-
-  if ($("saveBankBtn")) {
-
-    $("saveBankBtn")
-      .addEventListener(
-        "click",
-        saveBankDetails
-      );
-  }
-
-
-  if ($("depositHistoryBtn")) {
-
-    $("depositHistoryBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage(
-            "depositHistoryPage"
-          );
-        }
-      );
-  }
-
-
-  if ($("withdrawalHistoryBtn")) {
-
-    $("withdrawalHistoryBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage(
-            "withdrawalHistoryPage"
-          );
-        }
-      );
-  }
-
-
-  if ($("transactionHistoryBtn")) {
-
-    $("transactionHistoryBtn")
-      .addEventListener(
-        "click",
-        function() {
-          showPage(
-            "historyPage"
-          );
-        }
-      );
-  }
-
-
-  if ($("withdrawSubmit")) {
-
-    $("withdrawSubmit")
-      .addEventListener(
-        "click",
-        function() {
-
-          const amount =
-            $("withdrawAmount")
-              ?.value;
-
-          processWithdrawal(
-            amount
-          );
-        }
-      );
-  }
-
-
-  if ($("withdrawPageSubmit")) {
-
-    $("withdrawPageSubmit")
-      .addEventListener(
-        "click",
-        function() {
-
-          const amount =
-            $("withdrawPageAmount")
-              ?.value;
-
-          processWithdrawal(
-            amount
-          );
-        }
-      );
-  }
-}
-
-
-/* =========================================================
-   DEPOSIT BUTTONS
-========================================================= */
-
-function setupDepositButtons() {
-
-  if ($("copyUpiBtn")) {
-
-    $("copyUpiBtn")
-      .addEventListener(
-        "click",
-        copyUPI
-      );
-  }
-
-
-  if ($("paymentSubmit")) {
-
-    $("paymentSubmit")
-      .addEventListener(
-        "click",
-        submitDepositRequest
-      );
-  }
-}
-
-
-/* =========================================================
-   PROFILE BUTTONS
-========================================================= */
-
-function setupProfileButtons() {
-
-  if ($("profileUploadBtn")) {
-
-    $("profileUploadBtn")
-      .addEventListener(
-        "click",
-        function() {
-
-          const input =
-            $("profileUpload");
-
-          if (input) {
-            input.click();
-          }
-        }
-      );
-  }
-
-
-  if ($("profileUpload")) {
-
-    $("profileUpload")
-      .addEventListener(
-        "change",
-        function() {
-
-          const file =
-            this.files?.[0];
-
-          handleProfileImage(
-            file
-          );
-        }
-      );
-  }
-}
-
-
-/* =========================================================
-   INVITE BUTTONS
-========================================================= */
-
-function setupInviteButtons() {
-
-  if ($("copyLinkBtn")) {
-
-    $("copyLinkBtn")
-      .addEventListener(
-        "click",
-        copyReferral
-      );
-  }
-
-
-  if ($("whatsappBtn")) {
-
-    $("whatsappBtn")
-      .addEventListener(
-        "click",
-        inviteOnWhatsApp
-      );
-  }
-
-
-  if ($("customerServiceBtn")) {
-
-    $("customerServiceBtn")
-      .addEventListener(
-        "click",
-        openCustomerService
-      );
-  }
-}
-
-
-/* =========================================================
-   MODAL BUTTONS
-========================================================= */
-
-function setupModal() {
-
-  if ($("modalClose")) {
-
-    $("modalClose")
-      .addEventListener(
-        "click",
-        closeProductModal
-      );
-  }
-
-
-  if ($("modalDepositBtn")) {
-
-    $("modalDepositBtn")
-      .addEventListener(
-        "click",
-        continueDemoPurchase
-      );
+  if ($("modalContent")) {
+    $("modalContent").textContent =
+      description;
   }
 
 
   const modal =
-    $("planModal");
+    $("modal");
 
   if (modal) {
+    modal.classList.add("show");
+  }
+}
 
-    modal.addEventListener(
-      "click",
-      function(event) {
 
-        if (
-          event.target === modal
-        ) {
-          closeProductModal();
-        }
-      }
-    );
+function closeModal() {
+
+  const modal =
+    $("modal");
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
+
+  selectedPlan = null;
+}
+
+
+function goDepositFromModal() {
+
+  closeModal();
+
+  showDeposit();
+
+  if (
+    selectedPlan &&
+    selectedPlan.price
+  ) {
+
+    const number =
+      Number(
+        String(selectedPlan.price)
+          .replace(/[^\d.]/g, "")
+      );
+
+    if ($("depositAmount") &&
+        number >= 500) {
+
+      $("depositAmount").value =
+        number;
+    }
   }
 }
 
 
 /* =========================================================
-   KEYBOARD
-========================================================= */
+   ESCAPE HTML
+   ========================================================= */
 
-function setupKeyboard() {
+function escapeHTML(value) {
 
-  document.addEventListener(
-    "keydown",
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   MODAL CLICK OUTSIDE
+   ========================================================= */
+
+function setupModal() {
+
+  const modal =
+    $("modal");
+
+  if (!modal) return;
+
+  modal.addEventListener(
+    "click",
     function(event) {
 
-      if (
-        event.key === "Escape"
-      ) {
-
-        closeProductModal();
+      if (event.target === modal) {
+        closeModal();
       }
+
     }
   );
 }
 
 
 /* =========================================================
-   INPUT RESTRICTIONS
-========================================================= */
+   INITIALIZE
+   ========================================================= */
 
-function setupInputValidation() {
+function initializeApp() {
 
-  if ($("utr")) {
+  const user =
+    getUser();
 
-    $("utr")
-      .addEventListener(
-        "input",
-        function() {
-
-          this.value =
-            this.value
-              .replace(/\s/g, "")
-              .slice(0, 50);
-        }
-      );
+  if (!user) {
+    return;
   }
 
 
-  if ($("bankIfsc")) {
-
-    $("bankIfsc")
-      .addEventListener(
-        "input",
-        function() {
-
-          this.value =
-            this.value
-              .toUpperCase()
-              .replace(/[^A-Z0-9]/g, "")
-              .slice(0, 11);
-        }
-      );
-  }
-
-
-  if ($("bankAccount")) {
-
-    $("bankAccount")
-      .addEventListener(
-        "input",
-        function() {
-
-          this.value =
-            this.value
-              .replace(/\D/g, "")
-              .slice(0, 20);
-        }
-      );
-  }
-
-
-  if ($("bankAccountRepeat")) {
-
-    $("bankAccountRepeat")
-      .addEventListener(
-        "input",
-        function() {
-
-          this.value =
-            this.value
-              .replace(/\D/g, "")
-              .slice(0, 20);
-        }
-      );
-  }
-}
-
-
-/* =========================================================
-   DEFAULT DATA
-========================================================= */
-
-function initializeLocalData() {
-
-  getUser();
-
-  getReferralCode();
-
-  if (
-    localStorage.getItem(
-      STORAGE.BALANCE
-    ) === null
-  ) {
-
+  if (!localStorage.getItem(KEYS.balance)) {
     localStorage.setItem(
-      STORAGE.BALANCE,
-      "0"
+      KEYS.balance,
+      "0.00"
     );
   }
 
 
-  if (
-    !localStorage.getItem(
-      STORAGE.DEPOSITS
-    )
-  ) {
+  if ($("greeting")) {
 
-    writeJSON(
-      STORAGE.DEPOSITS,
-      []
-    );
+    $("greeting").textContent =
+      "Hello " +
+      user.id +
+      " 👋";
   }
 
 
-  if (
-    !localStorage.getItem(
-      STORAGE.WITHDRAWALS
-    )
-  ) {
-
-    writeJSON(
-      STORAGE.WITHDRAWALS,
-      []
-    );
-  }
-
-
-  if (
-    !localStorage.getItem(
-      STORAGE.TRANSACTIONS
-    )
-  ) {
-
-    writeJSON(
-      STORAGE.TRANSACTIONS,
-      []
-    );
-  }
-
-
-  if (
-    !localStorage.getItem(
-      STORAGE.PURCHASES
-    )
-  ) {
-
-    writeJSON(
-      STORAGE.PURCHASES,
-      []
-    );
-  }
-}
-
-
-/* =========================================================
-   HOME DATA
-========================================================= */
-
-function setupHomeData() {
-
-  updateGreeting();
-  updateBalanceUI();
-  updateReferralLink();
-}
-
-
-/* =========================================================
-   HISTORY TITLES
-========================================================= */
-
-function setupHistoryTitles() {
-
-  if ($("historyPageTitle")) {
-
-    $("historyPageTitle")
-      .textContent =
-      "Transaction History";
-  }
-
-
-  if ($("historyPageSubtitle")) {
-
-    $("historyPageSubtitle")
-      .textContent =
-      "Your demo transaction records";
-  }
-}
-
-
-/* =========================================================
-   INIT
-========================================================= */
-
-async function initializeApp() {
-
-  initializeLocalData();
-
-  updateProfileUI();
-
-  setupHomeData();
+  initializeProfile();
 
   loadBankDetails();
 
-  setupNavigation();
+  initializeReferral();
 
-  setupBackButtons();
+  updateBalanceUI();
 
-  setupInfoButtons();
-
-  setupDepositButtons();
-
-  setupProfileButtons();
-
-  setupInviteButtons();
-
-  setupModal();
-
-  setupKeyboard();
-
-  setupInputValidation();
+  setupProfileUpload();
 
   setupScreenshotPreview();
 
-  setupHistoryTitles();
-
-  renderProducts();
-
-  setupHomePlanButtons();
+  setupModal();
 
   renderDepositHistory();
 
   renderWithdrawalHistory();
 
-  renderTransactionHistory();
+  renderTransactions();
 
-  updateBalanceUI();
 
-  await initializeFirebase();
+  /* Make sure HOME is visible */
+
+  openPage("home");
 }
 
 
 /* =========================================================
-   DOM READY
-========================================================= */
+   STARTUP
+   ========================================================= */
 
-if (
-  document.readyState ===
-  "loading"
-) {
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializeApp
-  );
+    const user =
+      getUser();
 
-} else {
+    if (user) {
 
-  initializeApp();
-}
+      showApp();
 
+    } else {
 
-/* =========================================================
-   DEBUG HELPERS
-========================================================= */
+      if ($("authScreen")) {
+        $("authScreen")
+          .classList
+          .remove("hidden");
+      }
 
-window.BitcoinMinningApp = {
+      if ($("app")) {
+        $("app")
+          .classList
+          .add("hidden");
+      }
 
-  getUser: getUser,
-
-  getBalance:
-    getLocalBalance,
-
-  setDemoBalance:
-    async function(amount) {
-
-      const balance =
-        setLocalBalance(amount);
-
-      await saveFirebaseBalance(
-        balance
-      );
-
-      return balance;
-    },
-
-  getDeposits:
-    function() {
-
-      return readJSON(
-        STORAGE.DEPOSITS,
-        []
-      );
-    },
-
-  getWithdrawals:
-    function() {
-
-      return readJSON(
-        STORAGE.WITHDRAWALS,
-        []
-      );
-    },
-
-  getTransactions:
-    getTransactions,
-
-  getPurchases:
-    function() {
-
-      return readJSON(
-        STORAGE.PURCHASES,
-        []
-      );
-    },
-
-  showPage:
-    showPage
-};
+      showLogin();
+    }
 
 
-/* =========================================================
-   END
-========================================================= */
+    /* Bottom navigation */
+
+    document
+      .querySelectorAll(".bottom-nav .nav")
+      .forEach(function(button) {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            const page =
+              button.dataset.page;
+
+            if (page) {
+              openPage(page);
+            }
+
+          }
+        );
+
+      });
+
+  });
