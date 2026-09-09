@@ -1,345 +1,162 @@
 const UPI="yadav-rishab@fam";
-const SUPPORT="https://t.me/Hammerff7gcz";
 
-const WEB_APP_URL="https://script.google.com/macros/s/AKfycbzCyz1pDKhy9pTVcuyIzw96fwH7MiXxDF0DnFU0KKnmZ1Ur4eLM5XJPY3xQrfQ4yDOIMg/exec";
+const SUPPORT=
+"https://t.me/Hammerff7gcz";
+
+
+const API_URL=
+"https://script.google.com/macros/s/AKfycbyfiUUmlAnWfhoTrADnxKjOiuNT1K5v9qke90nj2GrU_5AH9jCSjl9cSLX_8V7yo3ID/exec";
 
 
 const plans=[
+
 {
 id:1,
 name:"Plan ₹500",
 price:500,
 reward:10
 },
+
 {
 id:2,
 name:"Plan ₹1,500",
 price:1500,
 reward:30
 },
+
 {
 id:3,
 name:"Plan ₹3,600",
 price:3600,
 reward:72
 }
+
 ];
 
 
 let s=
-JSON.parse(localStorage.getItem("nsgState")||"null")
+
+JSON.parse(
+localStorage.getItem(
+"nsgState"
+)||"null"
+)
+
 ||
+
 {
+
 balance:0,
+
 attendance:{},
+
 deposits:[],
+
 withdrawals:[],
+
 transactions:[],
+
 purchased:[]
-};
-
-
-/* =========================
-   DEVICE ID
-========================= */
-
-function deviceID(){
-
-let x=localStorage.getItem("nsgDeviceId");
-
-if(!x){
-
-x=
-"DEV-"+
-Date.now()+
-"-"+
-Math.random()
-.toString(36)
-.slice(2,10);
-
-localStorage.setItem(
-"nsgDeviceId",
-x
-);
-
-}
-
-return x;
-
-}
-
-
-/* =========================
-   USER ID
-========================= */
-
-function userID(){
-
-let x=
-localStorage.getItem("nsgUid");
-
-if(!x){
-
-x=
-"You-"+
-Math.floor(
-1000000+
-Math.random()*8999999
-);
-
-localStorage.setItem(
-"nsgUid",
-x
-);
-
-}
-
-return x;
-
-}
-
-
-/* =========================
-   BACKEND API
-========================= */
-
-async function api(action,payload={}){
-
-const body=
-Object.assign(
-{},
-payload,
-{
-action:action,
-
-userId:
-payload.userId||
-userID(),
-
-userKey:
-payload.userKey||
-payload.userId||
-userID()
-}
-);
-
-
-const res=
-await fetch(
-WEB_APP_URL,
-{
-method:"POST",
-
-headers:{
-"Content-Type":
-"text/plain;charset=utf-8"
-},
-
-body:
-JSON.stringify(body)
-}
-);
-
-
-const text=
-await res.text();
-
-
-let data;
-
-try{
-
-data=
-JSON.parse(text);
-
-}catch(e){
-
-throw new Error(
-"Server returned an invalid response."
-);
-
-}
-
-
-if(!data.ok){
-
-throw new Error(
-data.message||
-"Request failed."
-);
-
-}
-
-
-return data;
-
-}
-
-
-/* =========================
-   IMAGE COMPRESSION
-========================= */
-
-function compressImage(
-file,
-maxWidth=1000,
-quality=.65
-){
-
-return new Promise(
-(resolve,reject)=>{
-
-const reader=
-new FileReader();
-
-
-reader.onload=e=>{
-
-const img=
-new Image();
-
-
-img.onload=()=>{
-
-const scale=
-Math.min(
-1,
-maxWidth/img.width
-);
-
-
-const canvas=
-document.createElement(
-"canvas"
-);
-
-
-canvas.width=
-Math.max(
-1,
-Math.round(
-img.width*scale
-)
-);
-
-
-canvas.height=
-Math.max(
-1,
-Math.round(
-img.height*scale
-)
-);
-
-
-const ctx=
-canvas.getContext(
-"2d"
-);
-
-
-ctx.drawImage(
-img,
-0,
-0,
-canvas.width,
-canvas.height
-);
-
-
-resolve(
-canvas.toDataURL(
-"image/jpeg",
-quality
-)
-);
 
 };
 
-
-img.onerror=()=>{
-
-reject(
-new Error(
-"Could not read screenshot."
-)
-);
-
-};
-
-
-img.src=
-e.target.result;
-
-};
-
-
-reader.onerror=()=>{
-
-reject(
-new Error(
-"Could not read screenshot."
-)
-);
-
-};
-
-
-reader.readAsDataURL(file);
-
-});
-
-}
-
-
-/* =========================
-   SAVE LOCAL STATE
-========================= */
 
 function save(){
 
 localStorage.setItem(
+
 "nsgState",
+
 JSON.stringify(s)
+
 );
 
 }
 
-
-/* =========================
-   FORMAT MONEY
-========================= */
 
 function fmt(n){
 
-return Number(n||0)
-.toLocaleString(
+return Number(
+n||0
+).toLocaleString(
+
 "en-IN",
+
 {
+
 minimumFractionDigits:2,
+
 maximumFractionDigits:2
+
 }
+
 );
 
 }
 
 
-/* =========================
-   NAVIGATION
-========================= */
+function userID(){
+
+let x=
+localStorage.getItem(
+"nsgUid"
+);
+
+
+if(!x){
+
+x=
+
+"You-"+
+
+Math.floor(
+
+1000000+
+
+Math.random()*
+8999999
+
+);
+
+
+localStorage.setItem(
+
+"nsgUid",
+
+x
+
+);
+
+}
+
+
+return x;
+
+}
+
 
 function go(page){
 
 document
-.querySelectorAll(".page")
+
+.querySelectorAll(
+".page"
+)
+
 .forEach(
+
 p=>
-p.classList.remove("active")
+p.classList.remove(
+"active"
+)
+
 );
 
 
 const target=
-document.getElementById(page);
+document.getElementById(
+page
+);
 
 
 if(target){
@@ -362,93 +179,50 @@ render();
 }
 
 
-/* =========================
-   MAIN RENDER
-========================= */
-
 function render(){
 
-const topBalance=
 document.getElementById(
 "topBalance"
-);
-
-if(topBalance){
-
-topBalance.textContent=
+).textContent=
 fmt(s.balance);
 
-}
 
-
-const homeBalance=
 document.getElementById(
 "homeBalance"
-);
-
-if(homeBalance){
-
-homeBalance.textContent=
+).textContent=
 fmt(s.balance);
 
-}
 
-
-const withdrawBalance=
 document.getElementById(
 "withdrawBalance"
-);
-
-if(withdrawBalance){
-
-withdrawBalance.textContent=
+).textContent=
 fmt(s.balance);
 
-}
 
-
-const profileId=
 document.getElementById(
 "profileId"
-);
-
-if(profileId){
-
-profileId.textContent=
+).textContent=
 userID();
 
-}
 
-
-const userIdHome=
 document.getElementById(
 "userIdHome"
-);
-
-if(userIdHome){
-
-userIdHome.textContent=
+).textContent=
 userID();
 
-}
 
-
-const inviteLink=
 document.getElementById(
 "inviteLink"
-);
-
-if(inviteLink){
-
-inviteLink.value=
+).value=
 location.href;
-
-}
 
 
 renderProducts();
+
 renderCalendar();
+
 renderRewards();
+
 renderHistory();
 
 }
@@ -501,14 +275,26 @@ Terms and eligibility apply
 </ul>
 
 <button
-class="${bought?"secondary":"primary"}"
-${bought?"disabled":""}
+
+class="${
+bought
+?"secondary"
+:"primary"
+}"
+
+${bought
+?"disabled"
+:""}
+
 onclick="buy(${p.id})"
+
 >
 
-${bought?
-"Purchased":
-"Select Product"}
+${
+bought
+?"Purchased"
+:"Select Product"
+}
 
 </button>
 
@@ -527,37 +313,19 @@ plans
 .join("");
 
 
-const homeProducts=
 document.getElementById(
 "homeProducts"
-);
-
-if(homeProducts){
-
-homeProducts.innerHTML=
+).innerHTML=
 html;
 
-}
 
-
-const productList=
 document.getElementById(
 "productList"
-);
-
-if(productList){
-
-productList.innerHTML=
+).innerHTML=
 html;
 
 }
 
-}
-
-
-/* =========================
-   BUY PRODUCT
-========================= */
 
 function buy(i){
 
@@ -567,11 +335,7 @@ x=>x.id===i
 );
 
 
-if(!p){
-
-return;
-
-}
+if(!p)return;
 
 
 if(
@@ -584,7 +348,8 @@ return;
 
 
 if(
-s.balance<p.price
+s.balance<
+p.price
 ){
 
 alert(
@@ -607,11 +372,14 @@ i
 
 s.transactions.unshift({
 
-type:"Product",
+type:
+"Product",
 
-amount:p.price,
+amount:
+p.price,
 
-status:"Completed",
+status:
+"Completed",
 
 date:
 new Date()
@@ -633,7 +401,7 @@ alert(
 
 
 /* =========================
-   CALENDAR
+   ATTENDANCE
 ========================= */
 
 let cd=
@@ -651,28 +419,26 @@ renderCalendar();
 }
 
 
-function key(
-y,
-m,
-d
-){
+function key(y,m,d){
 
 return (
+
 y+
+
 "-"+
+
 String(m+1)
 .padStart(2,"0")+
+
 "-"+
+
 String(d)
 .padStart(2,"0")
+
 );
 
 }
 
-
-/* =========================
-   ATTENDANCE CALENDAR
-========================= */
 
 function renderCalendar(){
 
@@ -689,31 +455,23 @@ document.getElementById(
 );
 
 
-if(!calendar){
-
-return;
-
-}
-
-
-const monthTitle=
 document.getElementById(
 "monthTitle"
-);
+).textContent=
 
-
-if(monthTitle){
-
-monthTitle.textContent=
 new Intl.DateTimeFormat(
+
 "en-IN",
+
 {
+
 month:"long",
+
 year:"numeric"
-}
-).format(cd);
 
 }
+
+).format(cd);
 
 
 calendar.innerHTML="";
@@ -728,18 +486,24 @@ m,
 
 
 for(
+
 let i=0;
+
 i<first;
+
 i++
+
 ){
 
 calendar.innerHTML+=
+
 '<div class="day empty"></div>';
 
 }
 
 
 const total=
+
 new Date(
 y,
 m+1,
@@ -752,9 +516,13 @@ new Date();
 
 
 for(
+
 let d=1;
+
 d<=total;
+
 d++
+
 ){
 
 const k=
@@ -772,135 +540,47 @@ document.createElement(
 
 
 e.className=
+
 "day"+
+
 (
 s.attendance[k]
-?
-" done"
-:
-""
+?" done"
+:""
 )+
+
 (
-d===now.getDate()&&
-m===now.getMonth()&&
-y===now.getFullYear()
-?
-" today"
-:
-""
+
+d===
+now.getDate()&&
+
+m===
+now.getMonth()&&
+
+y===
+now.getFullYear()
+
+?" today"
+:""
+
 );
 
 
-e.textContent=d;
+e.textContent=
+d;
 
 
-e.onclick=
-async()=>{
+e.onclick=()=>{
 
 if(
-s.attendance[k]
+!s.attendance[k]
 ){
-
-return;
-
-}
-
-
-const now2=
-new Date();
-
-
-const selected=
-new Date(
-y,
-m,
-d
-);
-
-
-if(
-selected>now2
-){
-
-alert(
-"Future date attendance is not allowed."
-);
-
-return;
-
-}
-
-
-e.style.pointerEvents=
-"none";
-
-
-try{
-
-const data=
-await api(
-"attendance",
-{
-userId:userID(),
-date:k,
-deviceId:deviceID()
-}
-);
-
 
 s.attendance[k]=1;
 
-
-if(
-typeof data.newBalance===
-"number"
-){
-
-s.balance=
-data.newBalance;
-
-}else{
-
-s.balance+=12;
-
-}
-
-
-s.transactions.unshift({
-
-type:
-"Attendance Reward",
-
-amount:12,
-
-status:
-"Completed",
-
-date:
-new Date()
-.toLocaleString()
-
-});
-
-
 save();
 
-render();
-
-
-alert(
-"Attendance marked. ₹12 added to your game balance."
-);
-
-
-}catch(err){
-
-e.style.pointerEvents="";
-
-alert(
-err.message||
-"Attendance failed."
-);
+renderCalendar();
 
 }
 
@@ -912,20 +592,13 @@ calendar.appendChild(e);
 }
 
 
-const attCount=
 document.getElementById(
 "attCount"
-);
+).textContent=
 
-
-if(attCount){
-
-attCount.textContent=
 Object.keys(
 s.attendance
 ).length;
-
-}
 
 }
 
@@ -942,18 +615,12 @@ document.getElementById(
 );
 
 
-if(!box){
-
-return;
-
-}
-
-
 if(
 !s.purchased.length
 ){
 
 box.innerHTML=
+
 '<div class="item">No rewards available yet.</div>';
 
 return;
@@ -962,20 +629,15 @@ return;
 
 
 box.innerHTML=
+
 s.purchased
+
 .map(i=>{
 
 const p=
 plans.find(
 x=>x.id===i
 );
-
-
-if(!p){
-
-return "";
-
-}
 
 
 return `
@@ -995,6 +657,7 @@ Daily reward: ₹${p.reward}
 `;
 
 })
+
 .join("");
 
 }
@@ -1006,22 +669,22 @@ Daily reward: ₹${p.reward}
 
 function showDeposit(){
 
-go("deposit");
+go(
+"deposit"
+);
 
 }
 
-
-/* =========================
-   COPY UPI
-========================= */
 
 function copyUPI(){
 
 const copy=()=>{
 
 alert(
+
 "UPI ID copied: "+
 UPI
+
 );
 
 };
@@ -1032,8 +695,13 @@ navigator.clipboard
 ){
 
 navigator.clipboard
-.writeText(UPI)
+
+.writeText(
+UPI
+)
+
 .then(copy)
+
 .catch(
 ()=>fallbackCopy()
 );
@@ -1076,8 +744,10 @@ x.remove();
 
 
 alert(
+
 "UPI ID copied: "+
 UPI
+
 );
 
 }
@@ -1087,16 +757,16 @@ UPI
    SCREENSHOT PREVIEW
 ========================= */
 
-const screenshotInput=
-document.getElementById(
+document
+
+.getElementById(
 "paymentScreenshot"
-);
+)
 
+.addEventListener(
 
-if(screenshotInput){
-
-screenshotInput.addEventListener(
 "change",
+
 function(){
 
 const file=
@@ -1111,11 +781,7 @@ document.getElementById(
 
 if(!file){
 
-if(preview){
-
 preview.innerHTML="";
-
-}
 
 return;
 
@@ -1131,9 +797,7 @@ alert(
 "Screenshot must be under 5 MB."
 );
 
-
 this.value="";
-
 
 return;
 
@@ -1147,17 +811,19 @@ new FileReader();
 reader.onload=
 e=>{
 
-if(preview){
-
 preview.innerHTML=
-`
-<img
-src="${e.target.result}"
-alt="Screenshot preview"
->
-`;
 
-}
+`
+
+<img
+
+src="${e.target.result}"
+
+alt="Screenshot preview"
+
+>
+
+`;
 
 };
 
@@ -1167,6 +833,52 @@ file
 );
 
 }
+
+);
+
+
+/* =========================
+   FILE TO BASE64
+========================= */
+
+function fileToBase64(file){
+
+return new Promise(
+
+(resolve,reject)=>{
+
+const reader=
+new FileReader();
+
+
+reader.onload=()=>{
+
+resolve(
+reader.result
+);
+
+};
+
+
+reader.onerror=()=>{
+
+reject(
+
+new Error(
+"Unable to read screenshot"
+)
+
+);
+
+};
+
+
+reader.readAsDataURL(
+file
+);
+
+}
+
 );
 
 }
@@ -1176,17 +888,20 @@ file
    SUBMIT DEPOSIT
 ========================= */
 
-function submitDeposit(){
+async function submitDeposit(){
 
 const amount=
 Number(
+
 document.getElementById(
 "depositAmount"
 ).value
+
 );
 
 
 const utr=
+
 document.getElementById(
 "utr"
 ).value
@@ -1194,20 +909,16 @@ document.getElementById(
 
 
 const file=
+
 document.getElementById(
 "paymentScreenshot"
 ).files[0];
 
 
 const msg=
+
 document.getElementById(
 "depositMsg"
-);
-
-
-const btn=
-document.querySelector(
-'#deposit button[onclick="submitDeposit()"]'
 );
 
 
@@ -1217,6 +928,7 @@ amount>50000
 ){
 
 msg.textContent=
+
 "Enter an amount between ₹500 and ₹50,000.";
 
 return;
@@ -1227,6 +939,7 @@ return;
 if(!utr){
 
 msg.textContent=
+
 "Enter UTR / Transaction ID.";
 
 return;
@@ -1237,6 +950,7 @@ return;
 if(!file){
 
 msg.textContent=
+
 "Upload payment screenshot.";
 
 return;
@@ -1250,6 +964,7 @@ file.size>
 ){
 
 msg.textContent=
+
 "Screenshot must be under 5 MB.";
 
 return;
@@ -1257,75 +972,135 @@ return;
 }
 
 
-if(btn){
+const requestId=
+"DEP-"+Date.now();
 
-btn.disabled=true;
 
-}
+const uid=
+userID();
 
 
 msg.textContent=
+
 "Submitting deposit request...";
 
-
-(async()=>{
 
 try{
 
 const screenshot=
-await compressImage(
+await fileToBase64(
 file
 );
 
 
-const data=
-await api(
-"deposit",
+const response=
+await fetch(
+
+API_URL,
+
 {
-userId:userID(),
-amount:amount,
-utr:utr,
-screenshot:screenshot
+
+method:
+"POST",
+
+headers:{
+
+"Content-Type":
+"text/plain;charset=utf-8"
+
+},
+
+body:
+JSON.stringify({
+
+action:
+"deposit",
+
+userId:
+uid,
+
+requestId:
+requestId,
+
+amount:
+amount,
+
+utr:
+utr,
+
+screenshot:
+screenshot,
+
+screenshotName:
+file.name,
+
+screenshotType:
+file.type
+
+})
+
 }
+
 );
 
 
-const id=
-data.depositId||
-("DEP-"+Date.now());
+const result=
+await response.json();
 
 
-const date=
-new Date()
-.toLocaleString();
+if(
+!result.success
+){
+
+throw new Error(
+
+result.message||
+"Request failed"
+
+);
+
+}
 
 
-s.deposits.unshift({
+const r={
 
-id:id,
+id:
+requestId,
 
-amount:amount,
+amount:
+amount,
 
-utr:utr,
+utr:
+utr,
 
 status:
 "Pending Verification",
 
-date:date
+date:
+new Date()
+.toLocaleString()
 
-});
+};
+
+
+s.deposits.unshift(
+r
+);
 
 
 s.transactions.unshift({
 
-type:"Deposit",
+type:
+"Deposit",
 
-amount:amount,
+amount:
+amount,
 
 status:
 "Pending Verification",
 
-date:date
+date:
+r.date
 
 });
 
@@ -1353,71 +1128,55 @@ document.getElementById(
 ).innerHTML="";
 
 
-if(
-data.telegramSent===false
-){
-
 msg.textContent=
-"Deposit saved, but Telegram notification could not be sent.";
 
-}else{
-
-msg.textContent=
-"Deposit request submitted. Pending manual verification.";
-
-}
+"Deposit request submitted successfully.";
 
 
 render();
 
 
-}catch(err){
+}catch(error){
+
+console.error(error);
+
 
 msg.textContent=
-err.message||
-"Deposit request failed.";
 
-}finally{
-
-if(btn){
-
-btn.disabled=false;
+"Unable to submit request. Please try again.";
 
 }
-
-}
-
-})();
 
 }
 
 
 /* =========================
-   WITHDRAW PAGE
+   WITHDRAW
 ========================= */
 
 function showWithdraw(){
 
-go("withdraw");
+go(
+"withdraw"
+);
 
 }
 
 
-/* =========================
-   SUBMIT WITHDRAW
-========================= */
-
-function submitWithdraw(){
+async function submitWithdraw(){
 
 const amount=
 Number(
+
 document.getElementById(
 "withdrawAmount"
 ).value
+
 );
 
 
 const name=
+
 document.getElementById(
 "bankName"
 ).value
@@ -1425,6 +1184,7 @@ document.getElementById(
 
 
 const ifsc=
+
 document.getElementById(
 "ifsc"
 ).value
@@ -1433,6 +1193,7 @@ document.getElementById(
 
 
 const bank=
+
 document.getElementById(
 "bank"
 ).value
@@ -1440,6 +1201,7 @@ document.getElementById(
 
 
 const account=
+
 document.getElementById(
 "accountNumber"
 ).value
@@ -1447,6 +1209,7 @@ document.getElementById(
 
 
 const confirmAccount=
+
 document.getElementById(
 "confirmAccount"
 ).value
@@ -1454,14 +1217,9 @@ document.getElementById(
 
 
 const msg=
+
 document.getElementById(
 "withdrawMsg"
-);
-
-
-const btn=
-document.querySelector(
-'#withdraw button[onclick="submitWithdraw()"]'
 );
 
 
@@ -1471,6 +1229,7 @@ amount>20000
 ){
 
 msg.textContent=
+
 "Enter an amount between ₹300 and ₹20,000.";
 
 return;
@@ -1483,6 +1242,7 @@ amount>s.balance
 ){
 
 msg.textContent=
+
 "Insufficient balance.";
 
 return;
@@ -1491,14 +1251,17 @@ return;
 
 
 if(
+
 !name||
 !ifsc||
 !bank||
 !account||
 !confirmAccount
+
 ){
 
 msg.textContent=
+
 "Please fill all bank details.";
 
 return;
@@ -1511,6 +1274,7 @@ account!==confirmAccount
 ){
 
 msg.textContent=
+
 "Account numbers do not match.";
 
 return;
@@ -1524,6 +1288,7 @@ if(
 ){
 
 msg.textContent=
+
 "Enter a valid IFSC code.";
 
 return;
@@ -1531,89 +1296,132 @@ return;
 }
 
 
-if(btn){
+const requestId=
+"WDR-"+Date.now();
 
-btn.disabled=true;
 
-}
+const uid=
+userID();
 
 
 msg.textContent=
+
 "Submitting withdrawal request...";
 
 
-(async()=>{
-
 try{
 
-const data=
-await api(
-"withdraw",
+const response=
+await fetch(
+
+API_URL,
+
 {
-userId:userID(),
 
-amount:amount,
+method:
+"POST",
 
-accountName:name,
+headers:{
 
-ifsc:ifsc,
+"Content-Type":
+"text/plain;charset=utf-8"
 
-bank:bank,
+},
 
-accountNumber:account
+body:
+JSON.stringify({
+
+action:
+"withdrawal",
+
+userId:
+uid,
+
+requestId:
+requestId,
+
+amount:
+amount,
+
+accountHolder:
+name,
+
+ifsc:
+ifsc,
+
+bankName:
+bank,
+
+accountNumber:
+account
+
+})
+
 }
+
 );
 
 
-const id=
-data.withdrawalId||
-("WDR-"+Date.now());
+const result=
+await response.json();
 
 
-const date=
+if(
+!result.success
+){
+
+throw new Error(
+
+result.message||
+"Request failed"
+
+);
+
+}
+
+
+const r={
+
+id:
+requestId,
+
+amount:
+amount,
+
+status:
+"Pending",
+
+date:
 new Date()
-.toLocaleString();
+.toLocaleString()
+
+};
 
 
-s.withdrawals.unshift({
-
-id:id,
-
-amount:amount,
-
-status:"Pending",
-
-date:date
-
-});
+s.withdrawals.unshift(
+r
+);
 
 
 s.transactions.unshift({
 
-type:"Withdrawal",
+type:
+"Withdrawal",
 
-amount:amount,
+amount:
+amount,
 
-status:"Pending",
+status:
+"Pending",
 
-date:date
+date:
+r.date
 
 });
 
 
-if(
-typeof data.newBalance===
-"number"
-){
-
-s.balance=
-data.newBalance;
-
-}else{
-
-s.balance-=amount;
-
-}
+s.balance-=
+amount;
 
 
 save();
@@ -1624,41 +1432,49 @@ document.getElementById(
 ).value="";
 
 
-if(
-data.telegramSent===false
-){
+document.getElementById(
+"bankName"
+).value="";
+
+
+document.getElementById(
+"ifsc"
+).value="";
+
+
+document.getElementById(
+"bank"
+).value="";
+
+
+document.getElementById(
+"accountNumber"
+).value="";
+
+
+document.getElementById(
+"confirmAccount"
+).value="";
+
 
 msg.textContent=
-"Withdrawal saved, but Telegram notification could not be sent.";
 
-}else{
-
-msg.textContent=
-"Withdrawal request submitted for manual verification.";
-
-}
+"Withdrawal request submitted successfully.";
 
 
 render();
 
 
-}catch(err){
+}catch(error){
+
+console.error(error);
+
 
 msg.textContent=
-err.message||
-"Withdrawal request failed.";
 
-}finally{
-
-if(btn){
-
-btn.disabled=false;
+"Unable to submit request. Please try again.";
 
 }
-
-}
-
-})();
 
 }
 
@@ -1687,16 +1503,15 @@ document.getElementById(
 );
 
 
-if(d){
-
 d.innerHTML=
+
 s.deposits.length
 
 ?
 
 s.deposits
-.map(
-x=>`
+
+.map(x=>`
 
 <div class="item">
 
@@ -1705,40 +1520,39 @@ Deposit ₹${fmt(x.amount)}
 </b>
 
 <small>
-${safe(x.date)}
+${x.date}
 </small>
 
 <p>
-UTR: ${safe(x.utr)}
+UTR:
+${safe(x.utr)}
 </p>
 
 <p>
-Status: ${safe(x.status)}
+Status:
+${safe(x.status)}
 </p>
 
 </div>
 
-`
-)
+`)
+
 .join("")
 
 :
 
 '<div class="item">No deposit requests.</div>';
 
-}
-
-
-if(w){
 
 w.innerHTML=
+
 s.withdrawals.length
 
 ?
 
 s.withdrawals
-.map(
-x=>`
+
+.map(x=>`
 
 <div class="item">
 
@@ -1747,56 +1561,60 @@ Withdrawal ₹${fmt(x.amount)}
 </b>
 
 <small>
-${safe(x.date)}
+${x.date}
 </small>
 
 <p>
-Status: ${safe(x.status)}
+Status:
+${safe(x.status)}
 </p>
 
 </div>
 
-`
-)
+`)
+
 .join("")
 
 :
 
 '<div class="item">No withdrawal requests.</div>';
 
-}
-
-
-if(t){
 
 t.innerHTML=
+
 s.transactions.length
 
 ?
 
 s.transactions
-.map(
-x=>`
+
+.map(x=>`
 
 <div class="item">
 
 <b>
+
 ${safe(x.type)}
+
 ₹${fmt(x.amount)}
+
 </b>
 
 <small>
-${safe(x.date)}
+${x.date}
 </small>
 
 <p>
-Status: ${safe(x.status)}
+
+Status:
+${safe(x.status)}
+
 </p>
 
 </div>
 
-`
-)
+`)
+
 .join("")
 
 :
@@ -1805,53 +1623,68 @@ Status: ${safe(x.status)}
 
 }
 
-}
-
 
 /* =========================
-   HTML SAFETY
+   SAFE HTML
 ========================= */
 
 function safe(x){
 
-return String(x||"")
+return String(
+x||""
+)
+
 .replace(
 /[&<>"']/g,
+
 a=>({
 
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#039;"
+"&":
+"&amp;",
+
+"<":
+"&lt;",
+
+">":
+"&gt;",
+
+'"':
+"&quot;",
+
+"'":
+"&#039;"
 
 }[a])
+
 );
 
 }
 
 
 /* =========================
-   SHARE INVITE
+   INVITE
 ========================= */
 
 function shareInvite(){
 
 window.open(
+
 "https://wa.me/?text="+
+
 encodeURIComponent(
+
 "Join NSG Wellfare: "+
+
 location.href
+
 ),
+
 "_blank"
+
 );
 
 }
 
-
-/* =========================
-   COPY INVITE
-========================= */
 
 function copyInvite(){
 
@@ -1866,24 +1699,31 @@ navigator.clipboard
 ){
 
 navigator.clipboard
+
 .writeText(
 location.href
 )
+
 .then(
+
 ()=>{
 
 msg.textContent=
-"Invite link copied.";
+"Invite link copied."
 
 }
+
 )
+
 .catch(
+
 ()=>{
 
 msg.textContent=
-location.href;
+location.href
 
 }
+
 );
 
 }else{
@@ -1903,8 +1743,11 @@ location.href;
 function support(){
 
 window.open(
+
 SUPPORT,
+
 "_blank"
+
 );
 
 }
