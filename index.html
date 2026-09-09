@@ -1,275 +1,313 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NSG Wellfare</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div id="app">
+<header class="top">
+  <div>
+    <strong>🌿 NSG Wellfare</strong>
+    <small>Investment & Rewards</small>
+  </div>
 
-  <!-- HEADER -->
-  <header class="top-header">
-    <div>
-      <h1>NSG Wellfare</h1>
-      <p>Investment & Rewards</p>
-    </div>
-    <div class="balance-box">
-      <small>Balance</small>
-      <strong>₹<span id="balance">0.00</span></strong>
-    </div>
-  </header>
+  <div class="topbal">
+    ₹<span id="topBalance">0.00</span>
+  </div>
+</header>
 
+<main>
 
   <!-- HOME -->
   <section id="home" class="page active">
 
-    <div class="welcome-card">
-      <h2>Welcome to NSG Wellfare</h2>
-      <p>Invest, purchase plans and earn daily rewards.</p>
-    </div>
-
-    <!-- BALANCE CARD -->
-    <div class="balance-card">
+    <div class="hero">
       <div>
-        <span>Available Balance</span>
-        <h2>₹<span id="homeBalance">0.00</span></h2>
+        <span class="muted">Available Balance</span>
+        <h1>₹<span id="homeBalance">0.00</span></h1>
+        <span id="userIdHome"></span>
       </div>
-      <div class="wallet-icon">₹</div>
+
+      <div class="heroIcon">₹</div>
     </div>
 
-    <!-- QUICK ACTIONS -->
-    <div class="quick-actions">
+    <div class="quick">
 
-      <button onclick="showPage('deposit')">
-        <span>💰</span>
+      <button onclick="go('attendance')">
+        📅
+        <b>Attendance</b>
+        <small>Daily check-in</small>
+      </button>
+
+      <button onclick="go('products')">
+        📦
+        <b>Products</b>
+        <small>View plans</small>
+      </button>
+
+      <button onclick="showDeposit()">
+        💰
         <b>Deposit</b>
+        <small>Add funds</small>
       </button>
 
-      <button onclick="showPage('withdraw')">
-        <span>🏦</span>
+      <button onclick="showWithdraw()">
+        🏦
         <b>Withdraw</b>
-      </button>
-
-      <button onclick="showPage('rewards')">
-        <span>🎁</span>
-        <b>Rewards</b>
-      </button>
-
-      <button onclick="showPage('history')">
-        <span>📋</span>
-        <b>History</b>
+        <small>Request payout</small>
       </button>
 
     </div>
 
+    <h2>Investment Plans</h2>
 
-    <!-- PRODUCTS -->
-    <div class="section-title">
-      <h2>Investment Plans</h2>
-      <span>Daily Rewards</span>
-    </div>
-
-    <div id="homeProducts" class="product-list"></div>
+    <div id="homeProducts"></div>
 
   </section>
 
+
+  <!-- PRODUCTS -->
+  <section id="products" class="page">
+
+    <div class="head">
+      <button onclick="go('home')">‹</button>
+      <h2>Investment Plans</h2>
+    </div>
+
+    <div id="productList"></div>
+
+  </section>
+
+
+  <!-- ATTENDANCE -->
+  <section id="attendance" class="page">
+
+    <div class="head">
+      <button onclick="go('home')">‹</button>
+      <h2>Daily Attendance</h2>
+    </div>
+
+    <div class="card">
+
+      <div class="calHead">
+        <button onclick="month(-1)">‹</button>
+
+        <b id="monthTitle"></b>
+
+        <button onclick="month(1)">›</button>
+      </div>
+
+      <div class="week">
+        <span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+      </div>
+
+      <div id="calendar" class="calendar"></div>
+
+      <p class="center">
+        Attendance:
+        <b id="attCount">0</b> days
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- REWARD TODAY -->
+  <section id="rewards" class="page">
+
+    <div class="head">
+      <button onclick="go('home')">‹</button>
+      <h2>🎁 Reward Today</h2>
+    </div>
+
+    <div class="reward-head">
+      <div class="reward-big">🎁</div>
+
+      <div>
+        <b>Daily Rewards</b>
+        <small>Claim your available daily reward.</small>
+      </div>
+    </div>
+
+    <div id="rewardsList"></div>
+
+  </section>
 
 
   <!-- DEPOSIT -->
   <section id="deposit" class="page">
 
-    <div class="page-header">
-      <button onclick="showPage('home')" class="back-btn">←</button>
+    <div class="head">
+      <button onclick="go('home')">‹</button>
       <h2>Deposit</h2>
     </div>
 
-    <div class="form-card">
+    <div class="card">
 
       <label>Deposit Amount</label>
+
       <input
-        type="number"
         id="depositAmount"
-        placeholder="Enter amount"
-        min="1"
+        type="number"
+        min="500"
+        max="50000"
+        placeholder="₹500 - ₹50,000"
       >
 
       <label>UPI ID</label>
-      <input
-        type="text"
-        id="upiId"
-        value="yadav-rishab@fam"
-        readonly
-      >
 
-      <div class="upi-box">
-        <p>Pay using the UPI ID above</p>
-        <strong>yadav-rishab@fam</strong>
+      <div class="upiRow">
+        <input
+          id="upiId"
+          value="yadav-rishab@fam"
+          readonly
+        >
+
+        <button onclick="copyUPI()">Copy</button>
+      </div>
+
+      <div class="upiBox">
+        <b>yadav-rishab@fam</b>
+        <small>Send payment to this UPI ID</small>
       </div>
 
       <label>UTR / Transaction ID</label>
+
       <input
-        type="text"
         id="utr"
+        type="text"
         placeholder="Enter UTR number"
       >
 
       <label>Payment Screenshot</label>
+
       <input
-        type="file"
         id="paymentScreenshot"
+        type="file"
         accept="image/*"
-        onchange="previewScreenshot(event)"
       >
 
-      <div id="preview" class="screenshot-preview"></div>
+      <div id="preview"></div>
 
       <button
-        class="primary-btn"
+        class="primary"
         onclick="submitDeposit()"
       >
         Submit Deposit
       </button>
 
-      <div id="depositMsg" class="message"></div>
+      <div id="depositMsg" class="msg"></div>
 
     </div>
 
 
-    <div class="section-title">
-      <h3>Deposit History</h3>
-    </div>
+    <h3 class="subTitle">Deposit History</h3>
 
     <div id="depositHistoryList"></div>
 
   </section>
 
 
-
   <!-- WITHDRAW -->
   <section id="withdraw" class="page">
 
-    <div class="page-header">
-      <button onclick="showPage('home')" class="back-btn">←</button>
+    <div class="head">
+      <button onclick="go('home')">‹</button>
       <h2>Withdraw</h2>
     </div>
 
-    <div class="form-card">
+    <div class="card">
 
-      <div class="withdraw-balance">
+      <div class="withdrawBal">
         <span>Available Balance</span>
-        <strong>₹<span id="withdrawBalance">0.00</span></strong>
+        <b>₹<span id="withdrawBalance">0.00</span></b>
       </div>
 
-      <label>Withdraw Amount</label>
+      <label>Withdrawal Amount</label>
+
       <input
-        type="number"
         id="withdrawAmount"
-        placeholder="Enter withdrawal amount"
-        min="1"
+        type="number"
+        min="300"
+        max="20000"
+        placeholder="₹300 - ₹20,000"
       >
 
       <label>Bank Name</label>
+
       <input
-        type="text"
         id="bankName"
+        type="text"
         placeholder="Enter bank name"
       >
 
       <label>IFSC Code</label>
+
       <input
-        type="text"
         id="ifsc"
+        type="text"
         placeholder="Enter IFSC code"
       >
 
       <label>Account Holder Name</label>
+
       <input
-        type="text"
         id="bank"
+        type="text"
         placeholder="Enter account holder name"
       >
 
       <label>Account Number</label>
+
       <input
-        type="text"
         id="accountNumber"
+        type="text"
         placeholder="Enter account number"
       >
 
       <label>Confirm Account Number</label>
+
       <input
-        type="text"
         id="confirmAccount"
+        type="text"
         placeholder="Re-enter account number"
       >
 
       <button
-        class="primary-btn"
+        class="primary"
         onclick="submitWithdraw()"
       >
         Submit Withdrawal
       </button>
 
-      <div id="withdrawMsg" class="message"></div>
+      <div id="withdrawMsg" class="msg"></div>
 
     </div>
 
 
-    <div class="section-title">
-      <h3>Withdrawal History</h3>
-    </div>
+    <h3 class="subTitle">Withdrawal History</h3>
 
     <div id="withdrawHistoryList"></div>
 
   </section>
 
 
-
-  <!-- PRODUCTS -->
-  <section id="products" class="page">
-
-    <div class="page-header">
-      <button onclick="showPage('home')" class="back-btn">←</button>
-      <h2>Investment Plans</h2>
-    </div>
-
-    <div id="productList" class="product-list"></div>
-
-  </section>
-
-
-
-  <!-- REWARD TODAY -->
-  <section id="rewards" class="page">
-
-    <div class="page-header">
-      <button onclick="showPage('home')" class="back-btn">←</button>
-      <h2>Reward Today</h2>
-    </div>
-
-    <div class="reward-info-card">
-      <div class="reward-icon">🎁</div>
-      <div>
-        <h3>Daily Rewards</h3>
-        <p>Claim your available reward once every day.</p>
-      </div>
-    </div>
-
-    <div id="rewardsList" class="reward-list"></div>
-
-  </section>
-
-
-
   <!-- HISTORY -->
   <section id="history" class="page">
 
-    <div class="page-header">
-      <button onclick="showPage('home')" class="back-btn">←</button>
+    <div class="head">
+      <button onclick="go('home')">‹</button>
       <h2>Transaction History</h2>
     </div>
 
@@ -278,133 +316,114 @@
   </section>
 
 
+  <!-- MY INFO -->
+  <section id="info" class="page">
 
-  <!-- ATTENDANCE -->
-  <section id="attendance" class="page">
+    <h2>My Info</h2>
 
-    <div class="page-header">
-      <button onclick="showPage('home')" class="back-btn">←</button>
-      <h2>Daily Attendance</h2>
-    </div>
+    <div class="card profile">
 
-    <div class="attendance-card">
+      <div class="avatar">👤</div>
 
-      <h3>Attendance Calendar</h3>
-      <p>Tap today's date to mark attendance.</p>
-
-      <div class="calendar-header">
-        <button onclick="previousMonth()">‹</button>
-        <strong id="calendarMonth"></strong>
-        <button onclick="nextMonth()">›</button>
-      </div>
-
-      <div id="calendar" class="calendar"></div>
-
-    </div>
-
-  </section>
-
-
-
-  <!-- PROFILE -->
-  <section id="profile" class="page">
-
-    <div class="page-header">
-      <h2>My Profile</h2>
-    </div>
-
-    <div class="profile-card">
-
-      <div class="profile-avatar">
-        👤
-      </div>
-
-      <h2 id="profileUserId">User</h2>
+      <h3>NSG Wellfare User</h3>
 
       <p>
         User ID:
-        <strong id="profileUserIdText">-</strong>
+        <b id="profileId"></b>
       </p>
 
     </div>
 
-    <div class="profile-menu">
 
-      <button onclick="showPage('history')">
-        📋
-        <span>Transaction History</span>
-        <b>›</b>
+    <div class="card">
+
+      <label>Invite Link</label>
+
+      <input
+        id="inviteLink"
+        readonly
+      >
+
+      <button
+        class="primary"
+        onclick="copyInvite()"
+      >
+        Copy Invite Link
       </button>
 
-      <button onclick="showPage('attendance')">
-        📅
-        <span>Attendance</span>
-        <b>›</b>
+      <button
+        class="secondary"
+        onclick="shareInvite()"
+      >
+        Share on WhatsApp
       </button>
 
-      <button onclick="openSupport()">
-        💬
-        <span>Customer Support</span>
-        <b>›</b>
-      </button>
+      <div id="inviteMsg" class="msg"></div>
 
     </div>
 
+
+    <button
+      class="supportBtn"
+      onclick="support()"
+    >
+      💬 Customer Support
+    </button>
+
   </section>
 
+</main>
 
 
-  <!-- BOTTOM NAVIGATION -->
-  <nav class="bottom-nav">
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom">
 
-    <button
-      id="navHome"
-      class="nav-item active"
-      onclick="showPage('home')"
-    >
-      <span>⌂</span>
-      <small>Home</small>
-    </button>
+  <button
+    id="navHome"
+    class="nav active"
+    onclick="go('home')"
+  >
+    <span>⌂</span>
+    <small>Home</small>
+  </button>
 
-    <button
-      id="navProducts"
-      class="nav-item"
-      onclick="showPage('products')"
-    >
-      <span>💼</span>
-      <small>Plans</small>
-    </button>
+  <button
+    id="navProducts"
+    class="nav"
+    onclick="go('products')"
+  >
+    <span>💼</span>
+    <small>Plans</small>
+  </button>
 
-    <button
-      id="navRewards"
-      class="nav-item"
-      onclick="showPage('rewards')"
-    >
-      <span>🎁</span>
-      <small>Reward Today</small>
-    </button>
+  <button
+    id="navRewards"
+    class="nav"
+    onclick="go('rewards')"
+  >
+    <span>🎁</span>
+    <small>Reward Today</small>
+  </button>
 
-    <button
-      id="navDeposit"
-      class="nav-item"
-      onclick="showPage('deposit')"
-    >
-      <span>💰</span>
-      <small>Deposit</small>
-    </button>
+  <button
+    id="navDeposit"
+    class="nav"
+    onclick="showDeposit()"
+  >
+    <span>💰</span>
+    <small>Deposit</small>
+  </button>
 
-    <button
-      id="navProfile"
-      class="nav-item"
-      onclick="showPage('profile')"
-    >
-      <span>👤</span>
-      <small>Profile</small>
-    </button>
+  <button
+    id="navInfo"
+    class="nav"
+    onclick="go('info')"
+  >
+    <span>👤</span>
+    <small>Profile</small>
+  </button>
 
-  </nav>
-
-</div>
+</nav>
 
 
 <script src="script.js"></script>
