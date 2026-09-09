@@ -1,6 +1,8 @@
 const UPI="yadav-rishab@fam";
 const SUPPORT="https://t.me/Hammerff7gcz";
 
+const WEB_APP_URL="https://script.google.com/macros/s/AKfycbzCyz1pDKhy9pTVcuyIzw96fwH7MiXxDF0DnFU0KKnmZ1Ur4eLM5XJPY3xQrfQ4yDOIMg/exec";
+
 
 const plans=[
 {
@@ -37,28 +39,44 @@ purchased:[]
 };
 
 
-function save(){
+/* =========================
+   DEVICE ID
+========================= */
+
+function deviceID(){
+
+let x=localStorage.getItem("nsgDeviceId");
+
+if(!x){
+
+x=
+"DEV-"+
+Date.now()+
+"-"+
+Math.random()
+.toString(36)
+.slice(2,10);
+
 localStorage.setItem(
-"nsgState",
-JSON.stringify(s)
+"nsgDeviceId",
+x
 );
+
+}
+
+return x;
+
 }
 
 
-function fmt(n){
-return Number(n||0).toLocaleString(
-"en-IN",
-{
-minimumFractionDigits:2,
-maximumFractionDigits:2
-}
-);
-}
-
+/* =========================
+   USER ID
+========================= */
 
 function userID(){
 
-let x=localStorage.getItem("nsgUid");
+let x=
+localStorage.getItem("nsgUid");
 
 if(!x){
 
@@ -77,60 +95,355 @@ x
 }
 
 return x;
+
 }
 
+
+/* =========================
+   BACKEND API
+========================= */
+
+async function api(action,payload={}){
+
+const body=
+Object.assign(
+{},
+payload,
+{
+action:action,
+
+userId:
+payload.userId||
+userID(),
+
+userKey:
+payload.userKey||
+payload.userId||
+userID()
+}
+);
+
+
+const res=
+await fetch(
+WEB_APP_URL,
+{
+method:"POST",
+
+headers:{
+"Content-Type":
+"text/plain;charset=utf-8"
+},
+
+body:
+JSON.stringify(body)
+}
+);
+
+
+const text=
+await res.text();
+
+
+let data;
+
+try{
+
+data=
+JSON.parse(text);
+
+}catch(e){
+
+throw new Error(
+"Server returned an invalid response."
+);
+
+}
+
+
+if(!data.ok){
+
+throw new Error(
+data.message||
+"Request failed."
+);
+
+}
+
+
+return data;
+
+}
+
+
+/* =========================
+   IMAGE COMPRESSION
+========================= */
+
+function compressImage(
+file,
+maxWidth=1000,
+quality=.65
+){
+
+return new Promise(
+(resolve,reject)=>{
+
+const reader=
+new FileReader();
+
+
+reader.onload=e=>{
+
+const img=
+new Image();
+
+
+img.onload=()=>{
+
+const scale=
+Math.min(
+1,
+maxWidth/img.width
+);
+
+
+const canvas=
+document.createElement(
+"canvas"
+);
+
+
+canvas.width=
+Math.max(
+1,
+Math.round(
+img.width*scale
+)
+);
+
+
+canvas.height=
+Math.max(
+1,
+Math.round(
+img.height*scale
+)
+);
+
+
+const ctx=
+canvas.getContext(
+"2d"
+);
+
+
+ctx.drawImage(
+img,
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+resolve(
+canvas.toDataURL(
+"image/jpeg",
+quality
+)
+);
+
+};
+
+
+img.onerror=()=>{
+
+reject(
+new Error(
+"Could not read screenshot."
+)
+);
+
+};
+
+
+img.src=
+e.target.result;
+
+};
+
+
+reader.onerror=()=>{
+
+reject(
+new Error(
+"Could not read screenshot."
+)
+);
+
+};
+
+
+reader.readAsDataURL(file);
+
+});
+
+}
+
+
+/* =========================
+   SAVE LOCAL STATE
+========================= */
+
+function save(){
+
+localStorage.setItem(
+"nsgState",
+JSON.stringify(s)
+);
+
+}
+
+
+/* =========================
+   FORMAT MONEY
+========================= */
+
+function fmt(n){
+
+return Number(n||0)
+.toLocaleString(
+"en-IN",
+{
+minimumFractionDigits:2,
+maximumFractionDigits:2
+}
+);
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
 
 function go(page){
 
 document
 .querySelectorAll(".page")
 .forEach(
-p=>p.classList.remove("active")
+p=>
+p.classList.remove("active")
 );
 
-const target=document.getElementById(page);
+
+const target=
+document.getElementById(page);
+
 
 if(target){
-target.classList.add("active");
+
+target.classList.add(
+"active"
+);
+
 }
 
-window.scrollTo(0,0);
+
+window.scrollTo(
+0,
+0
+);
+
 
 render();
 
 }
 
 
+/* =========================
+   MAIN RENDER
+========================= */
+
 function render(){
 
+const topBalance=
 document.getElementById(
 "topBalance"
-).textContent=fmt(s.balance);
+);
+
+if(topBalance){
+
+topBalance.textContent=
+fmt(s.balance);
+
+}
 
 
+const homeBalance=
 document.getElementById(
 "homeBalance"
-).textContent=fmt(s.balance);
+);
+
+if(homeBalance){
+
+homeBalance.textContent=
+fmt(s.balance);
+
+}
 
 
+const withdrawBalance=
 document.getElementById(
 "withdrawBalance"
-).textContent=fmt(s.balance);
+);
+
+if(withdrawBalance){
+
+withdrawBalance.textContent=
+fmt(s.balance);
+
+}
 
 
+const profileId=
 document.getElementById(
 "profileId"
-).textContent=userID();
+);
+
+if(profileId){
+
+profileId.textContent=
+userID();
+
+}
 
 
+const userIdHome=
 document.getElementById(
 "userIdHome"
-).textContent=userID();
+);
+
+if(userIdHome){
+
+userIdHome.textContent=
+userID();
+
+}
 
 
+const inviteLink=
 document.getElementById(
 "inviteLink"
-).value=location.href;
+);
+
+if(inviteLink){
+
+inviteLink.value=
+location.href;
+
+}
 
 
 renderProducts();
@@ -141,10 +454,16 @@ renderHistory();
 }
 
 
+/* =========================
+   PRODUCTS
+========================= */
+
 function productHTML(p){
 
 const bought=
-s.purchased.includes(p.id);
+s.purchased.includes(
+p.id
+);
 
 
 return `
@@ -169,7 +488,6 @@ Product plan
 
 </div>
 
-
 <ul>
 
 <li>
@@ -182,14 +500,15 @@ Terms and eligibility apply
 
 </ul>
 
-
 <button
 class="${bought?"secondary":"primary"}"
 ${bought?"disabled":""}
 onclick="buy(${p.id})"
 >
 
-${bought?"Purchased":"Select Product"}
+${bought?
+"Purchased":
+"Select Product"}
 
 </button>
 
@@ -203,36 +522,70 @@ ${bought?"Purchased":"Select Product"}
 function renderProducts(){
 
 const html=
-plans.map(productHTML).join("");
+plans
+.map(productHTML)
+.join("");
 
 
+const homeProducts=
 document.getElementById(
 "homeProducts"
-).innerHTML=html;
+);
 
+if(homeProducts){
 
-document.getElementById(
-"productList"
-).innerHTML=html;
+homeProducts.innerHTML=
+html;
 
 }
 
+
+const productList=
+document.getElementById(
+"productList"
+);
+
+if(productList){
+
+productList.innerHTML=
+html;
+
+}
+
+}
+
+
+/* =========================
+   BUY PRODUCT
+========================= */
 
 function buy(i){
 
 const p=
-plans.find(x=>x.id===i);
+plans.find(
+x=>x.id===i
+);
 
 
-if(!p)return;
+if(!p){
 
-
-if(s.purchased.includes(i)){
 return;
+
 }
 
 
-if(s.balance<p.price){
+if(
+s.purchased.includes(i)
+){
+
+return;
+
+}
+
+
+if(
+s.balance<p.price
+){
 
 alert(
 "Insufficient balance."
@@ -243,17 +596,26 @@ return;
 }
 
 
-s.balance-=p.price;
+s.balance-=
+p.price;
 
-s.purchased.push(i);
+
+s.purchased.push(
+i
+);
 
 
 s.transactions.unshift({
 
 type:"Product",
+
 amount:p.price,
+
 status:"Completed",
-date:new Date().toLocaleString()
+
+date:
+new Date()
+.toLocaleString()
 
 });
 
@@ -270,7 +632,12 @@ alert(
 }
 
 
-let cd=new Date();
+/* =========================
+   CALENDAR
+========================= */
+
+let cd=
+new Date();
 
 
 function month(v){
@@ -284,23 +651,37 @@ renderCalendar();
 }
 
 
-function key(y,m,d){
+function key(
+y,
+m,
+d
+){
 
 return (
 y+
 "-"+
-String(m+1).padStart(2,"0")+
+String(m+1)
+.padStart(2,"0")+
 "-"+
-String(d).padStart(2,"0")
+String(d)
+.padStart(2,"0")
 );
 
 }
 
 
+/* =========================
+   ATTENDANCE CALENDAR
+========================= */
+
 function renderCalendar(){
 
-const y=cd.getFullYear();
-const m=cd.getMonth();
+const y=
+cd.getFullYear();
+
+const m=
+cd.getMonth();
+
 
 const calendar=
 document.getElementById(
@@ -308,9 +689,22 @@ document.getElementById(
 );
 
 
+if(!calendar){
+
+return;
+
+}
+
+
+const monthTitle=
 document.getElementById(
 "monthTitle"
-).textContent=
+);
+
+
+if(monthTitle){
+
+monthTitle.textContent=
 new Intl.DateTimeFormat(
 "en-IN",
 {
@@ -319,12 +713,18 @@ year:"numeric"
 }
 ).format(cd);
 
+}
+
 
 calendar.innerHTML="";
 
 
 const first=
-new Date(y,m,1).getDay();
+new Date(
+y,
+m,
+1
+).getDay();
 
 
 for(
@@ -347,7 +747,8 @@ m+1,
 ).getDate();
 
 
-const now=new Date();
+const now=
+new Date();
 
 
 for(
@@ -357,7 +758,11 @@ d++
 ){
 
 const k=
-key(y,m,d);
+key(
+y,
+m,
+d
+);
 
 
 const e=
@@ -368,27 +773,134 @@ document.createElement(
 
 e.className=
 "day"+
-(s.attendance[k]?" done":"")+
+(
+s.attendance[k]
+?
+" done"
+:
+""
+)+
 (
 d===now.getDate()&&
 m===now.getMonth()&&
 y===now.getFullYear()
-?" today":""
+?
+" today"
+:
+""
 );
 
 
 e.textContent=d;
 
 
-e.onclick=()=>{
+e.onclick=
+async()=>{
 
-if(!s.attendance[k]){
+if(
+s.attendance[k]
+){
+
+return;
+
+}
+
+
+const now2=
+new Date();
+
+
+const selected=
+new Date(
+y,
+m,
+d
+);
+
+
+if(
+selected>now2
+){
+
+alert(
+"Future date attendance is not allowed."
+);
+
+return;
+
+}
+
+
+e.style.pointerEvents=
+"none";
+
+
+try{
+
+const data=
+await api(
+"attendance",
+{
+userId:userID(),
+date:k,
+deviceId:deviceID()
+}
+);
+
 
 s.attendance[k]=1;
 
+
+if(
+typeof data.newBalance===
+"number"
+){
+
+s.balance=
+data.newBalance;
+
+}else{
+
+s.balance+=12;
+
+}
+
+
+s.transactions.unshift({
+
+type:
+"Attendance Reward",
+
+amount:12,
+
+status:
+"Completed",
+
+date:
+new Date()
+.toLocaleString()
+
+});
+
+
 save();
 
-renderCalendar();
+render();
+
+
+alert(
+"Attendance marked. ₹12 added to your game balance."
+);
+
+
+}catch(err){
+
+e.style.pointerEvents="";
+
+alert(
+err.message||
+"Attendance failed."
+);
 
 }
 
@@ -400,15 +912,27 @@ calendar.appendChild(e);
 }
 
 
+const attCount=
 document.getElementById(
 "attCount"
-).textContent=
+);
+
+
+if(attCount){
+
+attCount.textContent=
 Object.keys(
 s.attendance
 ).length;
 
 }
 
+}
+
+
+/* =========================
+   REWARDS
+========================= */
 
 function renderRewards(){
 
@@ -418,7 +942,16 @@ document.getElementById(
 );
 
 
-if(!s.purchased.length){
+if(!box){
+
+return;
+
+}
+
+
+if(
+!s.purchased.length
+){
 
 box.innerHTML=
 '<div class="item">No rewards available yet.</div>';
@@ -433,7 +966,17 @@ s.purchased
 .map(i=>{
 
 const p=
-plans.find(x=>x.id===i);
+plans.find(
+x=>x.id===i
+);
+
+
+if(!p){
+
+return "";
+
+}
+
 
 return `
 
@@ -457,12 +1000,20 @@ Daily reward: ₹${p.reward}
 }
 
 
+/* =========================
+   DEPOSIT PAGE
+========================= */
+
 function showDeposit(){
 
 go("deposit");
 
 }
 
+
+/* =========================
+   COPY UPI
+========================= */
 
 function copyUPI(){
 
@@ -503,17 +1054,26 @@ document.createElement(
 "textarea"
 );
 
-x.value=UPI;
 
-document.body.appendChild(x);
+x.value=
+UPI;
+
+
+document.body.appendChild(
+x
+);
+
 
 x.select();
+
 
 document.execCommand(
 "copy"
 );
 
+
 x.remove();
+
 
 alert(
 "UPI ID copied: "+
@@ -523,15 +1083,25 @@ UPI
 }
 
 
-document
-.getElementById(
+/* =========================
+   SCREENSHOT PREVIEW
+========================= */
+
+const screenshotInput=
+document.getElementById(
 "paymentScreenshot"
-)
-.addEventListener(
+);
+
+
+if(screenshotInput){
+
+screenshotInput.addEventListener(
 "change",
 function(){
 
-const file=this.files[0];
+const file=
+this.files[0];
+
 
 const preview=
 document.getElementById(
@@ -541,7 +1111,11 @@ document.getElementById(
 
 if(!file){
 
+if(preview){
+
 preview.innerHTML="";
+
+}
 
 return;
 
@@ -557,7 +1131,9 @@ alert(
 "Screenshot must be under 5 MB."
 );
 
+
 this.value="";
+
 
 return;
 
@@ -571,6 +1147,8 @@ new FileReader();
 reader.onload=
 e=>{
 
+if(preview){
+
 preview.innerHTML=
 `
 <img
@@ -579,14 +1157,24 @@ alt="Screenshot preview"
 >
 `;
 
+}
+
 };
 
 
-reader.readAsDataURL(file);
+reader.readAsDataURL(
+file
+);
 
 }
 );
 
+}
+
+
+/* =========================
+   SUBMIT DEPOSIT
+========================= */
 
 function submitDeposit(){
 
@@ -601,7 +1189,8 @@ document.getElementById(
 const utr=
 document.getElementById(
 "utr"
-).value.trim();
+).value
+.trim();
 
 
 const file=
@@ -613,6 +1202,12 @@ document.getElementById(
 const msg=
 document.getElementById(
 "depositMsg"
+);
+
+
+const btn=
+document.querySelector(
+'#deposit button[onclick="submitDeposit()"]'
 );
 
 
@@ -649,10 +1244,65 @@ return;
 }
 
 
-const r={
+if(
+file.size>
+5*1024*1024
+){
 
-id:
-"DEP-"+Date.now(),
+msg.textContent=
+"Screenshot must be under 5 MB.";
+
+return;
+
+}
+
+
+if(btn){
+
+btn.disabled=true;
+
+}
+
+
+msg.textContent=
+"Submitting deposit request...";
+
+
+(async()=>{
+
+try{
+
+const screenshot=
+await compressImage(
+file
+);
+
+
+const data=
+await api(
+"deposit",
+{
+userId:userID(),
+amount:amount,
+utr:utr,
+screenshot:screenshot
+}
+);
+
+
+const id=
+data.depositId||
+("DEP-"+Date.now());
+
+
+const date=
+new Date()
+.toLocaleString();
+
+
+s.deposits.unshift({
+
+id:id,
 
 amount:amount,
 
@@ -661,13 +1311,9 @@ utr:utr,
 status:
 "Pending Verification",
 
-date:
-new Date().toLocaleString()
+date:date
 
-};
-
-
-s.deposits.unshift(r);
+});
 
 
 s.transactions.unshift({
@@ -679,7 +1325,7 @@ amount:amount,
 status:
 "Pending Verification",
 
-date:r.date
+date:date
 
 });
 
@@ -707,14 +1353,48 @@ document.getElementById(
 ).innerHTML="";
 
 
+if(
+data.telegramSent===false
+){
+
+msg.textContent=
+"Deposit saved, but Telegram notification could not be sent.";
+
+}else{
+
 msg.textContent=
 "Deposit request submitted. Pending manual verification.";
+
+}
 
 
 render();
 
+
+}catch(err){
+
+msg.textContent=
+err.message||
+"Deposit request failed.";
+
+}finally{
+
+if(btn){
+
+btn.disabled=false;
+
 }
 
+}
+
+})();
+
+}
+
+
+/* =========================
+   WITHDRAW PAGE
+========================= */
 
 function showWithdraw(){
 
@@ -722,6 +1402,10 @@ go("withdraw");
 
 }
 
+
+/* =========================
+   SUBMIT WITHDRAW
+========================= */
 
 function submitWithdraw(){
 
@@ -736,36 +1420,48 @@ document.getElementById(
 const name=
 document.getElementById(
 "bankName"
-).value.trim();
+).value
+.trim();
 
 
 const ifsc=
 document.getElementById(
 "ifsc"
-).value.trim().toUpperCase();
+).value
+.trim()
+.toUpperCase();
 
 
 const bank=
 document.getElementById(
 "bank"
-).value.trim();
+).value
+.trim();
 
 
 const account=
 document.getElementById(
 "accountNumber"
-).value.trim();
+).value
+.trim();
 
 
 const confirmAccount=
 document.getElementById(
 "confirmAccount"
-).value.trim();
+).value
+.trim();
 
 
 const msg=
 document.getElementById(
 "withdrawMsg"
+);
+
+
+const btn=
+document.querySelector(
+'#withdraw button[onclick="submitWithdraw()"]'
 );
 
 
@@ -782,7 +1478,9 @@ return;
 }
 
 
-if(amount>s.balance){
+if(
+amount>s.balance
+){
 
 msg.textContent=
 "Insufficient balance.";
@@ -821,7 +1519,8 @@ return;
 
 
 if(
-!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)
+!/^[A-Z]{4}0[A-Z0-9]{6}$/
+.test(ifsc)
 ){
 
 msg.textContent=
@@ -832,22 +1531,61 @@ return;
 }
 
 
-const r={
+if(btn){
 
-id:
-"WDR-"+Date.now(),
+btn.disabled=true;
+
+}
+
+
+msg.textContent=
+"Submitting withdrawal request...";
+
+
+(async()=>{
+
+try{
+
+const data=
+await api(
+"withdraw",
+{
+userId:userID(),
+
+amount:amount,
+
+accountName:name,
+
+ifsc:ifsc,
+
+bank:bank,
+
+accountNumber:account
+}
+);
+
+
+const id=
+data.withdrawalId||
+("WDR-"+Date.now());
+
+
+const date=
+new Date()
+.toLocaleString();
+
+
+s.withdrawals.unshift({
+
+id:id,
 
 amount:amount,
 
 status:"Pending",
 
-date:
-new Date().toLocaleString()
+date:date
 
-};
-
-
-s.withdrawals.unshift(r);
+});
 
 
 s.transactions.unshift({
@@ -858,12 +1596,24 @@ amount:amount,
 
 status:"Pending",
 
-date:r.date
+date:date
 
 });
 
 
+if(
+typeof data.newBalance===
+"number"
+){
+
+s.balance=
+data.newBalance;
+
+}else{
+
 s.balance-=amount;
+
+}
 
 
 save();
@@ -874,14 +1624,48 @@ document.getElementById(
 ).value="";
 
 
+if(
+data.telegramSent===false
+){
+
+msg.textContent=
+"Withdrawal saved, but Telegram notification could not be sent.";
+
+}else{
+
 msg.textContent=
 "Withdrawal request submitted for manual verification.";
+
+}
 
 
 render();
 
+
+}catch(err){
+
+msg.textContent=
+err.message||
+"Withdrawal request failed.";
+
+}finally{
+
+if(btn){
+
+btn.disabled=false;
+
 }
 
+}
+
+})();
+
+}
+
+
+/* =========================
+   HISTORY
+========================= */
 
 function renderHistory(){
 
@@ -903,13 +1687,16 @@ document.getElementById(
 );
 
 
+if(d){
+
 d.innerHTML=
 s.deposits.length
 
 ?
 
 s.deposits
-.map(x=>`
+.map(
+x=>`
 
 <div class="item">
 
@@ -918,7 +1705,7 @@ Deposit ₹${fmt(x.amount)}
 </b>
 
 <small>
-${x.date}
+${safe(x.date)}
 </small>
 
 <p>
@@ -926,18 +1713,23 @@ UTR: ${safe(x.utr)}
 </p>
 
 <p>
-Status: ${x.status}
+Status: ${safe(x.status)}
 </p>
 
 </div>
 
-`)
+`
+)
 .join("")
 
 :
 
 '<div class="item">No deposit requests.</div>';
 
+}
+
+
+if(w){
 
 w.innerHTML=
 s.withdrawals.length
@@ -945,7 +1737,8 @@ s.withdrawals.length
 ?
 
 s.withdrawals
-.map(x=>`
+.map(
+x=>`
 
 <div class="item">
 
@@ -954,22 +1747,27 @@ Withdrawal ₹${fmt(x.amount)}
 </b>
 
 <small>
-${x.date}
+${safe(x.date)}
 </small>
 
 <p>
-Status: ${x.status}
+Status: ${safe(x.status)}
 </p>
 
 </div>
 
-`)
+`
+)
 .join("")
 
 :
 
 '<div class="item">No withdrawal requests.</div>';
 
+}
+
+
+if(t){
 
 t.innerHTML=
 s.transactions.length
@@ -977,7 +1775,8 @@ s.transactions.length
 ?
 
 s.transactions
-.map(x=>`
+.map(
+x=>`
 
 <div class="item">
 
@@ -987,7 +1786,7 @@ ${safe(x.type)}
 </b>
 
 <small>
-${x.date}
+${safe(x.date)}
 </small>
 
 <p>
@@ -996,7 +1795,8 @@ Status: ${safe(x.status)}
 
 </div>
 
-`)
+`
+)
 .join("")
 
 :
@@ -1005,6 +1805,12 @@ Status: ${safe(x.status)}
 
 }
 
+}
+
+
+/* =========================
+   HTML SAFETY
+========================= */
 
 function safe(x){
 
@@ -1025,6 +1831,10 @@ a=>({
 }
 
 
+/* =========================
+   SHARE INVITE
+========================= */
+
 function shareInvite(){
 
 window.open(
@@ -1039,6 +1849,10 @@ location.href
 }
 
 
+/* =========================
+   COPY INVITE
+========================= */
+
 function copyInvite(){
 
 const msg=
@@ -1052,17 +1866,23 @@ navigator.clipboard
 ){
 
 navigator.clipboard
-.writeText(location.href)
+.writeText(
+location.href
+)
 .then(
 ()=>{
+
 msg.textContent=
-"Invite link copied."
+"Invite link copied.";
+
 }
 )
 .catch(
 ()=>{
+
 msg.textContent=
-location.href
+location.href;
+
 }
 );
 
@@ -1076,6 +1896,10 @@ location.href;
 }
 
 
+/* =========================
+   SUPPORT
+========================= */
+
 function support(){
 
 window.open(
@@ -1085,5 +1909,9 @@ SUPPORT,
 
 }
 
+
+/* =========================
+   START
+========================= */
 
 render();
