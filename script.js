@@ -1,1760 +1,1841 @@
-const UPI="yadav-rishab@fam";
+/* =========================================================
+   NSG WELLFARE - FINAL SCRIPT
+   Deposit + Withdrawal + Google Apps Script
+========================================================= */
 
-const SUPPORT=
-"https://t.me/Hammerff7gcz";
+const UPI = "yadav-rishab@fam";
+
+const SUPPORT =
+  "https://t.me/Hammerff7gcz";
+
+/*
+  IMPORTANT:
+  Ye tumhara deployed Google Apps Script Web App URL hai.
+*/
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbyfiUUmlAnWfhoTrADnxKjOiuNT1K5v9qke90nj2GrU_5AH9jCSjl9cSLX_8V7yo3ID/exec";
 
 
-const API_URL=
-"https://script.google.com/macros/s/AKfycbyfiUUmlAnWfhoTrADnxKjOiuNT1K5v9qke90nj2GrU_5AH9jCSjl9cSLX_8V7yo3ID/exec";
+/* =========================================================
+   PLANS
+========================================================= */
 
+const plans = [
 
-const plans=[
+  {
+    id: 1,
+    name: "Plan ₹500",
+    price: 500,
+    reward: 10
+  },
 
-{
-id:1,
-name:"Plan ₹500",
-price:500,
-reward:10
-},
+  {
+    id: 2,
+    name: "Plan ₹1,500",
+    price: 1500,
+    reward: 30
+  },
 
-{
-id:2,
-name:"Plan ₹1,500",
-price:1500,
-reward:30
-},
-
-{
-id:3,
-name:"Plan ₹3,600",
-price:3600,
-reward:72
-}
+  {
+    id: 3,
+    name: "Plan ₹3,600",
+    price: 3600,
+    reward: 72
+  }
 
 ];
 
 
-let s=
+/* =========================================================
+   LOCAL STATE
+========================================================= */
 
-JSON.parse(
-localStorage.getItem(
-"nsgState"
-)||"null"
-)
+let s =
+  JSON.parse(
+    localStorage.getItem("nsgState") || "null"
+  ) || {
 
-||
+    balance: 0,
 
-{
+    attendance: {},
 
-balance:0,
+    deposits: [],
 
-attendance:{},
+    withdrawals: [],
 
-deposits:[],
+    transactions: [],
 
-withdrawals:[],
+    purchased: []
 
-transactions:[],
-
-purchased:[]
-
-};
+  };
 
 
-function save(){
+function save() {
 
-localStorage.setItem(
-
-"nsgState",
-
-JSON.stringify(s)
-
-);
+  localStorage.setItem(
+    "nsgState",
+    JSON.stringify(s)
+  );
 
 }
 
 
-function fmt(n){
+/* =========================================================
+   FORMAT
+========================================================= */
 
-return Number(
-n||0
-).toLocaleString(
+function fmt(n) {
 
-"en-IN",
-
-{
-
-minimumFractionDigits:2,
-
-maximumFractionDigits:2
-
-}
-
-);
+  return Number(n || 0).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }
+  );
 
 }
 
 
-function userID(){
+/* =========================================================
+   USER ID
+========================================================= */
 
-let x=
-localStorage.getItem(
-"nsgUid"
-);
+function userID() {
 
+  let x =
+    localStorage.getItem("nsgUid");
 
-if(!x){
+  if (!x) {
 
-x=
+    x =
+      "You-" +
+      Math.floor(
+        1000000 +
+        Math.random() * 8999999
+      );
 
-"You-"+
+    localStorage.setItem(
+      "nsgUid",
+      x
+    );
 
-Math.floor(
+  }
 
-1000000+
-
-Math.random()*
-8999999
-
-);
-
-
-localStorage.setItem(
-
-"nsgUid",
-
-x
-
-);
+  return x;
 
 }
 
 
-return x;
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function go(page) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(function(p) {
+
+      p.classList.remove("active");
+
+    });
+
+
+  const target =
+    document.getElementById(page);
+
+
+  if (target) {
+
+    target.classList.add("active");
+
+  }
+
+
+  window.scrollTo(0, 0);
+
+  render();
 
 }
 
 
-function go(page){
+/* =========================================================
+   RENDER
+========================================================= */
 
-document
+function render() {
 
-.querySelectorAll(
-".page"
-)
+  const topBalance =
+    document.getElementById("topBalance");
 
-.forEach(
+  const homeBalance =
+    document.getElementById("homeBalance");
 
-p=>
-p.classList.remove(
-"active"
-)
+  const withdrawBalance =
+    document.getElementById("withdrawBalance");
 
-);
+  const profileId =
+    document.getElementById("profileId");
 
+  const userIdHome =
+    document.getElementById("userIdHome");
 
-const target=
-document.getElementById(
-page
-);
-
-
-if(target){
-
-target.classList.add(
-"active"
-);
-
-}
+  const inviteLink =
+    document.getElementById("inviteLink");
 
 
-window.scrollTo(
-0,
-0
-);
+  if (topBalance) {
+
+    topBalance.textContent =
+      fmt(s.balance);
+
+  }
 
 
-render();
+  if (homeBalance) {
 
-}
+    homeBalance.textContent =
+      fmt(s.balance);
 
-
-function render(){
-
-document.getElementById(
-"topBalance"
-).textContent=
-fmt(s.balance);
+  }
 
 
-document.getElementById(
-"homeBalance"
-).textContent=
-fmt(s.balance);
+  if (withdrawBalance) {
+
+    withdrawBalance.textContent =
+      fmt(s.balance);
+
+  }
 
 
-document.getElementById(
-"withdrawBalance"
-).textContent=
-fmt(s.balance);
+  if (profileId) {
+
+    profileId.textContent =
+      userID();
+
+  }
 
 
-document.getElementById(
-"profileId"
-).textContent=
-userID();
+  if (userIdHome) {
+
+    userIdHome.textContent =
+      userID();
+
+  }
 
 
-document.getElementById(
-"userIdHome"
-).textContent=
-userID();
+  if (inviteLink) {
+
+    inviteLink.value =
+      location.href;
+
+  }
 
 
-document.getElementById(
-"inviteLink"
-).value=
-location.href;
+  renderProducts();
 
+  renderCalendar();
 
-renderProducts();
+  renderRewards();
 
-renderCalendar();
-
-renderRewards();
-
-renderHistory();
+  renderHistory();
 
 }
 
 
-/* =========================
+/* =========================================================
    PRODUCTS
-========================= */
+========================================================= */
 
-function productHTML(p){
+function productHTML(p) {
 
-const bought=
-s.purchased.includes(
-p.id
-);
+  const bought =
+    s.purchased.includes(p.id);
 
 
-return `
+  return `
 
-<div class="product">
+    <div class="product">
 
-<div class="productTop">
+      <div class="productTop">
 
-<div>
+        <div>
 
-<h3>${p.name}</h3>
+          <h3>${p.name}</h3>
 
-<p>
-Product plan
-</p>
+          <p>
+            Product plan
+          </p>
 
-</div>
+        </div>
 
-<div class="price">
-₹${p.price}
-</div>
+        <div class="price">
+          ₹${p.price}
+        </div>
 
-</div>
+      </div>
 
-<ul>
+      <ul>
 
-<li>
-Daily reward: ₹${p.reward}
-</li>
+        <li>
+          Daily reward: ₹${p.reward}
+        </li>
 
-<li>
-Terms and eligibility apply
-</li>
+        <li>
+          Terms and eligibility apply
+        </li>
 
-</ul>
+      </ul>
 
-<button
+      <button
+        class="${bought ? "secondary" : "primary"}"
+        ${bought ? "disabled" : ""}
+        onclick="buy(${p.id})"
+      >
 
-class="${
-bought
-?"secondary"
-:"primary"
-}"
+        ${
+          bought
+            ? "Purchased"
+            : "Select Product"
+        }
 
-${bought
-?"disabled"
-:""}
+      </button>
 
-onclick="buy(${p.id})"
+    </div>
 
->
-
-${
-bought
-?"Purchased"
-:"Select Product"
-}
-
-</button>
-
-</div>
-
-`;
+  `;
 
 }
 
 
-function renderProducts(){
+function renderProducts() {
 
-const html=
-plans
-.map(productHTML)
-.join("");
-
-
-document.getElementById(
-"homeProducts"
-).innerHTML=
-html;
+  const html =
+    plans
+      .map(productHTML)
+      .join("");
 
 
-document.getElementById(
-"productList"
-).innerHTML=
-html;
-
-}
+  const homeProducts =
+    document.getElementById(
+      "homeProducts"
+    );
 
 
-function buy(i){
-
-const p=
-plans.find(
-x=>x.id===i
-);
+  const productList =
+    document.getElementById(
+      "productList"
+    );
 
 
-if(!p)return;
+  if (homeProducts) {
+
+    homeProducts.innerHTML =
+      html;
+
+  }
 
 
-if(
-s.purchased.includes(i)
-){
+  if (productList) {
 
-return;
+    productList.innerHTML =
+      html;
+
+  }
 
 }
 
 
-if(
-s.balance<
-p.price
-){
+/* =========================================================
+   BUY PRODUCT
+========================================================= */
 
-alert(
-"Insufficient balance."
-);
+function buy(i) {
 
-return;
+  const p =
+    plans.find(
+      function(x) {
+        return x.id === i;
+      }
+    );
+
+
+  if (!p) {
+
+    return;
+
+  }
+
+
+  if (
+    s.purchased.includes(i)
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    s.balance < p.price
+  ) {
+
+    alert(
+      "Insufficient balance."
+    );
+
+    return;
+
+  }
+
+
+  s.balance -=
+    p.price;
+
+
+  s.purchased.push(i);
+
+
+  s.transactions.unshift({
+
+    type: "Product",
+
+    amount: p.price,
+
+    status: "Completed",
+
+    date:
+      new Date()
+        .toLocaleString()
+
+  });
+
+
+  save();
+
+  render();
+
+
+  alert(
+    "Product selected successfully."
+  );
 
 }
 
 
-s.balance-=
-p.price;
-
-
-s.purchased.push(
-i
-);
-
-
-s.transactions.unshift({
-
-type:
-"Product",
-
-amount:
-p.price,
-
-status:
-"Completed",
-
-date:
-new Date()
-.toLocaleString()
-
-});
-
-
-save();
-
-render();
-
-
-alert(
-"Product selected successfully."
-);
-
-}
-
-
-/* =========================
+/* =========================================================
    ATTENDANCE
-========================= */
+========================================================= */
 
-let cd=
-new Date();
-
-
-function month(v){
-
-cd.setMonth(
-cd.getMonth()+v
-);
-
-renderCalendar();
-
-}
+let cd =
+  new Date();
 
 
-function key(y,m,d){
+function month(v) {
 
-return (
+  cd.setMonth(
+    cd.getMonth() + v
+  );
 
-y+
-
-"-"+
-
-String(m+1)
-.padStart(2,"0")+
-
-"-"+
-
-String(d)
-.padStart(2,"0")
-
-);
+  renderCalendar();
 
 }
 
 
-function renderCalendar(){
+function key(y, m, d) {
 
-const y=
-cd.getFullYear();
-
-const m=
-cd.getMonth();
-
-
-const calendar=
-document.getElementById(
-"calendar"
-);
-
-
-document.getElementById(
-"monthTitle"
-).textContent=
-
-new Intl.DateTimeFormat(
-
-"en-IN",
-
-{
-
-month:"long",
-
-year:"numeric"
-
-}
-
-).format(cd);
-
-
-calendar.innerHTML="";
-
-
-const first=
-new Date(
-y,
-m,
-1
-).getDay();
-
-
-for(
-
-let i=0;
-
-i<first;
-
-i++
-
-){
-
-calendar.innerHTML+=
-
-'<div class="day empty"></div>';
+  return (
+    y +
+    "-" +
+    String(m + 1)
+      .padStart(2, "0") +
+    "-" +
+    String(d)
+      .padStart(2, "0")
+  );
 
 }
 
 
-const total=
+function renderCalendar() {
 
-new Date(
-y,
-m+1,
-0
-).getDate();
-
-
-const now=
-new Date();
+  const calendar =
+    document.getElementById(
+      "calendar"
+    );
 
 
-for(
-
-let d=1;
-
-d<=total;
-
-d++
-
-){
-
-const k=
-key(
-y,
-m,
-d
-);
+  const monthTitle =
+    document.getElementById(
+      "monthTitle"
+    );
 
 
-const e=
-document.createElement(
-"div"
-);
+  const attCount =
+    document.getElementById(
+      "attCount"
+    );
 
 
-e.className=
+  if (
+    !calendar ||
+    !monthTitle
+  ) {
 
-"day"+
+    return;
 
-(
-s.attendance[k]
-?" done"
-:""
-)+
-
-(
-
-d===
-now.getDate()&&
-
-m===
-now.getMonth()&&
-
-y===
-now.getFullYear()
-
-?" today"
-:""
-
-);
+  }
 
 
-e.textContent=
-d;
+  const y =
+    cd.getFullYear();
 
 
-e.onclick=()=>{
+  const m =
+    cd.getMonth();
 
-if(
-!s.attendance[k]
-){
 
-s.attendance[k]=1;
+  monthTitle.textContent =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        month: "long",
+        year: "numeric"
+      }
+    ).format(cd);
 
-save();
 
-renderCalendar();
+  calendar.innerHTML = "";
+
+
+  const first =
+    new Date(
+      y,
+      m,
+      1
+    ).getDay();
+
+
+  for (
+    let i = 0;
+    i < first;
+    i++
+  ) {
+
+    calendar.innerHTML +=
+      '<div class="day empty"></div>';
+
+  }
+
+
+  const total =
+    new Date(
+      y,
+      m + 1,
+      0
+    ).getDate();
+
+
+  const now =
+    new Date();
+
+
+  for (
+    let d = 1;
+    d <= total;
+    d++
+  ) {
+
+    const k =
+      key(y, m, d);
+
+
+    const e =
+      document.createElement(
+        "div"
+      );
+
+
+    e.className =
+      "day" +
+      (
+        s.attendance[k]
+          ? " done"
+          : ""
+      ) +
+      (
+        d === now.getDate() &&
+        m === now.getMonth() &&
+        y === now.getFullYear()
+          ? " today"
+          : ""
+      );
+
+
+    e.textContent =
+      d;
+
+
+    e.onclick =
+      function() {
+
+        if (
+          !s.attendance[k]
+        ) {
+
+          s.attendance[k] =
+            1;
+
+          save();
+
+          renderCalendar();
+
+        }
+
+      };
+
+
+    calendar.appendChild(e);
+
+  }
+
+
+  if (attCount) {
+
+    attCount.textContent =
+      Object.keys(
+        s.attendance
+      ).length;
+
+  }
 
 }
 
-};
 
-
-calendar.appendChild(e);
-
-}
-
-
-document.getElementById(
-"attCount"
-).textContent=
-
-Object.keys(
-s.attendance
-).length;
-
-}
-
-
-/* =========================
+/* =========================================================
    REWARDS
-========================= */
+========================================================= */
 
-function renderRewards(){
+function renderRewards() {
 
-const box=
-document.getElementById(
-"rewardsList"
-);
+  const box =
+    document.getElementById(
+      "rewardsList"
+    );
 
 
-if(
-!s.purchased.length
-){
+  if (!box) {
 
-box.innerHTML=
+    return;
 
-'<div class="item">No rewards available yet.</div>';
+  }
 
-return;
+
+  if (
+    !s.purchased.length
+  ) {
+
+    box.innerHTML =
+      '<div class="item">No rewards available yet.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    s.purchased
+
+      .map(function(i) {
+
+        const p =
+          plans.find(
+            function(x) {
+              return x.id === i;
+            }
+          );
+
+
+        if (!p) {
+
+          return "";
+
+        }
+
+
+        return `
+
+          <div class="item">
+
+            <b>
+              🎁 ${p.name}
+            </b>
+
+            <small>
+              Daily reward: ₹${p.reward}
+            </small>
+
+          </div>
+
+        `;
+
+      })
+
+      .join("");
 
 }
 
 
-box.innerHTML=
-
-s.purchased
-
-.map(i=>{
-
-const p=
-plans.find(
-x=>x.id===i
-);
-
-
-return `
-
-<div class="item">
-
-<b>
-🎁 ${p.name}
-</b>
-
-<small>
-Daily reward: ₹${p.reward}
-</small>
-
-</div>
-
-`;
-
-})
-
-.join("");
-
-}
-
-
-/* =========================
+/* =========================================================
    DEPOSIT PAGE
-========================= */
+========================================================= */
 
-function showDeposit(){
+function showDeposit() {
 
-go(
-"deposit"
-);
+  go("deposit");
 
 }
 
 
-function copyUPI(){
+/* =========================================================
+   COPY UPI
+========================================================= */
 
-const copy=()=>{
+function copyUPI() {
 
-alert(
+  if (
+    navigator.clipboard
+  ) {
 
-"UPI ID copied: "+
-UPI
+    navigator.clipboard
 
-);
+      .writeText(UPI)
 
-};
+      .then(function() {
 
+        alert(
+          "UPI ID copied: " +
+          UPI
+        );
 
-if(
-navigator.clipboard
-){
+      })
 
-navigator.clipboard
+      .catch(function() {
 
-.writeText(
-UPI
-)
+        fallbackCopy();
 
-.then(copy)
+      });
 
-.catch(
-()=>fallbackCopy()
-);
+  } else {
 
-}else{
+    fallbackCopy();
 
-fallbackCopy();
-
-}
-
-}
-
-
-function fallbackCopy(){
-
-const x=
-document.createElement(
-"textarea"
-);
-
-
-x.value=
-UPI;
-
-
-document.body.appendChild(
-x
-);
-
-
-x.select();
-
-
-document.execCommand(
-"copy"
-);
-
-
-x.remove();
-
-
-alert(
-
-"UPI ID copied: "+
-UPI
-
-);
+  }
 
 }
 
 
-/* =========================
-   SCREENSHOT PREVIEW
-========================= */
+function fallbackCopy() {
 
-document
-
-.getElementById(
-"paymentScreenshot"
-)
-
-.addEventListener(
-
-"change",
-
-function(){
-
-const file=
-this.files[0];
+  const x =
+    document.createElement(
+      "textarea"
+    );
 
 
-const preview=
-document.getElementById(
-"preview"
-);
+  x.value =
+    UPI;
 
 
-if(!file){
-
-preview.innerHTML="";
-
-return;
-
-}
+  document.body.appendChild(x);
 
 
-if(
-file.size>
-5*1024*1024
-){
+  x.select();
 
-alert(
-"Screenshot must be under 5 MB."
-);
 
-this.value="";
+  document.execCommand(
+    "copy"
+  );
 
-return;
+
+  x.remove();
+
+
+  alert(
+    "UPI ID copied: " +
+    UPI
+  );
 
 }
 
 
-const reader=
-new FileReader();
-
-
-reader.onload=
-e=>{
-
-preview.innerHTML=
-
-`
-
-<img
-
-src="${e.target.result}"
-
-alt="Screenshot preview"
-
->
-
-`;
-
-};
-
-
-reader.readAsDataURL(
-file
-);
-
-}
-
-);
-
-
-/* =========================
+/* =========================================================
    FILE TO BASE64
-========================= */
+========================================================= */
 
-function fileToBase64(file){
+function fileToBase64(file) {
 
-return new Promise(
+  return new Promise(
+    function(resolve, reject) {
 
-(resolve,reject)=>{
-
-const reader=
-new FileReader();
-
-
-reader.onload=()=>{
-
-resolve(
-reader.result
-);
-
-};
+      const reader =
+        new FileReader();
 
 
-reader.onerror=()=>{
+      reader.onload =
+        function() {
 
-reject(
+          resolve(
+            reader.result
+          );
 
-new Error(
-"Unable to read screenshot"
-)
-
-);
-
-};
+        };
 
 
-reader.readAsDataURL(
-file
-);
+      reader.onerror =
+        function() {
 
-}
+          reject(
+            new Error(
+              "Unable to read screenshot"
+            )
+          );
 
-);
+        };
+
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
 
 }
 
 
-/* =========================
-   SUBMIT DEPOSIT
-========================= */
+/* =========================================================
+   SCREENSHOT PREVIEW
+========================================================= */
 
-async function submitDeposit(){
+function setupScreenshotPreview() {
 
-const amount=
-Number(
-
-document.getElementById(
-"depositAmount"
-).value
-
-);
+  const input =
+    document.getElementById(
+      "paymentScreenshot"
+    );
 
 
-const utr=
+  if (!input) {
 
-document.getElementById(
-"utr"
-).value
-.trim();
+    return;
 
-
-const file=
-
-document.getElementById(
-"paymentScreenshot"
-).files[0];
+  }
 
 
-const msg=
+  input.addEventListener(
+    "change",
+    function() {
 
-document.getElementById(
-"depositMsg"
-);
+      const file =
+        this.files[0];
 
 
-if(
-amount<500||
-amount>50000
-){
+      const preview =
+        document.getElementById(
+          "preview"
+        );
 
-msg.textContent=
 
-"Enter an amount between ₹500 and ₹50,000.";
+      if (!preview) {
 
-return;
+        return;
+
+      }
+
+
+      if (!file) {
+
+        preview.innerHTML =
+          "";
+
+        return;
+
+      }
+
+
+      if (
+        file.size >
+        5 * 1024 * 1024
+      ) {
+
+        alert(
+          "Screenshot must be under 5 MB."
+        );
+
+        this.value =
+          "";
+
+        preview.innerHTML =
+          "";
+
+        return;
+
+      }
+
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload =
+        function(e) {
+
+          preview.innerHTML = `
+
+            <img
+              src="${e.target.result}"
+              alt="Screenshot preview"
+            >
+
+          `;
+
+        };
+
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
 
 }
 
 
-if(!utr){
+/* =========================================================
+   DEPOSIT SUBMIT
+========================================================= */
 
-msg.textContent=
+async function submitDeposit() {
 
-"Enter UTR / Transaction ID.";
+  const amountInput =
+    document.getElementById(
+      "depositAmount"
+    );
 
-return;
+
+  const utrInput =
+    document.getElementById(
+      "utr"
+    );
+
+
+  const screenshotInput =
+    document.getElementById(
+      "paymentScreenshot"
+    );
+
+
+  const msg =
+    document.getElementById(
+      "depositMsg"
+    );
+
+
+  const amount =
+    Number(
+      amountInput
+        ? amountInput.value
+        : 0
+    );
+
+
+  const utr =
+    utrInput
+      ? utrInput.value.trim()
+      : "";
+
+
+  const file =
+    screenshotInput
+      ? screenshotInput.files[0]
+      : null;
+
+
+  if (
+    amount < 500 ||
+    amount > 50000
+  ) {
+
+    if (msg) {
+
+      msg.textContent =
+        "Enter an amount between ₹500 and ₹50,000.";
+
+    }
+
+    return;
+
+  }
+
+
+  if (!utr) {
+
+    if (msg) {
+
+      msg.textContent =
+        "Enter UTR / Transaction ID.";
+
+    }
+
+    return;
+
+  }
+
+
+  if (!file) {
+
+    if (msg) {
+
+      msg.textContent =
+        "Upload payment screenshot.";
+
+    }
+
+    return;
+
+  }
+
+
+  if (
+    file.size >
+    5 * 1024 * 1024
+  ) {
+
+    if (msg) {
+
+      msg.textContent =
+        "Screenshot must be under 5 MB.";
+
+    }
+
+    return;
+
+  }
+
+
+  const requestId =
+    "DEP-" +
+    Date.now();
+
+
+  const uid =
+    userID();
+
+
+  if (msg) {
+
+    msg.textContent =
+      "Submitting deposit request...";
+
+  }
+
+
+  try {
+
+    const screenshot =
+      await fileToBase64(
+        file
+      );
+
+
+    const payload = {
+
+      action:
+        "deposit",
+
+      userId:
+        uid,
+
+      requestId:
+        requestId,
+
+      amount:
+        amount,
+
+      utr:
+        utr,
+
+      screenshot:
+        screenshot,
+
+      screenshotName:
+        file.name,
+
+      screenshotType:
+        file.type ||
+        "image/jpeg"
+
+    };
+
+
+    /*
+      no-cors is required for browser -> Apps Script.
+      Apps Script receives the POST request.
+    */
+
+    await fetch(
+      API_URL,
+      {
+
+        method:
+          "POST",
+
+        mode:
+          "no-cors",
+
+        headers: {
+
+          "Content-Type":
+            "text/plain;charset=utf-8"
+
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          )
+
+      }
+    );
+
+
+    /*
+      Save local request history.
+    */
+
+    const r = {
+
+      id:
+        requestId,
+
+      amount:
+        amount,
+
+      utr:
+        utr,
+
+      status:
+        "Pending Verification",
+
+      date:
+        new Date()
+          .toLocaleString()
+
+    };
+
+
+    s.deposits.unshift(r);
+
+
+    s.transactions.unshift({
+
+      type:
+        "Deposit",
+
+      amount:
+        amount,
+
+      status:
+        "Pending Verification",
+
+      date:
+        r.date
+
+    });
+
+
+    save();
+
+
+    if (amountInput) {
+
+      amountInput.value =
+        "";
+
+    }
+
+
+    if (utrInput) {
+
+      utrInput.value =
+        "";
+
+    }
+
+
+    if (screenshotInput) {
+
+      screenshotInput.value =
+        "";
+
+    }
+
+
+    const preview =
+      document.getElementById(
+        "preview"
+      );
+
+
+    if (preview) {
+
+      preview.innerHTML =
+        "";
+
+    }
+
+
+    if (msg) {
+
+      msg.textContent =
+        "Deposit request submitted successfully. Pending verification.";
+
+    }
+
+
+    render();
+
+
+  } catch (error) {
+
+    console.error(
+      "Deposit error:",
+      error
+    );
+
+
+    if (msg) {
+
+      msg.textContent =
+        "Unable to submit request. Please try again.";
+
+    }
+
+  }
 
 }
 
 
-if(!file){
+/* =========================================================
+   WITHDRAW PAGE
+========================================================= */
 
-msg.textContent=
+function showWithdraw() {
 
-"Upload payment screenshot.";
-
-return;
-
-}
-
-
-if(
-file.size>
-5*1024*1024
-){
-
-msg.textContent=
-
-"Screenshot must be under 5 MB.";
-
-return;
+  go("withdraw");
 
 }
 
 
-const requestId=
-"DEP-"+Date.now();
+/* =========================================================
+   WITHDRAW SUBMIT
+========================================================= */
 
+async function submitWithdraw() {
 
-const uid=
-userID();
+  const amount =
+    Number(
+      document.getElementById(
+        "withdrawAmount"
+      ).value
+    );
 
 
-msg.textContent=
+  const name =
+    document.getElementById(
+      "bankName"
+    ).value.trim();
 
-"Submitting deposit request...";
 
+  const ifsc =
+    document.getElementById(
+      "ifsc"
+    ).value
+      .trim()
+      .toUpperCase();
 
-try{
 
-const screenshot=
-await fileToBase64(
-file
-);
+  const bank =
+    document.getElementById(
+      "bank"
+    ).value.trim();
 
 
-const response=
-await fetch(
+  const account =
+    document.getElementById(
+      "accountNumber"
+    ).value.trim();
 
-API_URL,
 
-{
+  const confirmAccount =
+    document.getElementById(
+      "confirmAccount"
+    ).value.trim();
 
-method:
-"POST",
 
-headers:{
+  const msg =
+    document.getElementById(
+      "withdrawMsg"
+    );
 
-"Content-Type":
-"text/plain;charset=utf-8"
 
-},
+  if (
+    amount < 300 ||
+    amount > 20000
+  ) {
 
-body:
-JSON.stringify({
+    msg.textContent =
+      "Enter an amount between ₹300 and ₹20,000.";
 
-action:
-"deposit",
+    return;
 
-userId:
-uid,
+  }
 
-requestId:
-requestId,
 
-amount:
-amount,
+  if (
+    amount >
+    s.balance
+  ) {
 
-utr:
-utr,
+    msg.textContent =
+      "Insufficient balance.";
 
-screenshot:
-screenshot,
+    return;
 
-screenshotName:
-file.name,
+  }
 
-screenshotType:
-file.type
 
-})
+  if (
+    !name ||
+    !ifsc ||
+    !bank ||
+    !account ||
+    !confirmAccount
+  ) {
 
-}
+    msg.textContent =
+      "Please fill all bank details.";
 
-);
+    return;
 
+  }
 
-const result=
-await response.json();
 
+  if (
+    account !==
+    confirmAccount
+  ) {
 
-if(
-!result.success
-){
+    msg.textContent =
+      "Account numbers do not match.";
 
-throw new Error(
+    return;
 
-result.message||
-"Request failed"
+  }
 
-);
 
-}
+  if (
+    !/^[A-Z]{4}0[A-Z0-9]{6}$/
+      .test(ifsc)
+  ) {
 
+    msg.textContent =
+      "Enter a valid IFSC code.";
 
-const r={
+    return;
 
-id:
-requestId,
+  }
 
-amount:
-amount,
 
-utr:
-utr,
+  const requestId =
+    "WDR-" +
+    Date.now();
 
-status:
-"Pending Verification",
 
-date:
-new Date()
-.toLocaleString()
+  const uid =
+    userID();
 
-};
 
+  msg.textContent =
+    "Submitting withdrawal request...";
 
-s.deposits.unshift(
-r
-);
 
+  try {
 
-s.transactions.unshift({
+    const payload = {
 
-type:
-"Deposit",
+      action:
+        "withdrawal",
 
-amount:
-amount,
+      userId:
+        uid,
 
-status:
-"Pending Verification",
+      requestId:
+        requestId,
 
-date:
-r.date
+      amount:
+        amount,
 
-});
+      accountHolder:
+        name,
 
+      ifsc:
+        ifsc,
 
-save();
+      bankName:
+        bank,
 
+      accountNumber:
+        account
 
-document.getElementById(
-"depositAmount"
-).value="";
+    };
 
 
-document.getElementById(
-"utr"
-).value="";
+    await fetch(
+      API_URL,
+      {
 
+        method:
+          "POST",
 
-document.getElementById(
-"paymentScreenshot"
-).value="";
+        mode:
+          "no-cors",
 
+        headers: {
 
-document.getElementById(
-"preview"
-).innerHTML="";
+          "Content-Type":
+            "text/plain;charset=utf-8"
 
+        },
 
-msg.textContent=
+        body:
+          JSON.stringify(
+            payload
+          )
 
-"Deposit request submitted successfully.";
+      }
+    );
 
 
-render();
+    const r = {
 
+      id:
+        requestId,
 
-}catch(error){
+      amount:
+        amount,
 
-console.error(error);
+      status:
+        "Pending",
 
+      date:
+        new Date()
+          .toLocaleString()
 
-msg.textContent=
+    };
 
-"Unable to submit request. Please try again.";
 
-}
+    s.withdrawals.unshift(r);
 
-}
 
+    s.transactions.unshift({
 
-/* =========================
-   WITHDRAW
-========================= */
+      type:
+        "Withdrawal",
 
-function showWithdraw(){
+      amount:
+        amount,
 
-go(
-"withdraw"
-);
+      status:
+        "Pending",
 
-}
+      date:
+        r.date
 
+    });
 
-async function submitWithdraw(){
 
-const amount=
-Number(
+    s.balance -=
+      amount;
 
-document.getElementById(
-"withdrawAmount"
-).value
 
-);
+    save();
 
 
-const name=
+    document.getElementById(
+      "withdrawAmount"
+    ).value =
+      "";
 
-document.getElementById(
-"bankName"
-).value
-.trim();
 
+    document.getElementById(
+      "bankName"
+    ).value =
+      "";
 
-const ifsc=
 
-document.getElementById(
-"ifsc"
-).value
-.trim()
-.toUpperCase();
+    document.getElementById(
+      "ifsc"
+    ).value =
+      "";
 
 
-const bank=
+    document.getElementById(
+      "bank"
+    ).value =
+      "";
 
-document.getElementById(
-"bank"
-).value
-.trim();
 
+    document.getElementById(
+      "accountNumber"
+    ).value =
+      "";
 
-const account=
 
-document.getElementById(
-"accountNumber"
-).value
-.trim();
+    document.getElementById(
+      "confirmAccount"
+    ).value =
+      "";
 
 
-const confirmAccount=
+    msg.textContent =
+      "Withdrawal request submitted successfully. Pending verification.";
 
-document.getElementById(
-"confirmAccount"
-).value
-.trim();
 
+    render();
 
-const msg=
 
-document.getElementById(
-"withdrawMsg"
-);
+  } catch (error) {
 
+    console.error(
+      "Withdrawal error:",
+      error
+    );
 
-if(
-amount<300||
-amount>20000
-){
 
-msg.textContent=
+    msg.textContent =
+      "Unable to submit request. Please try again.";
 
-"Enter an amount between ₹300 and ₹20,000.";
-
-return;
-
-}
-
-
-if(
-amount>s.balance
-){
-
-msg.textContent=
-
-"Insufficient balance.";
-
-return;
-
-}
-
-
-if(
-
-!name||
-!ifsc||
-!bank||
-!account||
-!confirmAccount
-
-){
-
-msg.textContent=
-
-"Please fill all bank details.";
-
-return;
+  }
 
 }
 
 
-if(
-account!==confirmAccount
-){
-
-msg.textContent=
-
-"Account numbers do not match.";
-
-return;
-
-}
-
-
-if(
-!/^[A-Z]{4}0[A-Z0-9]{6}$/
-.test(ifsc)
-){
-
-msg.textContent=
-
-"Enter a valid IFSC code.";
-
-return;
-
-}
-
-
-const requestId=
-"WDR-"+Date.now();
-
-
-const uid=
-userID();
-
-
-msg.textContent=
-
-"Submitting withdrawal request...";
-
-
-try{
-
-const response=
-await fetch(
-
-API_URL,
-
-{
-
-method:
-"POST",
-
-headers:{
-
-"Content-Type":
-"text/plain;charset=utf-8"
-
-},
-
-body:
-JSON.stringify({
-
-action:
-"withdrawal",
-
-userId:
-uid,
-
-requestId:
-requestId,
-
-amount:
-amount,
-
-accountHolder:
-name,
-
-ifsc:
-ifsc,
-
-bankName:
-bank,
-
-accountNumber:
-account
-
-})
-
-}
-
-);
-
-
-const result=
-await response.json();
-
-
-if(
-!result.success
-){
-
-throw new Error(
-
-result.message||
-"Request failed"
-
-);
-
-}
-
-
-const r={
-
-id:
-requestId,
-
-amount:
-amount,
-
-status:
-"Pending",
-
-date:
-new Date()
-.toLocaleString()
-
-};
-
-
-s.withdrawals.unshift(
-r
-);
-
-
-s.transactions.unshift({
-
-type:
-"Withdrawal",
-
-amount:
-amount,
-
-status:
-"Pending",
-
-date:
-r.date
-
-});
-
-
-s.balance-=
-amount;
-
-
-save();
-
-
-document.getElementById(
-"withdrawAmount"
-).value="";
-
-
-document.getElementById(
-"bankName"
-).value="";
-
-
-document.getElementById(
-"ifsc"
-).value="";
-
-
-document.getElementById(
-"bank"
-).value="";
-
-
-document.getElementById(
-"accountNumber"
-).value="";
-
-
-document.getElementById(
-"confirmAccount"
-).value="";
-
-
-msg.textContent=
-
-"Withdrawal request submitted successfully.";
-
-
-render();
-
-
-}catch(error){
-
-console.error(error);
-
-
-msg.textContent=
-
-"Unable to submit request. Please try again.";
-
-}
-
-}
-
-
-/* =========================
+/* =========================================================
    HISTORY
-========================= */
+========================================================= */
 
-function renderHistory(){
+function renderHistory() {
 
-const d=
-document.getElementById(
-"depositHistoryList"
-);
-
-
-const w=
-document.getElementById(
-"withdrawHistoryList"
-);
+  const d =
+    document.getElementById(
+      "depositHistoryList"
+    );
 
 
-const t=
-document.getElementById(
-"transactionList"
-);
+  const w =
+    document.getElementById(
+      "withdrawHistoryList"
+    );
 
 
-d.innerHTML=
-
-s.deposits.length
-
-?
-
-s.deposits
-
-.map(x=>`
-
-<div class="item">
-
-<b>
-Deposit ₹${fmt(x.amount)}
-</b>
-
-<small>
-${x.date}
-</small>
-
-<p>
-UTR:
-${safe(x.utr)}
-</p>
-
-<p>
-Status:
-${safe(x.status)}
-</p>
-
-</div>
-
-`)
-
-.join("")
-
-:
-
-'<div class="item">No deposit requests.</div>';
+  const t =
+    document.getElementById(
+      "transactionList"
+    );
 
 
-w.innerHTML=
+  if (d) {
 
-s.withdrawals.length
+    d.innerHTML =
+      s.deposits.length
 
-?
+        ?
 
-s.withdrawals
+        s.deposits
 
-.map(x=>`
+          .map(function(x) {
 
-<div class="item">
+            return `
 
-<b>
-Withdrawal ₹${fmt(x.amount)}
-</b>
+              <div class="item">
 
-<small>
-${x.date}
-</small>
+                <b>
+                  Deposit ₹${fmt(x.amount)}
+                </b>
 
-<p>
-Status:
-${safe(x.status)}
-</p>
+                <small>
+                  ${safe(x.date)}
+                </small>
 
-</div>
+                <p>
+                  UTR:
+                  ${safe(x.utr)}
+                </p>
 
-`)
+                <p>
+                  Status:
+                  ${safe(x.status)}
+                </p>
 
-.join("")
+              </div>
 
-:
+            `;
 
-'<div class="item">No withdrawal requests.</div>';
+          })
+
+          .join("")
+
+        :
+
+        '<div class="item">No deposit requests.</div>';
+
+  }
 
 
-t.innerHTML=
+  if (w) {
 
-s.transactions.length
+    w.innerHTML =
+      s.withdrawals.length
 
-?
+        ?
 
-s.transactions
+        s.withdrawals
 
-.map(x=>`
+          .map(function(x) {
 
-<div class="item">
+            return `
 
-<b>
+              <div class="item">
 
-${safe(x.type)}
+                <b>
+                  Withdrawal ₹${fmt(x.amount)}
+                </b>
 
-₹${fmt(x.amount)}
+                <small>
+                  ${safe(x.date)}
+                </small>
 
-</b>
+                <p>
+                  Status:
+                  ${safe(x.status)}
+                </p>
 
-<small>
-${x.date}
-</small>
+              </div>
 
-<p>
+            `;
 
-Status:
-${safe(x.status)}
+          })
 
-</p>
+          .join("")
 
-</div>
+        :
 
-`)
+        '<div class="item">No withdrawal requests.</div>';
 
-.join("")
+  }
 
-:
 
-'<div class="item">No transactions yet.</div>';
+  if (t) {
+
+    t.innerHTML =
+      s.transactions.length
+
+        ?
+
+        s.transactions
+
+          .map(function(x) {
+
+            return `
+
+              <div class="item">
+
+                <b>
+                  ${safe(x.type)}
+                  ₹${fmt(x.amount)}
+                </b>
+
+                <small>
+                  ${safe(x.date)}
+                </small>
+
+                <p>
+                  Status:
+                  ${safe(x.status)}
+                </p>
+
+              </div>
+
+            `;
+
+          })
+
+          .join("")
+
+        :
+
+        '<div class="item">No transactions yet.</div>';
+
+  }
 
 }
 
 
-/* =========================
-   SAFE HTML
-========================= */
+/* =========================================================
+   HTML SECURITY
+========================================================= */
 
-function safe(x){
+function safe(x) {
 
-return String(
-x||""
-)
+  return String(
+    x || ""
+  )
+    .replace(
+      /[&<>"']/g,
+      function(a) {
 
-.replace(
-/[&<>"']/g,
+        return {
 
-a=>({
+          "&":
+            "&amp;",
 
-"&":
-"&amp;",
+          "<":
+            "&lt;",
 
-"<":
-"&lt;",
+          ">":
+            "&gt;",
 
-">":
-"&gt;",
+          '"':
+            "&quot;",
 
-'"':
-"&quot;",
+          "'":
+            "&#039;"
 
-"'":
-"&#039;"
+        }[a];
 
-}[a])
-
-);
+      }
+    );
 
 }
 
 
-/* =========================
+/* =========================================================
    INVITE
-========================= */
+========================================================= */
 
-function shareInvite(){
+function shareInvite() {
 
-window.open(
+  window.open(
 
-"https://wa.me/?text="+
+    "https://wa.me/?text=" +
 
-encodeURIComponent(
+    encodeURIComponent(
 
-"Join NSG Wellfare: "+
+      "Join NSG Wellfare: " +
+      location.href
 
-location.href
+    ),
 
-),
+    "_blank"
 
-"_blank"
-
-);
-
-}
-
-
-function copyInvite(){
-
-const msg=
-document.getElementById(
-"inviteMsg"
-);
-
-
-if(
-navigator.clipboard
-){
-
-navigator.clipboard
-
-.writeText(
-location.href
-)
-
-.then(
-
-()=>{
-
-msg.textContent=
-"Invite link copied."
-
-}
-
-)
-
-.catch(
-
-()=>{
-
-msg.textContent=
-location.href
-
-}
-
-);
-
-}else{
-
-msg.textContent=
-location.href;
-
-}
+  );
 
 }
 
 
-/* =========================
+function copyInvite() {
+
+  const msg =
+    document.getElementById(
+      "inviteMsg"
+    );
+
+
+  if (
+    navigator.clipboard
+  ) {
+
+    navigator.clipboard
+
+      .writeText(
+        location.href
+      )
+
+      .then(function() {
+
+        if (msg) {
+
+          msg.textContent =
+            "Invite link copied.";
+
+        }
+
+      })
+
+      .catch(function() {
+
+        if (msg) {
+
+          msg.textContent =
+            location.href;
+
+        }
+
+      });
+
+  } else {
+
+    if (msg) {
+
+      msg.textContent =
+        location.href;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
    SUPPORT
-========================= */
+========================================================= */
 
-function support(){
+function support() {
 
-window.open(
-
-SUPPORT,
-
-"_blank"
-
-);
+  window.open(
+    SUPPORT,
+    "_blank"
+  );
 
 }
 
 
-/* =========================
+/* =========================================================
    START
-========================= */
+========================================================= */
 
-render();
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+
+    setupScreenshotPreview();
+
+    render();
+
+  }
+);
