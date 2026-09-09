@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NSG Wellfare</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="top">
+  <div>
+    <strong>🌿 NSG Wellfare</strong>
+    <small>Welcome back</small>
+  </div>
+
+  <div class="topbal">
+    ₹<span id="topBalance">0.00</span>
+  </div>
+</header>
+
+<main>
+
+<!-- HOME -->
+<section id="home" class="page active">
+
+  <div class="hero">
+    <div>
+      <span class="muted">Available Balance</span>
+      <h1>₹<span id="homeBalance">0.00</span></h1>
+      <span id="userIdHome"></span>
+    </div>
+
+    <div class="heroIcon">₹</div>
+  </div>
+
+  <div class="quick">
+
+    <button onclick="go('attendance')">
+      📅
+      <b>Attendance</b>
+      <small>Daily check-in</small>
+    </button>
+
+    <button onclick="go('products')">
+      📦
+      <b>Products</b>
+      <small>View plans</small>
+    </button>
+
+    <button onclick="showDeposit()">
+      💰
+      <b>Deposit</b>
+      <small>Add funds</small>
+    </button>
+
+    <button onclick="showWithdraw()">
+      🏦
+      <b>Withdraw</b>
+      <small>Request payout</small>
+    </button>
+
+  </div>
+
+  <h2>Products</h2>
+
+  <div id="homeProducts"></div>
+
+</section>
+
+
+<!-- PRODUCTS -->
+<section id="products" class="page">
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
+    <h2>Products</h2>
+  </div>
+
+  <div id="productList"></div>
+
+</section>
+
+
+<!-- ATTENDANCE -->
+<section id="attendance" class="page">
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
+    <h2>Daily Attendance</h2>
+  </div>
+
+  <div class="card">
+
+    <div class="calHead">
+      <button onclick="month(-1)">‹</button>
+      <b id="monthTitle"></b>
+      <button onclick="month(1)">›</button>
+    </div>
+
+    <div class="week">
+      <span>Sun</span>
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
+    </div>
+
+    <div id="calendar" class="calendar"></div>
+
+    <p class="center">
+      Attendance:
+      <b id="attCount">0</b> days
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- REWARDS -->
+<section id="rewards" class="page">
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
+    <h2>Rewards</h2>
+  </div>
+
+  <div id="rewardsList"></div>
+
+</section>
+
+
+<!-- MY INFO -->
+<section id="info" class="page">
+
+  <h2>My Info</h2>
+
+  <div class="profile card">
+
+    <div class="avatar">👤</div>
+
+    <div>
+      <b>User ID</b>
+      <p id="profileId"></p>
+    </div>
+
+  </div>
+
+
+  <div class="list">
+
+    <button onclick="showDeposit()">
+      💰
+      <span>
+        <b>Deposit</b>
+        <small>Add funds through UPI</small>
+      </span>
+      ›
+    </button>
+
+
+    <button onclick="showWithdraw()">
+      🏦
+      <span>
+        <b>Withdrawal</b>
+        <small>Submit withdrawal request</small>
+      </span>
+      ›
+    </button>
+
+
+    <button onclick="go('depositHistory')">
+      📥
+      <span>
+        <b>Deposit History</b>
+        <small>View submitted requests</small>
+      </span>
+      ›
+    </button>
+
+
+    <button onclick="go('withdrawHistory')">
+      📤
+      <span>
+        <b>Withdrawal History</b>
+        <small>View submitted requests</small>
+      </span>
+      ›
+    </button>
+
+
+    <button onclick="go('transactions')">
+      📊
+      <span>
+        <b>Transaction History</b>
+        <small>View activity</small>
+      </span>
+      ›
+    </button>
+
+
+    <button onclick="go('rewards')">
+      🎁
+      <span>
+        <b>Rewards</b>
+        <small>View rewards</small>
+      </span>
+      ›
+    </button>
+
+
+    <button onclick="support()">
+      💬
+      <span>
+        <b>Customer Service</b>
+        <small>Open support</small>
+      </span>
+      ›
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- DEPOSIT -->
+<section id="deposit" class="page">
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
+    <h2>Deposit</h2>
+  </div>
+
+
+  <div class="card">
+
+    <label>Deposit Amount</label>
+
+    <input
+      id="depositAmount"
+      type="number"
+      min="500"
+      max="50000"
+      placeholder="₹500 - ₹50,000"
+    >
+
+
+    <div class="pay">
+
+      <h3>Pay using UPI</h3>
+
+
+      <!-- QR CODE -->
+      <div class="qr">
+
+        <img
+          src="assets/upi-qr.jpg"
+          alt="UPI QR Code"
+        >
+
+      </div>
+
+
+      <!-- UPI ID -->
+      <div class="upi">
+
+        <span id="upiId">
+          yadav-rishab@fam
+        </span>
+
+        <button onclick="copyUPI()">
+          Copy
+        </button>
+
+      </div>
+
+
+      <p class="muted center">
+        Scan the QR code or use the UPI ID above.
+      </p>
+
+    </div>
+
+
+    <label>
+      UTR / Transaction ID
+    </label>
+
+    <input
+      id="utr"
+      maxlength="50"
+      placeholder="Enter transaction reference"
+    >
+
+
+    <label>
+      Payment Screenshot
+    </label>
+
+    <input
+      id="paymentScreenshot"
+      type="file"
+      accept="image/*"
+    >
+
+
+    <div id="preview"></div>
+
+
+    <button
+      class="primary"
+      onclick="submitDeposit()"
+    >
+      Submit Deposit Request
+    </button>
+
+
+    <p
+      id="depositMsg"
+      class="msg"
+    ></p>
+
+  </div>
+
+</section>
+
+
+<!-- WITHDRAW -->
+<section id="withdraw" class="page">
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
+    <h2>Withdrawal</h2>
+  </div>
+
+
+  <div class="card">
+
+    <div class="balanceLine">
+
+      <span>
+        Available Balance
+      </span>
+
+      <b>
+        ₹<span id="withdrawBalance">0.00</span>
+      </b>
+
+    </div>
+
+
+    <label>Amount</label>
+
+    <input
+      id="withdrawAmount"
+      type="number"
+      min="300"
+      max="20000"
+      placeholder="₹300 - ₹20,000"
+    >
+
+
+    <label>
+      Account Holder Name
+    </label>
+
+    <input
+      id="bankName"
+      placeholder="Full name"
+    >
+
+
+    <label>
+      IFSC Code
+    </label>
+
+    <input
+      id="ifsc"
+      placeholder="e.g. SBIN0001234"
+    >
+
+
+    <label>
+      Bank Name
+    </label>
+
+    <input
+      id="bank"
+      placeholder="Bank name"
+    >
+
+
+    <label>
+      Account Number
+    </label>
+
+    <input
+      id="accountNumber"
+      inputmode="numeric"
+      placeholder="Account number"
+    >
+
+
+    <label>
+      Repeat Account Number
+    </label>
+
+    <input
+      id="confirmAccount"
+      inputmode="numeric"
+      placeholder="Repeat account number"
+    >
+
+
+    <button
+      class="primary"
+      onclick="submitWithdraw()"
+    >
+      Submit Withdrawal Request
+    </button>
+
+
+    <p class="muted">
+      Withdrawal requests are subject to manual verification.
+    </p>
+
+
+    <p
+      id="withdrawMsg"
+      class="msg"
+    ></p>
+
+  </div>
+
+</section>
+
+
+<!-- DEPOSIT HISTORY -->
+<section id="depositHistory" class="page">
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
+    <h2>Deposit History</h2>
+  </div>
+
+  <div id="depositHistoryList"></div>
+
+</section>
+
+
+<!-- WITHDRAW HISTORY -->
+<section id="withdrawHistory" class="page">
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
+    <h2>Withdrawal History</h2>
+  </div>
+
+  <div id="withdrawHistoryList"></div>
+
+</section>
+
+
+<!-- TRANSACTIONS -->
+<section id="transactions" class="page">
+
+  <div class="head">
+    <button onclick="go('info')">‹</button>
+    <h2>Transaction History</h2>
+  </div>
+
+  <div id="transactionList"></div>
+
+</section>
+
+
+<!-- INVITE -->
+<section id="invite" class="page">
+
+  <div class="head">
+    <button onclick="go('home')">‹</button>
+    <h2>Invite</h2>
+  </div>
+
+
+  <div class="card center">
+
+    <h3>🎁 Invite Friends</h3>
+
+    <p class="muted">
+      Share your referral link with friends.
+    </p>
+
+
+    <input
+      id="inviteLink"
+      readonly
+    >
+
+
+    <button
+      class="primary"
+      onclick="shareInvite()"
+    >
+      Share on WhatsApp
+    </button>
+
+
+    <button
+      class="secondary"
+      onclick="copyInvite()"
+    >
+      Copy Link
+    </button>
+
+
+    <p
+      id="inviteMsg"
+      class="msg"
+    ></p>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<!-- BOTTOM NAV -->
+<nav>
+
+  <button onclick="go('home')">
+    🏠
+    <span>Home</span>
+  </button>
+
+
+  <button onclick="go('products')">
+    📦
+    <span>Product</span>
+  </button>
+
+
+  <button onclick="go('info')">
+    👤
+    <span>My Info</span>
+  </button>
+
+
+  <button onclick="go('invite')">
+    🎁
+    <span>Invite</span>
+  </button>
+
+</nav>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
